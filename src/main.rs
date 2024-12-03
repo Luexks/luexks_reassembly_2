@@ -43,8 +43,60 @@ impl Display for DisplayOrientedNumber {
 
 enum PortDistribution {
     Center,
-    TowardsFromCurrentVert,
-    BackwardsFromNextVert,
+    TowardsFromCurrentVert {
+        distance_from_current_vert: DisplayOrientedNumber,
+    },
+    BackwardsFromNextVert{
+        distance_from_next_vert: DisplayOrientedNumber,
+    },
+}
+
+struct Side<'a> {
+    side_index: usize,
+    vert_1: &'a Vert,
+    vert_2: &'a Vert,
+}
+
+impl<'a> Side<'_> {
+    fn to_ports_of_distribution(self, port_distribution: PortDistribution) -> Ports {
+        let side_length = ((self.vert_1.x.to_f32() - self.vert_2.x.to_f32()).powi(2) + (self.vert_1.y.to_f32() - self.vert_2.y.to_f32()).powi(2)).sqrt();
+        let port_count = (side_length / TOTAL_SCALE).floor();
+        if port_count <= 1.0 {
+            Ports(vec![Port {
+                side_index: self.side_index,
+                position: DisplayOrientedNumber::Float(PORT_POSITION_CENTER),
+                flags: Flags::<PortFlag>::default(),
+            }])
+        } else {
+            Ports((0..port_count as usize)
+                .map(|port_index| Port {
+                    side_index: self.side_index,
+                    position: DisplayOrientedNumber::Fraction {
+                        numerator: Box::new(match &port_distribution {
+                            PortDistribution::Center => DisplayOrientedNumber::Float(
+                                PORT_POSITION_CENTER * side_length
+                                - (PORT_SPACING * (port_count / 2.0 - 0.5))
+                                + (PORT_SPACING * port_index as f32)
+                            ),
+                            PortDistribution::TowardsFromCurrentVert {distance_from_current_vert} => DisplayOrientedNumber::Float(
+                                PORT_POSITION_CURRENT_VERT
+                                + distance_from_current_vert.to_f32()
+                                + (PORT_SPACING * port_index as f32)
+                            ),
+                            PortDistribution::BackwardsFromNextVert {distance_from_next_vert} => DisplayOrientedNumber::Float(
+                                PORT_POSITION_NEXT_VERT
+                                - distance_from_next_vert.to_f32()
+                                - (PORT_SPACING * port_index as f32)
+                            ),
+                        }),
+                        denominator: Box::new(DisplayOrientedNumber::Float(side_length)),
+                    },
+                    flags: Flags::<PortFlag>::default(),
+                })
+                .collect::<Vec<_>>()
+            )
+        }
+    }
 }
 
 struct Shapes(Vec<Shape>);
@@ -100,39 +152,11 @@ impl Verts {
                 .enumerate()
                 .zip(self.0.iter().cycle().skip(1))
                 .flat_map(|((side_index, vert_1), vert_2)| {
-                    let side_length = ((vert_1.x.to_f32() - vert_2.x.to_f32()).powi(2) + (vert_1.y.to_f32() - vert_2.y.to_f32()).powi(2)).sqrt();
-                    let port_count = (side_length / TOTAL_SCALE).floor();
-                    if port_count <= 1.0 {
-                        return vec![Port {
-                            side_index: side_index,
-                            position: DisplayOrientedNumber::Float(PORT_POSITION_CENTER),
-                            flags: Flags::<PortFlag>::default(),
-                        }]
-                    } else {
-                        return (0..port_count as usize)
-                            .map(|port_index| Port {
-                                side_index: side_index,
-                                // position: match PortDistribution::Center {
-                                //     PortDistribution::Center => (),
-                                //     _ => (),
-                                // },
-                                position: DisplayOrientedNumber::Fraction {
-                                    // numerator: Box::new(DisplayOrientedNumber::Float(
-                                    //     PORT_POSITION_CENTER
-                                    //     - ((PORT_SPACING / side_length) * (port_count / 2.0 - 0.5))
-                                    //     + ((PORT_SPACING / side_length) * port_index as f32))
-                                    // ),
-                                    numerator: Box::new(DisplayOrientedNumber::Float(
-                                        PORT_POSITION_CENTER * side_length
-                                        - (PORT_SPACING * (port_count / 2.0 - 0.5))
-                                        + (PORT_SPACING * port_index as f32))
-                                    ),
-                                    denominator: Box::new(DisplayOrientedNumber::Float(side_length)),
-                                },
-                                flags: Flags::<PortFlag>::default(),
-                            })
-                            .collect::<Vec<_>>();
-                    }
+                    Side {
+                        side_index: side_index,
+                        vert_1: vert_1,
+                        vert_2: vert_2,
+                    }.to_ports_of_distribution(PortDistribution::Center).0
                 }
                 )
                 .collect()
@@ -288,7 +312,7 @@ fn create_blocks_and_shapes(mod_path: &PathBuf) {
 
     let mut shapes = Shapes::default();
 
-
+    create_squares(&mut blocks, &mut shapes);
 
     blocks_file.write_all(blocks.as_bytes())
         .expect("Failed to write to blocks.lua");
@@ -297,19 +321,18 @@ fn create_blocks_and_shapes(mod_path: &PathBuf) {
 }
 
 fn create_squares(blocks: &mut String, shapes: &mut Shapes) {
-    // shapes.0.push(Shape {
-    //     id: 0,
-    //     scales: (0..SQUARE_SCALE_COUNT)
-    //         .map(|square_id| Scale {
-    //             verts: Verts((0..4)
-    //                 .map(|vert_index| Vert {
-    //                     x: DisplayOrientedNumber::Float(TOTAL_SCALE / 2.0),
-    //                     y: DisplayOrientedNumber::Float(TOTAL_SCALE / 2.0),
-    //                 }.orient_by_index(vert_index))
-    //                 .collect()
-    //             ),
-    //             ports: (),
-    //         })
-    //         .collect()
-    // });
+    shapes.0.push(Shape {
+        id: 0,
+        scales: (0..SQUARE_SCALE_COUNT)
+            .map(|square_index| Verts((0..4)
+                    .map(|vert_index| Vert {
+                        x: DisplayOrientedNumber::Float(TOTAL_SCALE * 0.5 * (1.0 + square_index as f32)),
+                        y: DisplayOrientedNumber::Float(TOTAL_SCALE * 0.5 * (1.0 + square_index as f32)),
+                    }.orient_by_index(vert_index))
+                    .collect()
+                ).to_hull_scale()
+            )
+            .collect()
+    });
+    blocks.push_str(&format!("{}", shapes.0.last().unwrap()));
 }
