@@ -1,6 +1,8 @@
+pub const MOD_NAME: &str = "Luexks1";
+
 pub const TOTAL_SCALE: f32 = 10.0;
 pub const PORT_SPACING: f32 = TOTAL_SCALE;
-pub const MININUM_PORT_SPACING: f32 = TOTAL_SCALE / 2.0;
+pub const PORT_SPACING_FROM_VERT: f32 = TOTAL_SCALE / 2.0;
 
 pub const SQUARE_SCALE_COUNT: usize = 4;
 

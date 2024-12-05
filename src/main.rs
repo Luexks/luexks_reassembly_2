@@ -1,287 +1,26 @@
-use core::fmt;
-use std::fmt::Display;
 use std::fs::{self, File};
-use std::io::{Write, Read};
+use std::io::Write;
 use std::path::PathBuf;
 
 mod configs;
 use configs::*;
-mod consts;
-use consts::*;
+mod utils;
+use utils::*;
+pub mod display_oriented_number;
 
-
-const MOD_NAME: &str = "Luexks1";
-const BLOCKS_NAME: &str = "blocks.lua";
-const SHAPES_NAME: &str = "shapes.lua";
-
-#[derive(Clone)]
-enum DisplayOrientedNumber {
-    Float(f32),
-    Fraction{
-        numerator: Box<DisplayOrientedNumber>,
-        denominator: Box<DisplayOrientedNumber>,
-    },
-}
-
-impl DisplayOrientedNumber {
-    fn to_f32(&self) -> f32 {
-        match self {
-            DisplayOrientedNumber::Float(value) => *value,
-            DisplayOrientedNumber::Fraction {numerator, denominator} => numerator.to_f32() / denominator.to_f32(),
-        }
-    }
-}
-    
-impl Display for DisplayOrientedNumber {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", match self {
-            DisplayOrientedNumber::Float(value) => format!("{}", value),
-            DisplayOrientedNumber::Fraction { numerator, denominator } => format!("{}/{}", numerator.to_f32(), denominator.to_f32()),
-        })
-    }
-}
-
-enum PortDistribution {
-    Center,
-    TowardsFromCurrentVert {
-        distance_from_current_vert: DisplayOrientedNumber,
-    },
-    BackwardsFromNextVert{
-        distance_from_next_vert: DisplayOrientedNumber,
-    },
-}
-
-struct Side<'a> {
-    side_index: usize,
-    vert_1: &'a Vert,
-    vert_2: &'a Vert,
-}
-
-impl<'a> Side<'_> {
-    fn to_ports_of_distribution(self, port_distribution: PortDistribution) -> Ports {
-        let side_length = ((self.vert_1.x.to_f32() - self.vert_2.x.to_f32()).powi(2) + (self.vert_1.y.to_f32() - self.vert_2.y.to_f32()).powi(2)).sqrt();
-        let port_count = (side_length / TOTAL_SCALE).floor();
-        if port_count <= 1.0 {
-            Ports(vec![Port {
-                side_index: self.side_index,
-                position: DisplayOrientedNumber::Float(PORT_POSITION_CENTER),
-                flags: Flags::<PortFlag>::default(),
-            }])
-        } else {
-            Ports((0..port_count as usize)
-                .map(|port_index| Port {
-                    side_index: self.side_index,
-                    position: DisplayOrientedNumber::Fraction {
-                        numerator: Box::new(match &port_distribution {
-                            PortDistribution::Center => DisplayOrientedNumber::Float(
-                                PORT_POSITION_CENTER * side_length
-                                - (PORT_SPACING * (port_count / 2.0 - 0.5))
-                                + (PORT_SPACING * port_index as f32)
-                            ),
-                            PortDistribution::TowardsFromCurrentVert {distance_from_current_vert} => DisplayOrientedNumber::Float(
-                                PORT_POSITION_CURRENT_VERT
-                                + distance_from_current_vert.to_f32()
-                                + (PORT_SPACING * port_index as f32)
-                            ),
-                            PortDistribution::BackwardsFromNextVert {distance_from_next_vert} => DisplayOrientedNumber::Float(
-                                PORT_POSITION_NEXT_VERT
-                                - distance_from_next_vert.to_f32()
-                                - (PORT_SPACING * port_index as f32)
-                            ),
-                        }),
-                        denominator: Box::new(DisplayOrientedNumber::Float(side_length)),
-                    },
-                    flags: Flags::<PortFlag>::default(),
-                })
-                .collect::<Vec<_>>()
-            )
-        }
-    }
-}
-
-struct Shapes(Vec<Shape>);
-
-impl Default for Shapes {
-    fn default() -> Self {
-        Shapes(Vec::new())
-    }
-}
-
-impl Display for Shapes {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{{\n{}\n}}", self.0.iter()
-        .map(|shape| shape.to_string())
-        .collect::<Vec<_>>()
-        .join("\n")
-    )}
-}
-
-struct Shape {
-    id: i32,
-    scales: Vec<Scale>,
-}
-
-impl Display for Shape {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", format!("{{{}{{\n{}\n}}}}", self.id, self.scales.iter()
-        .map(|scale| scale.to_string())
-        .collect::<Vec<_>>()
-        .join("\n")
-    ))}
-}
-
-struct Scale {
-    verts: Verts,
-    ports: Ports,
-}
-
-impl Display for Scale {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{{{}{}}}", self.verts, self.ports)
-    }
-}
-
-#[derive(Clone)]
-struct Verts(Vec<Vert>);
-
-impl Verts {
-    fn to_hull_scale(self) -> Scale {
-        Scale {
-            verts: self.clone(),
-            ports: Ports(self.0.iter()
-                .enumerate()
-                .zip(self.0.iter().cycle().skip(1))
-                .flat_map(|((side_index, vert_1), vert_2)| {
-                    Side {
-                        side_index: side_index,
-                        vert_1: vert_1,
-                        vert_2: vert_2,
-                    }.to_ports_of_distribution(PortDistribution::Center).0
-                }
-                )
-                .collect()
-            )
-        }
-    }
-}
-
-impl Display for Verts {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", format!("verts={{{}}}", self.0.iter()
-            .map(|vert| vert.to_string())
-            .collect::<Vec<_>>()
-            .join("")
-    ))
-    }
-}
-
-#[derive(Clone)]
-struct Vert {
-    x: DisplayOrientedNumber,
-    y: DisplayOrientedNumber,
-}
-
-impl Vert {
-    fn orient_by_index(&mut self, index: usize) -> Self {
-        Vert {
-            x: DisplayOrientedNumber::Float(self.x.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[index].0),
-            y: DisplayOrientedNumber::Float(self.y.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[index].1),
-        }
-    }
-}
-
-impl Display for Vert {
-    fn fmt(&self, f: &mut std::fmt::Formatter::<'_>) -> fmt::Result {
-        write!(f, "{{{},{}}}",
-            self.x,
-            self.y,
-        )
-    }
-}
-
-struct Ports(Vec<Port>);
-
-impl Display for Ports {
-    fn fmt(&self, f: &mut std::fmt::Formatter::<'_>) -> fmt::Result {
-        write!(f, "{}", format!("ports={{{}}}", self.0.iter()
-            .map(|port| format!("{}", port))
-            .collect::<Vec<_>>()
-            .join("")
-    ))}
-}
-
-struct Port {
-    side_index: usize,
-    position: DisplayOrientedNumber,
-    flags: Flags<PortFlag>,
-}
-
-impl Display for Port {
-    fn fmt(&self, f: &mut std::fmt::Formatter::<'_>) -> fmt::Result {
-        write!(f, "{}", format!("{{{},{}{}}}",
-            self.side_index,
-            self.position,
-            self.flags
-        ))
-    }
-}
-
-struct Flags<T: Display>(Vec<T>);
-
-impl<T: Display> Default for Flags<T> {
-    fn default() -> Self {
-        Flags(Vec::new())
-    }
-}
-
-impl<T: Display> Display for Flags<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.0
-            .iter()
-            .map(|flag| flag.to_string())
-            .collect::<Vec<_>>()
-            .join("|")
-        )
-    }
-}
-
-enum PortFlag {
-    ThrusterOut,
-    ThrusterIn,
-    WeaponOut,
-    WeaponIn,
-    Launcher,
-    Missile,
-    Root,
-    None,
-    Normal,
-}
-
-impl Display for PortFlag {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", match self {
-            PortFlag::ThrusterOut => "THRUSTER_OUT",
-            PortFlag::ThrusterIn => "THRUSTER_IN",
-            PortFlag::WeaponOut => "WEAPON_OUT",
-            PortFlag::WeaponIn => "WEAPON_IN",
-            PortFlag::Launcher => "LAUNCHER",
-            PortFlag::Missile => "MISSILE",
-            PortFlag::Root => "ROOT",
-            PortFlag::None => "NONE",
-            PortFlag::Normal => "NORMAL",
-        })
-    }
-}
+pub mod shape_types;
+use shape_types::*;
+pub mod mod_generation;
+use mod_generation::*;
 
 fn main() {
     let mod_path = create_mod_folder();
-    
+
     create_blocks_and_shapes(&mod_path);
 }
 
 fn create_mod_folder() -> PathBuf {
-    let generator_path = std::env::current_dir()
-        .expect("Failed to get generator folder");
+    let generator_path = std::env::current_dir().expect("Failed to get generator folder");
     let reassembly_mods_path = generator_path
         .parent()
         .expect("Failed to get reassembly mods folder");
@@ -289,8 +28,7 @@ fn create_mod_folder() -> PathBuf {
     let mod_path = reassembly_mods_path.join(MOD_NAME);
 
     if mod_path.exists() {
-        fs::remove_dir_all(&mod_path)
-            .expect("Failed to remove existing mod folder");
+        fs::remove_dir_all(&mod_path).expect("Failed to remove existing mod folder");
     }
 
     fs::create_dir(&mod_path).expect("Failed to create mod folder");
@@ -300,39 +38,21 @@ fn create_mod_folder() -> PathBuf {
 
 fn create_blocks_and_shapes(mod_path: &PathBuf) {
     let blocks_path = mod_path.join(BLOCKS_NAME);
-    let mut blocks_file = File::create(&blocks_path)
-        .expect("Failed to create blocks.lua");
+    let mut blocks_file = File::create(&blocks_path).expect("Failed to create blocks.lua");
 
     let mut blocks: String = String::new();
 
-
     let shapes_path = mod_path.join(SHAPES_NAME);
-    let mut shapes_path = File::create(&shapes_path)
-        .expect("Failed to create shapes.lua");
+    let mut shapes_path = File::create(&shapes_path).expect("Failed to create shapes.lua");
 
     let mut shapes = Shapes::default();
 
-    create_squares(&mut blocks, &mut shapes);
+    create_mod_specifics(&mut blocks, &mut shapes);
 
-    blocks_file.write_all(blocks.as_bytes())
+    blocks_file
+        .write_all(blocks.as_bytes())
         .expect("Failed to write to blocks.lua");
-    shapes_path.write_all(shapes.to_string().as_bytes())
+    shapes_path
+        .write_all(shapes.to_string().as_bytes())
         .expect("Failed to write to shapes.lua");
-}
-
-fn create_squares(blocks: &mut String, shapes: &mut Shapes) {
-    shapes.0.push(Shape {
-        id: 0,
-        scales: (0..SQUARE_SCALE_COUNT)
-            .map(|square_index| Verts((0..4)
-                    .map(|vert_index| Vert {
-                        x: DisplayOrientedNumber::Float(TOTAL_SCALE * 0.5 * (1.0 + square_index as f32)),
-                        y: DisplayOrientedNumber::Float(TOTAL_SCALE * 0.5 * (1.0 + square_index as f32)),
-                    }.orient_by_index(vert_index))
-                    .collect()
-                ).to_hull_scale()
-            )
-            .collect()
-    });
-    blocks.push_str(&format!("{}", shapes.0.last().unwrap()));
 }
