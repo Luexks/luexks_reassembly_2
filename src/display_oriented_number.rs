@@ -1,3 +1,4 @@
+use crate::utils::*;
 use std::fmt::{self, Display};
 
 #[derive(Clone)]
@@ -34,5 +35,57 @@ impl Display for DisplayOrientedNumber {
                 } => format!("{}/{}", numerator.to_f32(), denominator.to_f32()),
             }
         )
+    }
+}
+
+#[derive(Clone)]
+pub struct DisplayOriented2D {
+    pub x: DisplayOrientedNumber,
+    pub y: DisplayOrientedNumber,
+}
+
+impl DisplayOriented2D {
+    pub fn orient_by_index(&mut self, index: usize) -> Self {
+        DisplayOriented2D {
+            x: DisplayOrientedNumber::Float(
+                self.x.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[index].0,
+            ),
+            y: DisplayOrientedNumber::Float(
+                self.y.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[index].1,
+            ),
+        }
+    }
+}
+
+impl Display for DisplayOriented2D {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{{{},{}}}", self.x, self.y)
+    }
+}
+
+#[derive(Clone)]
+pub struct DisplayOriented3D {
+    pub x: DisplayOrientedNumber,
+    pub y: DisplayOrientedNumber,
+    pub z: DisplayOrientedNumber,
+}
+
+impl DisplayOriented3D {
+    pub fn orient_by_index(&mut self, index: usize) -> Self {
+        DisplayOriented3D {
+            x: DisplayOrientedNumber::Float(
+                self.x.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[index].0,
+            ),
+            y: DisplayOrientedNumber::Float(
+                self.y.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[index].1,
+            ),
+            z: self.z.clone(),
+        }
+    }
+}
+
+impl Display for DisplayOriented3D {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{{{},{},{}}}", self.x, self.y, self.z)
     }
 }

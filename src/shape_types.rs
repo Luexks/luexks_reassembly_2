@@ -21,8 +21,8 @@ struct Side<'a> {
 
 impl<'a> Side<'_> {
     fn get_side_length(&self) -> f32 {
-        ((self.vert_1.x.to_f32() - self.vert_2.x.to_f32()).powi(2)
-            + (self.vert_1.y.to_f32() - self.vert_2.y.to_f32()).powi(2))
+        ((self.vert_1.0.x.to_f32() - self.vert_2.0.x.to_f32()).powi(2)
+            + (self.vert_1.0.y.to_f32() - self.vert_2.0.y.to_f32()).powi(2))
         .sqrt()
     }
 
@@ -179,7 +179,7 @@ impl Display for Verts {
                 "verts={{{}}}",
                 self.0
                     .iter()
-                    .map(|vert| vert.to_string())
+                    .map(|vert| vert.0.to_string())
                     .collect::<Vec<_>>()
                     .join("")
             )
@@ -188,30 +188,7 @@ impl Display for Verts {
 }
 
 #[derive(Clone)]
-pub struct Vert {
-    pub x: DisplayOrientedNumber,
-    pub y: DisplayOrientedNumber,
-}
-
-impl Vert {
-    pub fn orient_by_index(&mut self, index: usize) -> Self {
-        Vert {
-            x: DisplayOrientedNumber::Float(
-                self.x.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[index].0,
-            ),
-            y: DisplayOrientedNumber::Float(
-                self.y.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[index].1,
-            ),
-        }
-    }
-}
-
-impl Display for Vert {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{{{},{}}}", self.x, self.y,)
-    }
-}
-
+pub struct Vert(pub DisplayOriented2D);
 pub struct Ports(Vec<Port>);
 
 impl Display for Ports {
@@ -243,28 +220,6 @@ impl Display for Port {
             f,
             "{}",
             format!("{{{},{}{}}}", self.side_index, self.position, self.flags)
-        )
-    }
-}
-
-pub struct Flags<T: Display>(Vec<T>);
-
-impl<T: Display> Default for Flags<T> {
-    fn default() -> Self {
-        Flags(Vec::new())
-    }
-}
-
-impl<T: Display> Display for Flags<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.0
-                .iter()
-                .map(|flag| flag.to_string())
-                .collect::<Vec<_>>()
-                .join("|")
         )
     }
 }

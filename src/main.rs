@@ -10,6 +10,8 @@ pub mod display_oriented_number;
 
 pub mod shape_types;
 use shape_types::*;
+pub mod block_types;
+use block_types::*;
 pub mod mod_generation;
 use mod_generation::*;
 
@@ -40,7 +42,7 @@ fn create_blocks_and_shapes(mod_path: &PathBuf) {
     let blocks_path = mod_path.join(BLOCKS_NAME);
     let mut blocks_file = File::create(&blocks_path).expect("Failed to create blocks.lua");
 
-    let mut blocks: String = String::new();
+    let mut blocks: Blocks = Blocks::default();
 
     let shapes_path = mod_path.join(SHAPES_NAME);
     let mut shapes_path = File::create(&shapes_path).expect("Failed to create shapes.lua");
@@ -50,7 +52,7 @@ fn create_blocks_and_shapes(mod_path: &PathBuf) {
     create_mod_specifics(&mut blocks, &mut shapes);
 
     blocks_file
-        .write_all(blocks.as_bytes())
+        .write_all(blocks.to_string().as_bytes())
         .expect("Failed to write to blocks.lua");
     shapes_path
         .write_all(shapes.to_string().as_bytes())
