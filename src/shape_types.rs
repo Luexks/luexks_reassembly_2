@@ -110,7 +110,7 @@ impl Display for Shapes {
 }
 
 pub struct Shape {
-    pub id: i32,
+    pub id: ShapeId,
     pub scales: Vec<Scale>,
 }
 

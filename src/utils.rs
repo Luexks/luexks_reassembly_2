@@ -1,5 +1,8 @@
 use crate::configs::*;
-use std::fmt::{self, Display};
+use std::{
+    default,
+    fmt::{self, Display},
+};
 
 pub const BLOCKS_NAME: &str = "blocks.lua";
 pub const SHAPES_NAME: &str = "shapes.lua";
@@ -17,10 +20,37 @@ pub const PORT_COUNT_DECISION_TOLERANCE: f32 = 0.001;
 pub const VERTEX_ORIENTATION_MULTIPLIERS: [(f32, f32); 4] =
     [(-1.0, -1.0), (-1.0, 1.0), (1.0, 1.0), (1.0, -1.0)];
 
+static mut CURRENT_SHAPE_ID: ShapeId = ShapeId(SHAPE_ID_BASE);
+
+#[derive(Clone, Copy)]
+pub struct ShapeId(u32);
+
+impl Display for ShapeId {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl ShapeId {
+    pub fn next() -> ShapeId {
+        unsafe {
+            let buffer_shape_id = CURRENT_SHAPE_ID;
+            CURRENT_SHAPE_ID.0 += 1;
+            buffer_shape_id
+        }
+    }
+}
+
 static mut CURRENT_BLOCK_ID: BlockId = BlockId(BLOCK_ID_BASE);
 
 #[derive(Clone, Copy)]
 pub struct BlockId(u32);
+
+impl Default for BlockId {
+    fn default() -> Self {
+        BlockId(0)
+    }
+}
 
 impl Display for BlockId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -59,6 +89,7 @@ impl BlockSort {
     }
 }
 
+#[derive(Clone)]
 pub struct Flags<T: Display>(pub Vec<T>);
 
 impl<T: Display> Default for Flags<T> {
@@ -81,6 +112,7 @@ impl<T: Display> Display for Flags<T> {
     }
 }
 
+#[derive(Clone)]
 pub enum Angle {
     Degree(f32),
     Radian(f32),
@@ -101,6 +133,7 @@ impl Angle {
     }
 }
 
+#[derive(Clone)]
 pub enum Color {
     RRGGBB { rr: u8, gg: u8, bb: u8 },
     AARRGGBB { aa: u8, rr: u8, gg: u8, bb: u8 },
@@ -142,14 +175,30 @@ impl Color {
         Color::AARRGGBB {
             aa: u8::from_str_radix(&aarrggbb[0..=1], 16)
                 .expect(&format!("Invalid hex for AA of {}", aarrggbb)),
-            rr: u8::from_str_radix(&aarrggbb[0..=1], 16)
+            rr: u8::from_str_radix(&aarrggbb[2..=3], 16)
                 .expect(&format!("Invalid hex for RR of {}", aarrggbb)),
-            gg: u8::from_str_radix(&aarrggbb[2..=3], 16)
+            gg: u8::from_str_radix(&aarrggbb[4..=5], 16)
                 .expect(&format!("Invalid hex for GG of {}", aarrggbb)),
-            bb: u8::from_str_radix(&aarrggbb[4..=5], 16)
+            bb: u8::from_str_radix(&aarrggbb[6..=7], 16)
                 .expect(&format!("Invalid hex for BB of {}", aarrggbb)),
         }
     }
 }
 
 pub const NO_FEATURE_DATA_NEEDED: &str = "";
+
+macro_rules! funky_string {
+    ($value:expr) => {
+        FunkyString($value.to_string())
+    };
+}
+pub(crate) use funky_string;
+
+#[derive(Clone)]
+pub struct FunkyString(pub String);
+
+impl Display for FunkyString {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "\"{}\"", self.0)
+    }
+}

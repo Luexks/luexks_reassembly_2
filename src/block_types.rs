@@ -2,6 +2,35 @@ use std::fmt::{self, Display};
 
 use crate::{display_oriented_number::DisplayOriented2D, utils::*};
 
+macro_rules! format_components {
+    ($($component:expr => $component_name:expr),*) => {
+        format!(
+            "{}",
+            vec![$(format_component!($component => $component_name)),*].join("")
+        )
+    };
+}
+
+macro_rules! format_component {
+    ($component:expr => $component_name:expr) => {
+        match $component {
+            Some(value) => format!(",{}={}", $component_name, value),
+            None => "".to_string(),
+        }
+    };
+}
+
+macro_rules! new_block {
+    ($($component_name:ident: $component_value:expr),*) => {
+        Block {
+            id: Some(BlockId::next()),
+            $($component_name: Some($component_value),)*
+            ..Block::default()
+        }
+    };
+}
+pub(crate) use new_block;
+
 pub struct Blocks(pub Vec<Block>);
 
 impl Default for Blocks {
@@ -24,59 +53,104 @@ impl Display for Blocks {
     }
 }
 
+#[derive(Clone)]
 pub struct Block {
-    pub id: BlockId,
+    pub id: Option<BlockId>,
     pub extends: Option<BlockId>,
     pub group: Option<i32>,
     pub sort: Option<BlockSort>,
-    pub feautures: Option<Flags<Feature>>,
+    pub features: Option<Flags<Feature>>,
     pub capacity: Option<f32>,
     pub elasticity: Option<f32>,
     pub binding_id: Option<u8>,
     pub color_1: Option<Color>,
     pub color_2: Option<Color>,
     pub line_color: Option<Color>,
-    pub shape: Option<i32>,
+    pub shape: Option<ShapeId>,
     pub scale: Option<u8>,
-    pub name: Option<String>,
+    pub name: Option<FunkyString>,
     pub points: Option<i32>,
     pub durability: Option<f32>,
     pub armor: Option<f32>,
     pub density: Option<f32>,
-    pub blurb: Option<String>,
+    pub blurb: Option<FunkyString>,
+}
+
+impl Block {
+    pub fn get_next_scale(&self) -> Block {
+        new_block!(
+            extends: self.id.unwrap(),
+            scale: match self.scale {
+                Some(value) => value + 1,
+                None => 2,
+            }
+        )
+    }
+
+    pub fn get_scales(&self, scale_count: usize) -> Vec<Block> {
+        (1..scale_count).fold(vec![self.clone()], |mut blocks, _| {
+            blocks.push(blocks.last().unwrap().get_next_scale());
+            blocks
+        })
+    }
+}
+
+impl Default for Block {
+    fn default() -> Self {
+        Block {
+            id: Some(BlockId::default()),
+            extends: None,
+            group: None,
+            sort: None,
+            features: None,
+            capacity: None,
+            elasticity: None,
+            binding_id: None,
+            color_1: None,
+            color_2: None,
+            line_color: None,
+            shape: None,
+            scale: None,
+            name: None,
+            points: None,
+            durability: None,
+            armor: None,
+            density: None,
+            blurb: None,
+        }
+    }
 }
 
 impl Display for Block {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{{{}{}{}{}{}{}{}{}}}",
-            self.id,
-            match self.extends {
-                Some(extends) => format!(",{}", extends.to_string()),
-                None => "".to_string(),
+            "{{{}{}{}}}",
+            match self.id {
+                Some(value) => value.to_string(),
+                None => String::new(),
             },
-            match self.group {
-                Some(group) => format!(",{}", group.to_string()),
-                None => "".to_string(),
-            },
-            match self.sort {
-                Some(sort) => format!(",{}", sort.to_string()),
-                None => "".to_string(),
-            },
-            match &self.feautures {
-                Some(features) => format!(",{}", features.to_string()),
-                None => "".to_string(),
-            },
-            match self.capacity {
-                Some(capacity) => format!(",{}", capacity.to_string()),
-                None => "".to_string(),
-            },
-            match self.elasticity {
-                Some(elasticity) => format!(",{}", elasticity.to_string()),
-                None => "".to_string(),
-            },
-            match &self.feautures {
+            format_components!(
+                self.extends => "extends",
+                self.group => "group",
+                self.sort => "sort",
+                &self.features => "features",
+                self.capacity => "capacity",
+                self.elasticity => "elasicity",
+                self.binding_id => "bindingId",
+                &self.color_1 => "fillColor",
+                &self.color_2 => "fillColor1",
+                &self.line_color => "lineColor",
+                self.shape => "shape",
+                self.scale => "scale",
+                &self.name => "name",
+                self.points => "points",
+                self.durability => "durability",
+                self.armor => "armor",
+                self.density => "density",
+                &self.blurb => "blurb"
+            ),
+            match &self.features {
                 Some(features) => features
                     .0
                     .iter()
@@ -89,6 +163,33 @@ impl Display for Block {
     }
 }
 
+macro_rules! features {
+    (
+        $($feature:ident $(: { $($feature_component_name:ident: $feature_component_value:expr),*})?),*
+    ) => {
+        Flags(vec![
+            $(new_feature!($feature $(: {$($feature_component_name: $feature_component_value),*})?)),*,
+        ])
+
+    };
+}
+pub(crate) use features;
+
+macro_rules! new_feature {
+    ($feature_name:ident) => {
+        Feature::$feature_name
+    };
+    ($feature_name:ident: { $($feature_component_name:ident: $feature_component_value:expr),* }) => {
+        Feature::$feature_name {
+            $(
+                $feature_component_name: Some($feature_component_value),
+            )*
+        }
+    };
+}
+pub(crate) use new_feature;
+
+#[derive(Clone)]
 pub enum Feature {
     Command,
     Thruster {
@@ -113,10 +214,16 @@ pub enum Feature {
         barrel_taper: Option<f32>,
     },
     // Launch,
-    Cannon(Option<Cannon>),
-    Laser(Option<Laser>),
+    Cannon {
+        cannon: Option<Cannon>,
+    },
+    Laser {
+        laser: Option<Laser>,
+    },
     Autofire,
-    Shield(Option<Shield>),
+    Shield {
+        shield: Option<Shield>,
+    },
     Torquer {
         torque: Option<f32>,
     },
@@ -197,10 +304,10 @@ impl Display for Feature {
                 Feature::Generator { .. } => "GENERATOR",
                 Feature::Perishable { .. } => "PERISHABLE",
                 Feature::Turret { .. } => "TURRET",
-                Feature::Cannon(_) => "CANNON",
-                Feature::Laser(_) => "LASER",
+                Feature::Cannon { .. } => "CANNON",
+                Feature::Laser { .. } => "LASER",
                 Feature::Autofire => "AUTOFIRE",
-                Feature::Shield(_) => "SHIELD",
+                Feature::Shield { .. } => "SHIELD",
                 Feature::Torquer { .. } => "TORQUER",
                 Feature::Launcher { .. } => "LAUNCHER",
                 Feature::Explode { .. } => "EXPLODE",
@@ -243,24 +350,6 @@ impl Display for Feature {
     }
 }
 
-macro_rules! format_features {
-    ($($feature:expr => $feature_name:expr),*) => {
-        format!(
-            "{}",
-            vec![$(format_feature!($feature => $feature_name)),*].join("")
-        )
-    };
-}
-
-macro_rules! format_feature {
-    ($feature:expr => $feature_name:expr) => {
-        match $feature {
-            Some(value) => format!(",{}={}", $feature_name, value),
-            None => "".to_string(),
-        }
-    };
-}
-
 impl Feature {
     pub fn components_to_string(&self) -> String {
         match self {
@@ -271,7 +360,7 @@ impl Feature {
                 boost_time,
                 color_1,
                 color_2,
-            } => format_features!(
+            } => format_components!(
                 force => "thrusterForce",
                 boost => "thrusterBoost",
                 boost_time => "thrusterBoostTime",
@@ -281,18 +370,18 @@ impl Feature {
             Feature::Generator {
                 capacity,
                 capacity_per_sec,
-            } => format_features!(
+            } => format_components!(
                 capacity => "powerCapacity",
                 capacity_per_sec => "generatorCapacityPerSec"
             ),
-            Feature::Perishable { lifetime } => format_feature!(lifetime => "lifetime"),
+            Feature::Perishable { lifetime } => format_component!(lifetime => "lifetime"),
             Feature::Turret {
                 speed,
                 limit,
                 barrel_size,
                 barrel_count,
                 barrel_taper,
-            } => format_features!(
+            } => format_components!(
                 speed => "turretSpeed",
                 limit => "turretLimit",
                 barrel_size => "barrelSize",
@@ -300,11 +389,11 @@ impl Feature {
                 barrel_taper => "barrelTaper"
             ),
             // Feature::Launch => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Cannon(cannon) => format_feature!(cannon => "cannon"),
-            Feature::Laser(laser) => format_feature!(laser => "laser"),
+            Feature::Cannon { cannon } => format_component!(cannon => "cannon"),
+            Feature::Laser { laser } => format_component!(laser => "laser"),
             Feature::Autofire => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Shield(shield) => format_feature!(shield => "shield"),
-            Feature::Torquer { torque } => format_feature!(torque => "torquerTorque"),
+            Feature::Shield { shield } => format_component!(shield => "shield"),
+            Feature::Torquer { torque } => format_component!(torque => "torquerTorque"),
             Feature::Launcher {
                 replicate_block,
                 speed,
@@ -312,45 +401,45 @@ impl Feature {
                 out_speed,
                 ang_vel,
             } => {
-                format_features!(replicate_block => "replicateBlock", speed => "launcherOutSpeed", power => "launcherPower", out_speed => "launcherOutSpeed", ang_vel => "launcherAngVel")
+                format_components!(replicate_block => "replicateBlock", speed => "launcherOutSpeed", power => "launcherPower", out_speed => "launcherOutSpeed", ang_vel => "launcherAngVel")
             }
             Feature::Explode {
                 explode_damage,
                 explode_radius,
                 explode_std_dev,
                 explode_faction,
-            } => format_features!(explode_damage => "explodeDamage",
+            } => format_components!(explode_damage => "explodeDamage",
                 explode_radius => "explodeRadius",
                 explode_std_dev => "explodeStdDev",
                 explode_faction => "explodeFactioN"
             ),
             Feature::Assembler => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Regrower => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::CannonBoost(cannon_boost) => format_feature!(cannon_boost => "cannonBoost"),
+            Feature::CannonBoost(cannon_boost) => format_component!(cannon_boost => "cannonBoost"),
             Feature::Invulnerable => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::NoRegen => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Persistent => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Environmental => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Tractor { range } => format_feature!(range => "tractorRange"),
+            Feature::Tractor { range } => format_component!(range => "tractorRange"),
             Feature::Root => NO_FEATURE_DATA_NEEDED.to_string(),
             // Feature::Grow => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Photosynth { per_sec } => format_feature!(per_sec => "photosynthPerSec"),
+            Feature::Photosynth { per_sec } => format_component!(per_sec => "photosynthPerSec"),
             Feature::Autolaunch => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::FreeRes => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Factory => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Seed { lifetime } => format_feature!(lifetime => "seedLifetime"),
-            Feature::Melee { damage } => format_feature!(damage => "meleeDamage"),
+            Feature::Seed { lifetime } => format_component!(lifetime => "seedLifetime"),
+            Feature::Melee { damage } => format_component!(damage => "meleeDamage"),
             // Feature::Ungrow => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Unique => NO_FEATURE_DATA_NEEDED.to_string(),
             Self::Charging { max_time, min } => {
-                format_features!(max_time => "chargingMaxTime", min => "chargingMin")
+                format_components!(max_time => "chargingMaxTime", min => "chargingMin")
             }
             Feature::SelfFactory => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::NoClip => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Invisible => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Bumper => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Teleporter { power, radius } => {
-                format_features!(power => "teleporterPower", radius => "teleporterRadius")
+                format_components!(power => "teleporterPower", radius => "teleporterRadius")
             }
             Feature::Deactivates => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Telespawn => NO_FEATURE_DATA_NEEDED.to_string(),
@@ -368,6 +457,7 @@ impl Feature {
     }
 }
 
+#[derive(Clone)]
 pub struct Cannon {
     rounds_per_sec: Option<f32>,
     rounds_per_burst: Option<u8>,
@@ -391,7 +481,7 @@ impl Display for Cannon {
         write!(
             f,
             "{{{}}}",
-            format_features!(
+            format_components!(
                 self.rounds_per_sec => "roundsPerSec",
                 self.rounds_per_burst => "roundsPerBurst",
                 &self.explosive => "explosive",
@@ -412,6 +502,7 @@ impl Display for Cannon {
     }
 }
 
+#[derive(Clone)]
 struct Fragment {
     rounds_per_burst: Option<u8>,
     explosive: Option<Flags<Explosive>>,
@@ -432,7 +523,7 @@ impl Display for Fragment {
         write!(
             f,
             "{{{}}}",
-            format_features!(
+            format_components!(
                 self.rounds_per_burst => "roundsPerBurst",
                 &self.explosive => "explosive",
                 &self.pattern => "pattern",
@@ -449,6 +540,7 @@ impl Display for Fragment {
     }
 }
 
+#[derive(Clone)]
 enum Pattern {
     Random,
     Constant,
@@ -473,6 +565,7 @@ impl Display for Pattern {
     }
 }
 
+#[derive(Clone)]
 enum Explosive {
     Enabled,
     Final,
@@ -501,6 +594,7 @@ impl Display for Explosive {
     }
 }
 
+#[derive(Clone)]
 pub struct Laser {
     pulses_per_sec: Option<f32>,
     pulses_per_burst: Option<u8>,
@@ -523,7 +617,7 @@ impl Display for Laser {
         write!(
             f,
             "{{{}}}",
-            format_features!(
+            format_components!(
                 self.pulses_per_sec => "pulsesPerSec",
                 self.pulses_per_burst => "pulsesPerBurst",
                 &self.explosive => "explosive",
@@ -543,6 +637,7 @@ impl Display for Laser {
     }
 }
 
+#[derive(Clone)]
 pub struct Shield {
     strength: Option<f32>,
     armor: Option<f32>,
@@ -560,7 +655,7 @@ impl Display for Shield {
         write!(
             f,
             "{{{}}}",
-            format_features!(
+            format_components!(
                 self.strength => "strength",
                 self.armor => "armor",
                 self.regen => "regen",
@@ -575,6 +670,7 @@ impl Display for Shield {
     }
 }
 
+#[derive(Clone)]
 pub struct CannonBoost {
     rounds_per_sec: Option<CannonBoostValue>,
     muzzle_vel: Option<CannonBoostValue>,
@@ -590,7 +686,7 @@ impl Display for CannonBoost {
         write!(
             f,
             "{{{}}}",
-            format_features!(&self.rounds_per_sec => "roundsPerSec",
+            format_components!(&self.rounds_per_sec => "roundsPerSec",
                 &self.muzzle_vel => "muzzleVel",
                 &self.power => "power",
                 &self.damage => "damage",
@@ -602,6 +698,7 @@ impl Display for CannonBoost {
     }
 }
 
+#[derive(Clone)]
 pub struct CannonBoostValue {
     multiplier: f32,
     flat: f32,

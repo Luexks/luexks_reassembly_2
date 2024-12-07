@@ -10,7 +10,7 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
 
 fn create_squares(blocks: &mut Blocks, shapes: &mut Shapes) {
     shapes.0.push(Shape {
-        id: 0,
+        id: ShapeId::next(),
         scales: (0..SQUARE_SCALE_COUNT)
             .map(|square_index| {
                 Verts(
@@ -34,60 +34,21 @@ fn create_squares(blocks: &mut Blocks, shapes: &mut Shapes) {
             })
             .collect(),
     });
-    let square_base = BlockId::next();
-    blocks.0.push(Block {
-        id: square_base,
-        extends: None,
-        group: Some(GROUP),
-        sort: Some(BlockSort::next()),
-        feautures: Some(Flags(vec![
-            Feature::Palette,
-            Feature::Thruster {
-                force: Some(100.0),
-                boost: Some(100.0),
-                boost_time: Some(100.0),
-                color_1: Some(Color::new_rrggbb("555555")),
-                color_2: Some(Color::new_rrggbb("999999")),
-            },
-        ])),
-        capacity: None,
-        elasticity: None,
-        binding_id: None,
-        color_1: None,
-        color_2: None,
-        line_color: None,
-        shape: Some(shapes.0.last().unwrap().id),
-        scale: None,
-        name: None,
-        points: None,
-        durability: None,
-        armor: None,
-        density: None,
-        blurb: None,
-    });
-    let _: Vec<_> = (1..=3)
-        .map(|square_index| {
-            blocks.0.push(Block {
-                id: BlockId::next(),
-                extends: Some(square_base),
-                group: None,
-                sort: None,
-                feautures: None,
-                capacity: None,
-                elasticity: None,
-                binding_id: None,
-                color_1: None,
-                color_2: None,
-                line_color: None,
-                shape: None,
-                scale: Some(square_index),
-                name: None,
-                points: None,
-                durability: None,
-                armor: None,
-                density: None,
-                blurb: None,
-            })
-        })
-        .collect();
+    blocks.0.extend(
+        new_block!(
+            name: funky_string!("Hull"),
+            group: GROUP,
+            shape: shapes.0.last().unwrap().id,
+            features: features!(
+                Palette
+            ),
+            color_1: Color::new_aarrggbb("ee555555"),
+            color_2: Color::new_aarrggbb("ffaaaaaa"),
+            line_color: Color::new_aarrggbb("ffaaaaaa")
+        )
+        .get_scales(SQUARE_SCALE_COUNT)
+    );
+    // (1..=3)
+    //     .map(|_| blocks.0.push(blocks.0.last().unwrap().get_next_scale()))
+    //     .collect()
 }
