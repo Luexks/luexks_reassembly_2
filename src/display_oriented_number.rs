@@ -1,6 +1,13 @@
 use crate::utils::*;
 use std::fmt::{self, Display};
 
+macro_rules! vert {
+    ($x:expr, $y:expr) => {
+        Vertex(DisplayOriented2D::simple($x, $y))
+    };
+}
+pub(crate) use vert;
+
 #[derive(Clone)]
 pub enum DisplayOrientedNumber {
     Float(f32),
@@ -38,6 +45,10 @@ impl Display for DisplayOrientedNumber {
     }
 }
 
+pub fn don_float_from(x: f32) -> DisplayOrientedNumber {
+    DisplayOrientedNumber::Float(x)
+}
+
 #[derive(Clone)]
 pub struct DisplayOriented2D {
     pub x: DisplayOrientedNumber,
@@ -45,7 +56,7 @@ pub struct DisplayOriented2D {
 }
 
 impl DisplayOriented2D {
-    pub fn orient_by_index(&mut self, index: usize) -> Self {
+    pub fn orient_by_index(&self, index: usize) -> Self {
         DisplayOriented2D {
             x: DisplayOrientedNumber::Float(
                 self.x.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[index].0,
@@ -60,6 +71,22 @@ impl DisplayOriented2D {
 impl Display for DisplayOriented2D {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{{{},{}}}", self.x, self.y)
+    }
+}
+
+impl DisplayOriented2D {
+    pub fn simple(x: f32, y: f32) -> DisplayOriented2D {
+        DisplayOriented2D {
+            x: DisplayOrientedNumber::Float(x),
+            y: DisplayOrientedNumber::Float(y),
+        }
+    }
+}
+
+pub fn do2d_float_from(x: f32, y: f32) -> DisplayOriented2D {
+    DisplayOriented2D {
+        x: DisplayOrientedNumber::Float(x),
+        y: DisplayOrientedNumber::Float(y),
     }
 }
 

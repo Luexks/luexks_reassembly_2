@@ -3,7 +3,35 @@ use crate::display_oriented_number::*;
 use crate::utils::*;
 use std::fmt::{self, Display};
 
-enum PortDistribution {
+// macro_rules! scale_from_vertices_and_port_distributions {
+//     ($($vertex:expr, $port_distribution_varient:ident),*) => {
+//         Vertices(
+//             vec![$($vertex),*]
+//         )
+//         .to_hull_scale_with_distributions(
+//             vec![$(match PortDistribution::$port_distribution_varient {
+//                 PortDistribution::Center => PortDistribution::Center,
+//                 PortDistribution::TowardsFromCurrentVert { distance_from_current_vert: _ } => PortDistribution::TowardsFromCurrentVert { distance_from_current_vert: don_float_from(PORT_SPACING_FROM_VERT) },
+//                 PortDistribution::BackwardsFromNextVert { distance_from_next_vert: _} => PortDistribution::BackwardsFromNextVert { distance_from_next_vert: don_float_from(PORT_SPACING_FROM_VERT) },
+//             }),*]
+//         )
+//     };
+// }
+// pub(crate) use scale_from_vertices_and_port_distributions;
+
+macro_rules! scale_from_vertices_and_port_distributions {
+    ($($vertex:expr, $port_distribution:expr),*) => {
+        Vertices(
+            vec![$($vertex),*]
+        )
+        .to_hull_scale_with_distributions(
+            vec![$($port_distribution),*]
+        )
+    };
+}
+pub(crate) use scale_from_vertices_and_port_distributions;
+
+pub enum PortDistribution {
     Center,
     TowardsFromCurrentVert {
         distance_from_current_vert: DisplayOrientedNumber,
@@ -15,8 +43,8 @@ enum PortDistribution {
 
 struct Side<'a> {
     side_index: usize,
-    vert_1: &'a Vert,
-    vert_2: &'a Vert,
+    vert_1: &'a Vertex,
+    vert_2: &'a Vertex,
 }
 
 impl<'a> Side<'_> {
@@ -26,17 +54,17 @@ impl<'a> Side<'_> {
         .sqrt()
     }
 
-    fn to_ports_of_distribution(self, port_distribution: PortDistribution) -> Ports {
+    fn to_ports_of_distribution(self, port_distribution: &PortDistribution) -> Ports {
         let side_length = self.get_side_length();
         let port_count = ((side_length + PORT_COUNT_DECISION_TOLERANCE) / TOTAL_SCALE).floor();
-        if port_count <= 1.0 {
+        if side_length <= TOTAL_SCALE {
             Ports(vec![Port {
                 side_index: self.side_index,
                 position: DisplayOrientedNumber::Float(PortPosition::CENTER),
                 flags: Flags::<PortFlag>::default(),
             }])
         } else {
-            Ports(
+            let mut ports = Ports(
                 (0..port_count as usize)
                     .map(|port_index| Port {
                         side_index: self.side_index,
@@ -49,7 +77,45 @@ impl<'a> Side<'_> {
                         flags: Flags::<PortFlag>::default(),
                     })
                     .collect(),
-            )
+            );
+            match port_distribution {
+                PortDistribution::Center => (),
+                PortDistribution::TowardsFromCurrentVert {
+                    distance_from_current_vert: _,
+                } => {
+                    if side_length > port_count * TOTAL_SCALE {
+                        ports.0.push(Port {
+                            side_index: self.side_index,
+                            position: DisplayOrientedNumber::Fraction {
+                                numerator: Box::new(don_float_from(
+                                    PortPosition::CURRENT_VERT * side_length
+                                        + (side_length + port_count * TOTAL_SCALE) * 0.5,
+                                )),
+                                denominator: Box::new(don_float_from(side_length)),
+                            },
+                            flags: Flags::<PortFlag>::default(),
+                        });
+                    }
+                }
+                PortDistribution::BackwardsFromNextVert {
+                    distance_from_next_vert: _,
+                } => {
+                    if side_length > port_count * TOTAL_SCALE {
+                        ports.0.push(Port {
+                            side_index: self.side_index,
+                            position: DisplayOrientedNumber::Fraction {
+                                numerator: Box::new(don_float_from(
+                                    PortPosition::NEXT_VERT * side_length
+                                        - (side_length + port_count * TOTAL_SCALE) * 0.5,
+                                )),
+                                denominator: Box::new(don_float_from(side_length)),
+                            },
+                            flags: Flags::<PortFlag>::default(),
+                        });
+                    }
+                }
+            }
+            ports
         }
     }
 }
@@ -63,27 +129,27 @@ fn get_port_position_of_distribution(
 ) -> DisplayOrientedNumber {
     DisplayOrientedNumber::Fraction {
         numerator: Box::new(match &port_distribution {
-            PortDistribution::Center => DisplayOrientedNumber::Float(
+            PortDistribution::Center => don_float_from(
                 PortPosition::CENTER * side_length
                     - (PORT_SPACING * (port_count / 2.0 - 0.5))
                     + (PORT_SPACING * port_index as f32),
             ),
             PortDistribution::TowardsFromCurrentVert {
                 distance_from_current_vert,
-            } => DisplayOrientedNumber::Float(
+            } => don_float_from(
                 PortPosition::CURRENT_VERT
                     + distance_from_current_vert.to_f32()
                     + (PORT_SPACING * port_index as f32),
             ),
             PortDistribution::BackwardsFromNextVert {
                 distance_from_next_vert,
-            } => DisplayOrientedNumber::Float(
-                PortPosition::NEXT_VERT
+            } => don_float_from(
+                PortPosition::NEXT_VERT * side_length
                     - distance_from_next_vert.to_f32()
-                    - (PORT_SPACING * port_index as f32),
+                    - (PORT_SPACING * port_index as f32)
             ),
         }),
-        denominator: Box::new(DisplayOrientedNumber::Float(*side_length)),
+        denominator: Box::new(don_float_from(*side_length)),
     }
 }
 
@@ -109,9 +175,53 @@ impl Display for Shapes {
     }
 }
 
-pub struct Shape {
-    pub id: ShapeId,
-    pub scales: Vec<Scale>,
+impl Shapes {
+    pub fn add_unmirrored_shape_from_scales(&mut self, scales: Vec<Scale>) {
+        self.0.push(Shape::Standard {
+            id: ShapeId::next(),
+            scales: scales,
+        });
+    }
+
+    pub fn add_mirrored_shape_from_scales(&mut self, scales: Vec<Scale>) {
+        let new_shape = Shape::Standard {
+            id: ShapeId::next(),
+            scales: scales,
+        };
+        let mirrored_new_shape = new_shape.mirrored();
+
+        self.0.push(new_shape);
+        self.0.push(mirrored_new_shape);
+    }
+}
+
+// macro_rules! unmirrored_shape {
+//     ($scales:expr) => {
+//         Shape::Standard {
+//             id: ShapeId::next(),
+//             scales: $scales,
+//         }
+//     };
+// }
+// pub(crate) use unmirrored_shape;
+
+// macro_rules! mirrored_shape {
+//     ($scales:expr) => {
+//         unmirrored_shape!($scales).with_mirror()
+//     };
+// }
+// pub(crate) use mirrored_shape;
+
+pub enum Shape {
+    Standard {
+        id: ShapeId,
+        scales: Vec<Scale>,
+    },
+    Mirror {
+        id: ShapeId,
+        mirror_of: ShapeId,
+        scale_count: usize,
+    },
 }
 
 impl Display for Shape {
@@ -119,21 +229,64 @@ impl Display for Shape {
         write!(
             f,
             "{}",
-            format!(
-                "{{{}{{\n{}\n}}}}",
-                self.id,
-                self.scales
-                    .iter()
-                    .map(|scale| scale.to_string())
-                    .collect::<Vec<_>>()
-                    .join("\n")
-            )
+            match self {
+                Shape::Standard { id, scales } => format!(
+                    "{{{}{{\n{}\n}}}}",
+                    id,
+                    scales
+                        .iter()
+                        .map(|scale| scale.to_string())
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                ),
+                Shape::Mirror {
+                    id,
+                    mirror_of,
+                    scale_count: _,
+                } => format!("{{{},{{}},mirror_of={}}}", id, mirror_of),
+            }
         )
     }
 }
 
+impl Shape {
+    pub fn mirrored(&self) -> Self {
+        let mirror_of = match self {
+            Shape::Standard { id, .. } => id,
+            Shape::Mirror { .. } => panic!(),
+        };
+        let scale_count = match self {
+            Shape::Standard { id: _, scales } => scales.len(),
+            Shape::Mirror { .. } => panic!(),
+        };
+        Shape::Mirror {
+            id: ShapeId::next(),
+            mirror_of: *mirror_of,
+            scale_count: scale_count,
+        }
+    }
+    pub fn with_mirror(self) -> Vec<Shape> {
+        let mirrored = self.mirrored();
+        vec![self, mirrored]
+    }
+
+    pub fn get_id(&self) -> Option<ShapeId> {
+        Some(match self {
+            Shape::Standard { id, .. } => *id,
+            Shape::Mirror { id, .. } => *id,
+        })
+    }
+
+    pub fn get_scale_count(&self) -> usize {
+        match self {
+            Shape::Standard { scales, .. } => scales.len(),
+            Shape::Mirror { scale_count, .. } => *scale_count,
+        }
+    }
+}
+
 pub struct Scale {
-    verts: Verts,
+    verts: Vertices,
     ports: Ports,
 }
 
@@ -144,9 +297,9 @@ impl Display for Scale {
 }
 
 #[derive(Clone)]
-pub struct Verts(pub Vec<Vert>);
+pub struct Vertices(pub Vec<Vertex>);
 
-impl Verts {
+impl Vertices {
     pub fn to_hull_scale(self) -> Scale {
         Scale {
             verts: self.clone(),
@@ -161,7 +314,32 @@ impl Verts {
                             vert_1: vert_1,
                             vert_2: vert_2,
                         }
-                        .to_ports_of_distribution(PortDistribution::Center)
+                        .to_ports_of_distribution(&PortDistribution::Center)
+                        .0
+                    })
+                    .collect(),
+            ),
+        }
+    }
+
+    pub fn to_hull_scale_with_distributions(
+        self,
+        port_distributions: Vec<PortDistribution>,
+    ) -> Scale {
+        Scale {
+            verts: self.clone(),
+            ports: Ports(
+                self.0
+                    .iter()
+                    .enumerate()
+                    .zip(self.0.iter().cycle().skip(1))
+                    .flat_map(|((side_index, vert_1), vert_2)| {
+                        Side {
+                            side_index: side_index,
+                            vert_1: vert_1,
+                            vert_2: vert_2,
+                        }
+                        .to_ports_of_distribution(&port_distributions[side_index])
                         .0
                     })
                     .collect(),
@@ -170,7 +348,7 @@ impl Verts {
     }
 }
 
-impl Display for Verts {
+impl Display for Vertices {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -188,15 +366,15 @@ impl Display for Verts {
 }
 
 #[derive(Clone)]
-pub struct Vert(pub DisplayOriented2D);
+pub struct Vertex(pub DisplayOriented2D);
+#[derive(Clone)]
 pub struct Ports(Vec<Port>);
 
 impl Display for Ports {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            format!(
+        if !FUNKY_PORT_FORMATING {
+            write!(
+                f,
                 "ports={{{}}}",
                 self.0
                     .iter()
@@ -204,10 +382,59 @@ impl Display for Ports {
                     .collect::<Vec<_>>()
                     .join("")
             )
+        } else {
+            write!(f, "ports={{{}}}", {
+                let mut ports = self.0.clone();
+                ports.sort_by(|port_a, port_b| port_a.side_index.cmp(&port_b.side_index));
+                let mut port_matrix: Vec<Vec<Port>> = vec![Vec::new()];
+                let mut current_side_index = 0;
+                let mut current_ports_on_a_side = 0;
+                let mut max_current_ports_on_a_side = 0;
+                for port in ports {
+                    if port.side_index != current_side_index {
+                        port_matrix.push(Vec::new());
+                        current_ports_on_a_side = 0;
+                    }
+                    current_ports_on_a_side += 1;
+                    if current_ports_on_a_side > max_current_ports_on_a_side {
+                        max_current_ports_on_a_side = current_ports_on_a_side;
+                    }
+                    current_side_index = port.side_index;
+                    port_matrix.last_mut().unwrap().push(port);
+                }
+                let mut funky_output = String::new();
+                for port_row_index in 0..max_current_ports_on_a_side {
+                    funky_output.push('\n');
+                    for port_column in port_matrix.iter() {
+                        funky_output.push_str(&format!(
+                            "{:<30}",
+                            match port_column.get(port_row_index) {
+                                Some(value) => value.to_string(),
+                                None => "".to_string(),
+                            }
+                        ));
+                    }
+                }
+                funky_output
+            })
+        }
+    }
+}
+
+impl Ports {
+    fn non_funky_format(&self) -> String {
+        format!(
+            "ports={{{}}}",
+            self.0
+                .iter()
+                .map(|port| format!("{}", port))
+                .collect::<Vec<_>>()
+                .join("")
         )
     }
 }
 
+#[derive(Clone)]
 pub struct Port {
     side_index: usize,
     position: DisplayOrientedNumber,
@@ -216,14 +443,11 @@ pub struct Port {
 
 impl Display for Port {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            format!("{{{},{}{}}}", self.side_index, self.position, self.flags)
-        )
+        write!(f, "{{{},{}{}}}", self.side_index, self.position, self.flags)
     }
 }
 
+#[derive(Clone)]
 pub enum PortFlag {
     ThrusterOut,
     ThrusterIn,

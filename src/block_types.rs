@@ -1,6 +1,6 @@
 use std::fmt::{self, Display};
 
-use crate::{display_oriented_number::DisplayOriented2D, utils::*};
+use crate::{display_oriented_number::DisplayOriented2D, utils::*, Shapes};
 
 macro_rules! format_components {
     ($($component:expr => $component_name:expr),*) => {
@@ -20,7 +20,7 @@ macro_rules! format_component {
     };
 }
 
-macro_rules! new_block {
+macro_rules! block {
     ($($component_name:ident: $component_value:expr),*) => {
         Block {
             id: Some(BlockId::next()),
@@ -29,7 +29,18 @@ macro_rules! new_block {
         }
     };
 }
-pub(crate) use new_block;
+pub(crate) use block;
+
+macro_rules! block_without_id {
+    ($($component_name:ident: $component_value:expr),*) => {
+        Block {
+            id: None,
+            $($component_name: Some($component_value),)*
+            ..Block::default()
+        }
+    };
+}
+pub(crate) use block_without_id;
 
 pub struct Blocks(pub Vec<Block>);
 
@@ -78,7 +89,7 @@ pub struct Block {
 
 impl Block {
     pub fn get_next_scale(&self) -> Block {
-        new_block!(
+        block!(
             extends: self.id.unwrap(),
             scale: match self.scale {
                 Some(value) => value + 1,
@@ -92,6 +103,27 @@ impl Block {
             blocks.push(blocks.last().unwrap().get_next_scale());
             blocks
         })
+    }
+
+    pub fn get_blocks_from_shapes(&self, shapes: &Shapes) -> Vec<Block> {
+        shapes
+            .0
+            .iter()
+            .map(|shape| {
+                (0..shape.get_scale_count()).map(|scale_index| {
+                    let mut new_block = self.clone();
+                    new_block.id = Some(BlockId::next());
+                    new_block.shape = shape.get_id();
+                    new_block.scale = Some(scale_index as u8 + 1);
+                    new_block
+                    // block!(
+                    //     shape: shape.get_id(),
+                    //     scale: scale_index as u8 + 1
+                    // )
+                })
+            })
+            .flatten()
+            .collect::<Vec<_>>()
     }
 }
 
