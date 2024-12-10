@@ -1,8 +1,5 @@
 use crate::configs::*;
-use std::{
-    default,
-    fmt::{self, Display},
-};
+use std::fmt::{self, Display};
 
 pub const BLOCKS_NAME: &str = "blocks.lua";
 pub const SHAPES_NAME: &str = "shapes.lua";

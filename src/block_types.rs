@@ -70,7 +70,7 @@ pub struct Block {
     pub extends: Option<BlockId>,
     pub group: Option<i32>,
     pub sort: Option<BlockSort>,
-    pub features: Option<Flags<Feature>>,
+    pub features: Option<ExtendAccountingFeatureList>,
     pub capacity: Option<f32>,
     pub elasticity: Option<f32>,
     pub binding_id: Option<u8>,
@@ -105,27 +105,71 @@ impl Block {
         })
     }
 
-    pub fn get_blocks_from_shapes(&self, shapes: &Shapes) -> Vec<Block> {
+    pub fn get_hull_blocks_from_shapes(&self, shapes: &Shapes) -> Vec<Block> {
+        static mut BASE_BLOCK_ID: Option<BlockId> = None;
+        static mut LAST_SHAPE_BLOCK_ID: Option<BlockId> = None;
         shapes
             .0
             .iter()
-            .map(|shape| {
-                (0..shape.get_scale_count()).map(|scale_index| {
-                    let mut new_block = self.clone();
-                    new_block.id = Some(BlockId::next());
-                    new_block.shape = shape.get_id();
-                    new_block.scale = Some(scale_index as u8 + 1);
-                    new_block
-                    // block!(
-                    //     shape: shape.get_id(),
-                    //     scale: scale_index as u8 + 1
-                    // )
+            .enumerate()
+            .map(|(shape_index, shape)| {
+                (0..shape.get_scale_count()).map(move |scale_index| match scale_index {
+                    0 => match shape_index {
+                        0 => {
+                            unsafe {
+                                BASE_BLOCK_ID = Some(self.id.unwrap());
+                                LAST_SHAPE_BLOCK_ID = BASE_BLOCK_ID;
+                            }
+                            let mut new_block = self.clone();
+                            new_block.shape = shape.get_id();
+                            new_block.scale = Some(scale_index as u8 + 1);
+                            new_block
+                        }
+                        _ => {
+                            let new_block = block!(
+                                extends: unsafe { BASE_BLOCK_ID.unwrap() },
+                                shape: shape.get_id().unwrap()
+                            );
+                            unsafe {
+                                LAST_SHAPE_BLOCK_ID = Some(new_block.id.unwrap());
+                            }
+                            new_block
+                        }
+                    },
+                    _ => {
+                        block!(
+                            extends: unsafe { LAST_SHAPE_BLOCK_ID.unwrap() },
+                            scale: scale_index as u8 + 1
+                        )
+                    }
                 })
             })
             .flatten()
             .collect::<Vec<_>>()
     }
 }
+
+//     pub fn get_hull_blocks_from_shapes(&self, shapes: &Shapes) -> Vec<Block> {
+//         shapes
+//             .0
+//             .iter()
+//             .map(|shape| {
+//                 (0..shape.get_scale_count()).map(|scale_index| {
+//                     let mut new_block = self.clone();
+//                     new_block.id = Some(BlockId::next());
+//                     new_block.shape = shape.get_id();
+//                     new_block.scale = Some(scale_index as u8 + 1);
+//                     new_block
+//                     // block!(
+//                     //     shape: shape.get_id(),
+//                     //     scale: scale_index as u8 + 1
+//                     // )
+//                 })
+//             })
+//             .flatten()
+//             .collect::<Vec<_>>()
+//     }
+// }
 
 impl Default for Block {
     fn default() -> Self {
@@ -157,7 +201,7 @@ impl Display for Block {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{{{}{}{}}}",
+            "{{{}{}{}{}}}",
             match self.id {
                 Some(value) => value.to_string(),
                 None => String::new(),
@@ -166,7 +210,6 @@ impl Display for Block {
                 self.extends => "extends",
                 self.group => "group",
                 self.sort => "sort",
-                &self.features => "features",
                 self.capacity => "capacity",
                 self.elasticity => "elasicity",
                 self.binding_id => "bindingId",
@@ -183,7 +226,20 @@ impl Display for Block {
                 &self.blurb => "blurb"
             ),
             match &self.features {
-                Some(features) => features
+                Some(extend_accounting_feature_list) => {
+                    match extend_accounting_feature_list.feature_list_same_as_extends {
+                        true => "".to_string(),
+                        false => {
+                            format_component!(Some(&extend_accounting_feature_list.features) => "features")
+                        }
+                    }
+                }
+
+                None => "".to_string(),
+            },
+            match &self.features {
+                Some(extend_accounting_feature_list) => extend_accounting_feature_list
+                    .features
                     .0
                     .iter()
                     .map(|feature| feature.components_to_string())
@@ -220,6 +276,12 @@ macro_rules! new_feature {
     };
 }
 pub(crate) use new_feature;
+
+#[derive(Clone)]
+pub struct ExtendAccountingFeatureList {
+    features: Flags<Feature>,
+    feature_list_same_as_extends: bool,
+}
 
 #[derive(Clone)]
 pub enum Feature {
