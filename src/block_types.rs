@@ -149,28 +149,6 @@ impl Block {
     }
 }
 
-//     pub fn get_hull_blocks_from_shapes(&self, shapes: &Shapes) -> Vec<Block> {
-//         shapes
-//             .0
-//             .iter()
-//             .map(|shape| {
-//                 (0..shape.get_scale_count()).map(|scale_index| {
-//                     let mut new_block = self.clone();
-//                     new_block.id = Some(BlockId::next());
-//                     new_block.shape = shape.get_id();
-//                     new_block.scale = Some(scale_index as u8 + 1);
-//                     new_block
-//                     // block!(
-//                     //     shape: shape.get_id(),
-//                     //     scale: scale_index as u8 + 1
-//                     // )
-//                 })
-//             })
-//             .flatten()
-//             .collect::<Vec<_>>()
-//     }
-// }
-
 impl Default for Block {
     fn default() -> Self {
         Block {

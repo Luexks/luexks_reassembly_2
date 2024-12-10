@@ -3,22 +3,6 @@ use crate::display_oriented_number::*;
 use crate::utils::*;
 use std::fmt::{self, Display};
 
-// macro_rules! scale_from_vertices_and_port_distributions {
-//     ($($vertex:expr, $port_distribution_varient:ident),*) => {
-//         Vertices(
-//             vec![$($vertex),*]
-//         )
-//         .to_hull_scale_with_distributions(
-//             vec![$(match PortDistribution::$port_distribution_varient {
-//                 PortDistribution::Center => PortDistribution::Center,
-//                 PortDistribution::TowardsFromCurrentVert { distance_from_current_vert: _ } => PortDistribution::TowardsFromCurrentVert { distance_from_current_vert: don_float_from(PORT_SPACING_FROM_VERT) },
-//                 PortDistribution::BackwardsFromNextVert { distance_from_next_vert: _} => PortDistribution::BackwardsFromNextVert { distance_from_next_vert: don_float_from(PORT_SPACING_FROM_VERT) },
-//             }),*]
-//         )
-//     };
-// }
-// pub(crate) use scale_from_vertices_and_port_distributions;
-
 macro_rules! scale_from_alternating_vertices_and_port_distributions {
     ($($vertex:expr, $port_distribution_varient:ident),*) => {
         Vertices(
@@ -164,43 +148,6 @@ impl<'a> Side<'_> {
                     }
                 }
             };
-            // match port_distribution {
-            //     PortDistribution::Center => (),
-            //     PortDistribution::TowardsFromCurrentVert {
-            //         add_courtesy_port, ..
-            //     } => {
-            //         if side_length > port_count * TOTAL_SCALE {
-            //             ports.0.push(Port {
-            //                 side_index: self.side_index,
-            //                 position: DisplayOrientedNumber::Fraction {
-            //                     numerator: Box::new(don_float_from(
-            //                         PortPosition::CURRENT_VERT * side_length
-            //                             + (side_length + port_count * TOTAL_SCALE) * 0.5,
-            //                     )),
-            //                     denominator: Box::new(don_float_from(side_length)),
-            //                 },
-            //                 flags: Flags::<PortFlag>::default(),
-            //             });
-            //         }
-            //     }
-            //     PortDistribution::BackwardsFromNextVert {
-            //         add_courtesy_port, ..
-            //     } => {
-            //         if side_length > port_count * TOTAL_SCALE {
-            //             ports.0.push(Port {
-            //                 side_index: self.side_index,
-            //                 position: DisplayOrientedNumber::Fraction {
-            //                     numerator: Box::new(don_float_from(
-            //                         PortPosition::NEXT_VERT * side_length
-            //                             - (side_length + port_count * TOTAL_SCALE) * 0.5,
-            //                     )),
-            //                     denominator: Box::new(don_float_from(side_length)),
-            //                 },
-            //                 flags: Flags::<PortFlag>::default(),
-            //             });
-            //         }
-            //     }
-            // }
             ports
         }
     }
@@ -280,24 +227,6 @@ impl Shapes {
         self.0.push(mirrored_new_shape);
     }
 }
-
-// macro_rules! unmirrored_shape {
-//     ($scales:expr) => {
-//         Shape::Standard {
-//             id: ShapeId::next(),
-//             scales: $scales,
-//         }
-//     };
-// }
-// pub(crate) use unmirrored_shape;
-
-// macro_rules! mirrored_shape {
-//     ($scales:expr) => {
-//         unmirrored_shape!($scales).with_mirror()
-//     };
-// }
-// pub(crate) use mirrored_shape;
-
 pub enum Shape {
     Standard {
         id: ShapeId,
@@ -506,19 +435,6 @@ impl Display for Ports {
         }
     }
 }
-
-// impl Ports {
-//     fn non_funky_format(&self) -> String {
-//         format!(
-//             "ports={{{}}}",
-//             self.0
-//                 .iter()
-//                 .map(|port| format!("{}", port))
-//                 .collect::<Vec<_>>()
-//                 .join("")
-//         )
-//     }
-// }
 
 #[derive(Clone)]
 pub struct Port {
