@@ -42,19 +42,6 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
             ],
         ),
     );
-    // blocks.0.extend(
-    //     block!(
-    //         name: funky_string!("Hull"),
-    //         blurb: funky_string!("Basic structure"),
-    //         group: GROUP,
-    //         color_1: Color::new_rrggbb("aa5555"),
-    //         color_2: Color::new_rrggbb("aa3333"),
-    //         line_color: Color::new_rrggbb("ffffff"),
-    //         durability: 1.0,
-    //         density: 0.1
-    //     )
-    //     .get_hull_blocks_from_shapes(shapes),
-    // );
 }
 
 fn create_square_shapes(shapes: &mut Shapes) {
