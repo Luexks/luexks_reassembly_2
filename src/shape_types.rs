@@ -222,7 +222,7 @@ impl Shapes {
             id: ShapeId::next(),
             scales: scales,
         };
-        let mirrored_new_shape = new_shape.mirrored();
+        let [new_shape, mirrored_new_shape] = new_shape.with_mirror();
 
         self.0.push(new_shape);
         self.0.push(mirrored_new_shape);
@@ -291,25 +291,32 @@ impl Shape {
             scale_names: scale_names,
         }
     }
-    pub fn with_mirror(self) -> Vec<Shape> {
+
+    pub fn with_mirror(self) -> [Shape; 2] {
         let left = self.clone().format_names_as_left();
         let right = self.mirrored();
         
-        vec![left, right]
+        [left, right]
     }
 
-    fn format_names_as_left(mut self) -> Self {
-        match self {
+    fn format_names_as_left(self) -> Shape {
+        let mut left = self;
+        match left {
             Shape::Standard { ref mut scales, .. } => {
-                scales
-                    .iter_mut()
-                    .for_each(|scale| {
-                        scale.name = format!("{}L", scale.name);
-                    });
+                for scale in scales.iter_mut() {
+                    scale.name = format!("{}L", scale.name);
+                    print!("{}", scale.name)
+                }
+                // let _ = scales
+                //     .iter_mut()
+                //     .map(|scale| {
+                //         scale.name = format!("{}L", scale.name);
+                //         print!("{}", scale.name);
+                //     });
             }
             Shape::Mirror { .. } => panic!(),
         };
-        self
+        left
     }
 
     pub fn get_id(&self) -> Option<ShapeId> {
