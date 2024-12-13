@@ -398,42 +398,55 @@ impl Display for Ports {
                     .join("")
             )
         } else {
-            write!(f, "ports={{{}}}", {
-                let mut ports = self.0.clone();
-                ports.sort_by(|port_a, port_b| port_a.side_index.cmp(&port_b.side_index));
-                let mut port_matrix: Vec<Vec<Port>> = vec![Vec::new()];
-                let mut current_side_index = 0;
-                let mut current_ports_on_a_side = 0;
-                let mut max_current_ports_on_a_side = 0;
-                for port in ports {
-                    if port.side_index != current_side_index {
-                        port_matrix.push(Vec::new());
-                        current_ports_on_a_side = 0;
-                    }
-                    current_ports_on_a_side += 1;
-                    if current_ports_on_a_side > max_current_ports_on_a_side {
-                        max_current_ports_on_a_side = current_ports_on_a_side;
-                    }
-                    current_side_index = port.side_index;
-                    port_matrix.last_mut().unwrap().push(port);
-                }
-                let mut funky_output = String::new();
-                for port_row_index in 0..max_current_ports_on_a_side {
-                    funky_output.push('\n');
-                    for port_column in port_matrix.iter() {
-                        funky_output.push_str(&format!(
-                            "{:<30}",
-                            match port_column.get(port_row_index) {
-                                Some(value) => value.to_string(),
-                                None => "".to_string(),
-                            }
-                        ));
-                    }
-                }
-                funky_output
-            })
+            let mut ports = self.0.clone();
+            ports.sort_by(|port_a, port_b| port_a.side_index.cmp(&port_b.side_index));
+            let side_sorted_port_matrix = side_sorted_port_matrix_from(ports);
+            let displayed_row_count = side_sorted_port_matrix
+                .iter()
+                .map(|row| row.len())
+                .max()
+                .unwrap_or(0);
+            let funky_output = funky_output_from_side_sorted_port_matrix(
+                displayed_row_count,
+                side_sorted_port_matrix,
+            );
+            write!(f, "ports={{\n{}}}", funky_output)
         }
     }
+}
+
+fn side_sorted_port_matrix_from(ports: Vec<Port>) -> Vec<Vec<Port>> {
+    let mut side_sorted_port_matrix: Vec<Vec<Port>> = Vec::new();
+    let mut current_side_index = None;
+    for port in ports {
+        if Some(port.side_index) != current_side_index {
+            side_sorted_port_matrix.push(Vec::new());
+        }
+
+        current_side_index = Some(port.side_index);
+        side_sorted_port_matrix.last_mut().unwrap().push(port);
+    }
+    side_sorted_port_matrix
+}
+
+fn funky_output_from_side_sorted_port_matrix(
+    displayed_row_count: usize,
+    side_sorted_port_matrix: Vec<Vec<Port>>,
+) -> String {
+    (0..displayed_row_count)
+        .map(|row_index| {
+            side_sorted_port_matrix
+                .iter()
+                .map(|column| {
+                    column
+                        .get(row_index)
+                        .map_or(" ".repeat(30), |port| format!("{:<30}", port.to_string()))
+                })
+                .collect::<Vec<_>>()
+                .join("")
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
 }
 
 #[derive(Clone)]

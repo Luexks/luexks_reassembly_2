@@ -11,15 +11,50 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
         block!(
             name: funky_string!("Hull"),
             blurb: funky_string!("Basic structure"),
+            features: explicit_features!(
+                Palette,
+            ),
             group: GROUP,
-            color_1: Color::new_rrggbb("aa5555"),
-            color_2: Color::new_rrggbb("aa3333"),
+            color_1: Color::new_rrggbb("5555aa"),
+            color_2: Color::new_rrggbb("3333aa"),
             line_color: Color::new_rrggbb("ffffff"),
             durability: 1.0,
             density: 0.1
         )
-        .get_hull_blocks_from_shapes(shapes),
+        .to_hull_blocks_from_shapes_and_varients(
+            shapes,
+            vec![
+                block_without_id!(
+                    color_1: Color::new_rrggbb("55aa55"),
+                    color_2: Color::new_rrggbb("33aa33"),
+                    line_color: Color::new_rrggbb("ffffff")
+                ),
+                block_without_id!(
+                    name: funky_string!("Armor"),
+                    features: implicit_features!(
+                        Palette,
+                        IntLines,
+                    ),
+                    color_1: Color::new_rrggbb("555555"),
+                    color_2: Color::new_rrggbb("333333"),
+                    line_color: Color::new_rrggbb("ffffff")
+                ),
+            ],
+        ),
     );
+    // blocks.0.extend(
+    //     block!(
+    //         name: funky_string!("Hull"),
+    //         blurb: funky_string!("Basic structure"),
+    //         group: GROUP,
+    //         color_1: Color::new_rrggbb("aa5555"),
+    //         color_2: Color::new_rrggbb("aa3333"),
+    //         line_color: Color::new_rrggbb("ffffff"),
+    //         durability: 1.0,
+    //         density: 0.1
+    //     )
+    //     .get_hull_blocks_from_shapes(shapes),
+    // );
 }
 
 fn create_square_shapes(shapes: &mut Shapes) {

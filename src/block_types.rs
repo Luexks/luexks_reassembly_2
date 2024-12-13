@@ -1,4 +1,7 @@
-use std::fmt::{self, Display};
+use std::{
+    any::Any,
+    fmt::{self, Display},
+};
 
 use crate::{display_oriented_number::DisplayOriented2D, utils::*, Shapes};
 
@@ -21,7 +24,7 @@ macro_rules! format_component {
 }
 
 macro_rules! block {
-    ($($component_name:ident: $component_value:expr),*) => {
+    ($($component_name:ident: $component_value:expr),* $(,)?) => {
         Block {
             id: Some(BlockId::next()),
             $($component_name: Some($component_value),)*
@@ -112,31 +115,27 @@ impl Block {
             .0
             .iter()
             .enumerate()
-            .map(|(shape_index, shape)| {
-                (0..shape.get_scale_count()).map(move |scale_index| match scale_index {
-                    0 => match shape_index {
-                        0 => {
-                            unsafe {
-                                BASE_BLOCK_ID = Some(self.id.unwrap());
-                                LAST_SHAPE_BLOCK_ID = BASE_BLOCK_ID;
-                            }
-                            let mut new_block = self.clone();
-                            new_block.shape = shape.get_id();
-                            new_block.scale = Some(scale_index as u8 + 1);
-                            new_block
+            .flat_map(|(shape_index, shape)| {
+                (0..shape.get_scale_count()).map(move |scale_index| {
+                    if scale_index == 0 && shape_index == 0 {
+                        unsafe {
+                            BASE_BLOCK_ID = Some(self.id.unwrap());
+                            LAST_SHAPE_BLOCK_ID = BASE_BLOCK_ID;
                         }
-                        _ => {
-                            let new_block = block!(
-                                extends: unsafe { BASE_BLOCK_ID.unwrap() },
-                                shape: shape.get_id().unwrap()
-                            );
-                            unsafe {
-                                LAST_SHAPE_BLOCK_ID = Some(new_block.id.unwrap());
-                            }
-                            new_block
+                        let mut new_block = self.clone();
+                        new_block.shape = shape.get_id();
+                        new_block.scale = Some(scale_index as u8 + 1);
+                        new_block
+                    } else if scale_index == 0 {
+                        let new_block = block!(
+                            extends: unsafe { BASE_BLOCK_ID.unwrap() },
+                            shape: shape.get_id().unwrap()
+                        );
+                        unsafe {
+                            LAST_SHAPE_BLOCK_ID = Some(new_block.id.unwrap());
                         }
-                    },
-                    _ => {
+                        new_block
+                    } else {
                         block!(
                             extends: unsafe { LAST_SHAPE_BLOCK_ID.unwrap() },
                             scale: scale_index as u8 + 1
@@ -144,7 +143,72 @@ impl Block {
                     }
                 })
             })
-            .flatten()
+            .collect::<Vec<_>>()
+    }
+
+    pub fn to_hull_blocks_from_shapes_and_varients(
+        self,
+        shapes: &Shapes,
+        extra_block_varients: Vec<Block>,
+    ) -> Vec<Block> {
+        let block_varients: Vec<_> = std::iter::once(self.clone())
+            .chain(extra_block_varients)
+            .collect();
+        static mut BASE_BLOCK_ID: Option<BlockId> = None;
+        static mut LAST_VARIENT_BLOCK_ID: Option<BlockId> = None;
+        static mut LAST_SHAPE_BLOCK_ID: Option<BlockId> = None;
+        block_varients
+            .iter()
+            .enumerate()
+            .flat_map(move |(block_varient_index, block_varient)| {
+                shapes
+                    .0
+                    .iter()
+                    .enumerate()
+                    .flat_map(|(shape_index, shape)| {
+                        (0..shape.get_scale_count()).map({
+                            let original_block = self.clone();
+                            move |scale_index| {
+                                if block_varient_index == 0 && shape_index == 0 && scale_index == 0
+                                {
+                                    unsafe {
+                                        BASE_BLOCK_ID = Some(self.id.unwrap());
+                                        LAST_VARIENT_BLOCK_ID = BASE_BLOCK_ID;
+                                        LAST_SHAPE_BLOCK_ID = BASE_BLOCK_ID;
+                                    }
+                                    let mut new_block = original_block.clone();
+                                    new_block.shape = shape.get_id();
+                                    new_block.scale = Some(scale_index as u8 + 1);
+                                    new_block
+                                } else if shape_index == 0 && scale_index == 0 {
+                                    let mut new_block = block_varient.clone();
+                                    unsafe {
+                                        new_block.id = Some(BlockId::next());
+                                        new_block.extends = BASE_BLOCK_ID;
+                                        LAST_VARIENT_BLOCK_ID = new_block.id;
+                                        LAST_SHAPE_BLOCK_ID = new_block.id;
+                                    }
+                                    new_block
+                                } else if scale_index == 0 {
+                                    let new_block = block!(
+                                        extends: unsafe { LAST_VARIENT_BLOCK_ID.unwrap() },
+                                        shape: shape.get_id().unwrap()
+                                    );
+                                    unsafe {
+                                        LAST_SHAPE_BLOCK_ID = new_block.id;
+                                    }
+                                    new_block
+                                } else {
+                                    block!(
+                                        extends: unsafe { LAST_SHAPE_BLOCK_ID.unwrap() },
+                                        scale: scale_index as u8 + 1
+                                    )
+                                }
+                            }
+                        })
+                    })
+                    .collect::<Vec<_>>()
+            })
             .collect::<Vec<_>>()
     }
 }
@@ -229,17 +293,33 @@ impl Display for Block {
     }
 }
 
-macro_rules! features {
+macro_rules! implicit_features {
     (
-        $($feature:ident $(: { $($feature_component_name:ident: $feature_component_value:expr),*})?),*
+        $($feature:ident $(: { $($feature_component_name:ident: $feature_component_value:expr),*})? $(,)?),*
     ) => {
-        Flags(vec![
-            $(new_feature!($feature $(: {$($feature_component_name: $feature_component_value),*})?)),*,
-        ])
-
+        ExtendAccountingFeatureList {
+            features: Flags(vec![
+                $(new_feature!($feature $(: {$($feature_component_name: $feature_component_value),*})?)),*,
+            ]),
+            feature_list_same_as_extends: false,
+        }
     };
 }
-pub(crate) use features;
+pub(crate) use implicit_features;
+
+macro_rules! explicit_features {
+    (
+        $($feature:ident $(: { $($feature_component_name:ident: $feature_component_value:expr),*})? $(,)?),*
+    ) => {
+        ExtendAccountingFeatureList {
+            features: Flags(vec![
+                $(new_feature!($feature $(: {$($feature_component_name: $feature_component_value),*})?)),*,
+            ]),
+            feature_list_same_as_extends: true,
+        }
+    };
+}
+pub(crate) use explicit_features;
 
 macro_rules! new_feature {
     ($feature_name:ident) => {
@@ -257,8 +337,8 @@ pub(crate) use new_feature;
 
 #[derive(Clone)]
 pub struct ExtendAccountingFeatureList {
-    features: Flags<Feature>,
-    feature_list_same_as_extends: bool,
+    pub features: Flags<Feature>,
+    pub feature_list_same_as_extends: bool,
 }
 
 #[derive(Clone)]
