@@ -258,11 +258,8 @@ impl Display for Shape {
                         .collect::<Vec<_>>()
                         .join("\n")
                 ),
-                Shape::Mirror {
-                    id,
-                    mirror_of,
-                    ..
-                } => format!("{{{},{{}},mirror_of={}}}", id, mirror_of),
+                Shape::Mirror { id, mirror_of, .. } =>
+                    format!("{{{},{{}},mirror_of={}}}", id, mirror_of),
             }
         )
     }
@@ -295,7 +292,7 @@ impl Shape {
     pub fn with_mirror(self) -> [Shape; 2] {
         let left = self.clone().format_names_as_left();
         let right = self.mirrored();
-        
+
         [left, right]
     }
 
@@ -303,16 +300,9 @@ impl Shape {
         let mut left = self;
         match left {
             Shape::Standard { ref mut scales, .. } => {
-                for scale in scales.iter_mut() {
+                scales.iter_mut().for_each(|scale| {
                     scale.name = format!("{}L", scale.name);
-                    print!("{}", scale.name)
-                }
-                // let _ = scales
-                //     .iter_mut()
-                //     .map(|scale| {
-                //         scale.name = format!("{}L", scale.name);
-                //         print!("{}", scale.name);
-                //     });
+                });
             }
             Shape::Mirror { .. } => panic!(),
         };
@@ -384,7 +374,7 @@ impl Vertices {
     pub fn to_hull_scale_with_distributions(
         self,
         port_distributions: Vec<PortDistribution>,
-        name: String
+        name: String,
     ) -> Scale {
         Scale {
             verts: self.clone(),

@@ -31,22 +31,49 @@ lazy_static! {
 }
 
 fn add_quarter_scales_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
-        rectangle_scale_factors
-            .extend((1..=5).map(|scale_index| (0.20, 0.20 * scale_index as f32, format!("FifthRectS{}", scale_index))));
+    rectangle_scale_factors.extend((1..=5).map(|scale_index| {
+        (
+            0.20,
+            0.20 * scale_index as f32,
+            format!("FifthRectS{}", scale_index),
+        )
+    }));
 }
 fn add_fifth_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
-    rectangle_scale_factors
-        .extend((1..=4).map(|scale_index| (0.25, 0.25 * scale_index as f32, format!("QuarterRectS{}", scale_index))));
+    rectangle_scale_factors.extend((1..=4).map(|scale_index| {
+        (
+            0.25,
+            0.25 * scale_index as f32,
+            format!("QuarterRectS{}", scale_index),
+        )
+    }));
 }
 fn add_half_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
-    rectangle_scale_factors
-        .extend((1..=2).map(|scale_index| (0.5, 0.5 * scale_index as f32, format!("HalfRectS{}", scale_index))));
+    rectangle_scale_factors.extend((1..=2).map(|scale_index| {
+        (
+            0.5,
+            0.5 * scale_index as f32,
+            format!("HalfRectS{}", scale_index),
+        )
+    }));
 }
 fn add_octagon_adapting_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
-    rectangle_scale_factors
-        .extend((1..=4).map(|scale_index| (scale_index as f32 * (1.0 - 1.0 / SQRT_2), 1.0 * scale_index as f32, format!("OctAdaptingRectS{}", scale_index))));
+    rectangle_scale_factors.extend((1..=4).map(|scale_index| {
+        (
+            scale_index as f32 * (1.0 - 1.0 / SQRT_2),
+            1.0 * scale_index as f32,
+            format!("OctAdaptingRectS{}", scale_index),
+        )
+    }));
 }
-fn add_iscoceles_right_triangle_irrational_side_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
-    rectangle_scale_factors
-        .extend((1..=4).map(|scale_index| (1.0, scale_index as f32 * (1.0 / SQRT_2), format!("IRTISrectS{}", scale_index as f32 * 0.5))));
+fn add_iscoceles_right_triangle_irrational_side_rects_to(
+    rectangle_scale_factors: &mut Vec<(f32, f32, String)>,
+) {
+    rectangle_scale_factors.extend((1..=4).map(|scale_index| {
+        (
+            1.0,
+            scale_index as f32 * (1.0 / SQRT_2),
+            format!("IRTISrectS{}", scale_index as f32 * 0.5),
+        )
+    }));
 }

@@ -1,5 +1,3 @@
-use std::ops::Index;
-
 use crate::block_types::*;
 use crate::configs::*;
 use crate::display_oriented_number::*;
@@ -75,9 +73,6 @@ fn add_right_triangles_to_the(shapes: &mut Shapes) {
             vert!(MASTER_SCALE * width_scale_factor * height_scale_factor, 0.0),
             BackwardsFromNextVert
             name: format!("{};{}rightTriS{}", 1, width_scale_factor, height_scale_factor)
-            // The code below was a mistake, but I think the code looks cool and I may use it to show off in the future.
-            // (Not deleting the comment. :)
-            // name: format!("{};{}rightTriS{}", 1, width_scale_factor, 1 + RIGHT_TRIANGLE_HEIGHT_SCALE_FACTORS.iter().position(|possibly_the_current_height_scale_factor| possibly_the_current_height_scale_factor == &height_scale_factor).unwrap())
         )
     };
     shapes.add_mirrored_shape_from_scales(

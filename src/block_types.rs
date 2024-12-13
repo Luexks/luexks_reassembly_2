@@ -216,7 +216,11 @@ impl Block {
                                     new_block.blurb = original_block.blurb.clone();
                                 }
                                 new_block.blurb = match new_block.blurb {
-                                    Some(_) => Some(funky_string!(format!("{}\\n{}", shape.get_scale_name(scale_index), new_block.blurb.unwrap().0))),
+                                    Some(_) => Some(funky_string!(format!(
+                                        "{}\\n{}",
+                                        shape.get_scale_name(scale_index),
+                                        new_block.blurb.unwrap().0
+                                    ))),
                                     None => panic!(),
                                 };
                                 new_block
