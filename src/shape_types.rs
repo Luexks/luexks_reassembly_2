@@ -38,14 +38,14 @@ pub(crate) use default_port_distribution_from_varient;
 
 macro_rules! add_courtesy_port_to_ports {
     (ports: $ports:expr, side_index: $side_index:expr, side_length: $side_length:expr, port_count: $port_count:expr, port_distribution: $port_distribution:expr) => {
-        if $side_length > $port_count * TOTAL_SCALE {
+        if $side_length > $port_count * MASTER_SCALE {
             if let PortDistribution::TowardsFromCurrentVert { .. } = $port_distribution {
                 $ports.0.push(Port {
                     side_index: $side_index,
                     position: DisplayOrientedNumber::Fraction {
                         numerator: Box::new(don_float_from(
                             PortPosition::CURRENT_VERT * $side_length
-                                + ($side_length + $port_count * TOTAL_SCALE) * 0.5,
+                                + ($side_length + $port_count * MASTER_SCALE) * 0.5,
                         )),
                         denominator: Box::new(don_float_from($side_length)),
                     },
@@ -57,7 +57,7 @@ macro_rules! add_courtesy_port_to_ports {
                     position: DisplayOrientedNumber::Fraction {
                         numerator: Box::new(don_float_from(
                             PortPosition::NEXT_VERT * $side_length
-                                - ($side_length + $port_count * TOTAL_SCALE) * 0.5,
+                                - ($side_length + $port_count * MASTER_SCALE) * 0.5,
                         )),
                         denominator: Box::new(don_float_from($side_length)),
                     },
@@ -97,8 +97,8 @@ impl<'a> Side<'_> {
 
     fn to_ports_of_distribution(self, port_distribution: &PortDistribution) -> Ports {
         let side_length = self.get_side_length();
-        let port_count = ((side_length + PORT_COUNT_DECISION_TOLERANCE) / TOTAL_SCALE).floor();
-        if side_length <= TOTAL_SCALE {
+        let port_count = ((side_length + PORT_COUNT_DECISION_TOLERANCE) / MASTER_SCALE).floor();
+        if side_length <= MASTER_SCALE {
             Ports(vec![Port {
                 side_index: self.side_index,
                 position: DisplayOrientedNumber::Float(PortPosition::CENTER),
