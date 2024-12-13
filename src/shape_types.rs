@@ -4,20 +4,21 @@ use crate::utils::*;
 use std::fmt::{self, Display};
 
 macro_rules! scale_from_alternating_vertices_and_port_distributions {
-    ($($vertex:expr, $port_distribution_varient:ident),*) => {
+    ($($vertex:expr, $port_distribution_variant:ident),* name: $name:expr) => {
         Vertices(
             vec![$($vertex),*]
         )
         .to_hull_scale_with_distributions(
             vec![$(
-                default_port_distribution_from_varient!($port_distribution_varient)
-            ),*]
+                default_port_distribution_from_variant!($port_distribution_variant)
+            ),*],
+            $name
         )
     };
 }
 pub(crate) use scale_from_alternating_vertices_and_port_distributions;
 
-macro_rules! default_port_distribution_from_varient {
+macro_rules! default_port_distribution_from_variant {
     (Center) => {
         PortDistribution::Center
     };
@@ -34,7 +35,7 @@ macro_rules! default_port_distribution_from_varient {
         }
     };
 }
-pub(crate) use default_port_distribution_from_varient;
+pub(crate) use default_port_distribution_from_variant;
 
 macro_rules! add_courtesy_port_to_ports {
     (ports: $ports:expr, side_index: $side_index:expr, side_length: $side_length:expr, port_count: $port_count:expr, port_distribution: $port_distribution:expr) => {
@@ -227,6 +228,8 @@ impl Shapes {
         self.0.push(mirrored_new_shape);
     }
 }
+
+#[derive(Clone)]
 pub enum Shape {
     Standard {
         id: ShapeId,
@@ -236,6 +239,7 @@ pub enum Shape {
         id: ShapeId,
         mirror_of: ShapeId,
         scale_count: usize,
+        scale_names: Vec<String>,
     },
 }
 
@@ -257,7 +261,7 @@ impl Display for Shape {
                 Shape::Mirror {
                     id,
                     mirror_of,
-                    scale_count: _,
+                    ..
                 } => format!("{{{},{{}},mirror_of={}}}", id, mirror_of),
             }
         )
@@ -266,23 +270,46 @@ impl Display for Shape {
 
 impl Shape {
     pub fn mirrored(&self) -> Self {
-        let mirror_of = match self {
-            Shape::Standard { id, .. } => id,
+        let mirror_of: &ShapeId;
+        let scale_count;
+        let scale_names;
+        match self {
+            Shape::Standard { id, scales } => {
+                mirror_of = id;
+                scale_count = scales.len();
+                scale_names = scales
+                    .iter()
+                    .map(|scale| format!("{}R", scale.name.clone()))
+                    .collect();
+            }
             Shape::Mirror { .. } => panic!(),
-        };
-        let scale_count = match self {
-            Shape::Standard { id: _, scales } => scales.len(),
-            Shape::Mirror { .. } => panic!(),
-        };
+        }
         Shape::Mirror {
             id: ShapeId::next(),
             mirror_of: *mirror_of,
             scale_count: scale_count,
+            scale_names: scale_names,
         }
     }
     pub fn with_mirror(self) -> Vec<Shape> {
-        let mirrored = self.mirrored();
-        vec![self, mirrored]
+        let left = self.clone().format_names_as_left();
+        let right = self.mirrored();
+        
+        vec![left, right]
+    }
+
+    fn format_names_as_left(mut self) -> Self {
+        match self {
+            Shape::Standard { ref mut scales, .. } => {
+                scales
+                    .iter_mut()
+                    .for_each(|scale| {
+                        scale.name = format!("{}L", scale.name);
+                    });
+            }
+            Shape::Mirror { .. } => panic!(),
+        };
+        self
     }
 
     pub fn get_id(&self) -> Option<ShapeId> {
@@ -298,11 +325,20 @@ impl Shape {
             Shape::Mirror { scale_count, .. } => *scale_count,
         }
     }
+
+    pub fn get_scale_name(&self, scale_index: usize) -> String {
+        match self {
+            Shape::Standard { scales, .. } => scales.get(scale_index).unwrap().name.clone(),
+            Shape::Mirror { scale_names, .. } => scale_names.get(scale_index).unwrap().clone(),
+        }
+    }
 }
 
+#[derive(Clone)]
 pub struct Scale {
     verts: Vertices,
     ports: Ports,
+    name: String,
 }
 
 impl Display for Scale {
@@ -315,7 +351,7 @@ impl Display for Scale {
 pub struct Vertices(pub Vec<Vertex>);
 
 impl Vertices {
-    pub fn to_hull_scale(self) -> Scale {
+    pub fn to_hull_scale(self, name: String) -> Scale {
         Scale {
             verts: self.clone(),
             ports: Ports(
@@ -334,12 +370,14 @@ impl Vertices {
                     })
                     .collect(),
             ),
+            name: name,
         }
     }
 
     pub fn to_hull_scale_with_distributions(
         self,
         port_distributions: Vec<PortDistribution>,
+        name: String
     ) -> Scale {
         Scale {
             verts: self.clone(),
@@ -359,6 +397,7 @@ impl Vertices {
                     })
                     .collect(),
             ),
+            name: name,
         }
     }
 }

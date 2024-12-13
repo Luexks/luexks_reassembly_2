@@ -1,3 +1,5 @@
+use std::ops::Index;
+
 use crate::block_types::*;
 use crate::configs::*;
 use crate::display_oriented_number::*;
@@ -47,17 +49,17 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
 
 fn add_squares_to_the(shapes: &mut Shapes) {
     let scale_from = |scale_index: usize| {
-        let half_square_length = 0.5 * MASTER_SCALE * (1.0 + scale_index as f32);
+        let half_square_length = 0.5 * MASTER_SCALE * (scale_index as f32);
         let unoriented_do2d = do2d_float_from(half_square_length, half_square_length);
         Vertices(
             (0..4)
                 .map(|vert_index| Vertex(unoriented_do2d.orient_by_index(vert_index)))
                 .collect(),
         )
-        .to_hull_scale()
+        .to_hull_scale(format!("SquareS{}", scale_index))
     };
     shapes.add_unmirrored_shape_from_scales(
-        (0..SQUARE_SCALE_COUNT)
+        (1..=SQUARE_SCALE_COUNT)
             .map(|scale_index| scale_from(scale_index))
             .collect(),
     );
@@ -72,6 +74,10 @@ fn add_right_triangles_to_the(shapes: &mut Shapes) {
             Center,
             vert!(MASTER_SCALE * width_scale_factor * height_scale_factor, 0.0),
             BackwardsFromNextVert
+            name: format!("{};{}rightTriS{}", 1, width_scale_factor, height_scale_factor)
+            // The code below was a mistake, but I think the code looks cool and I may use it to show off in the future.
+            // (Not deleting the comment. :)
+            // name: format!("{};{}rightTriS{}", 1, width_scale_factor, 1 + RIGHT_TRIANGLE_HEIGHT_SCALE_FACTORS.iter().position(|possibly_the_current_height_scale_factor| possibly_the_current_height_scale_factor == &height_scale_factor).unwrap())
         )
     };
     shapes.add_mirrored_shape_from_scales(
@@ -89,20 +95,20 @@ fn add_right_triangles_to_the(shapes: &mut Shapes) {
 }
 
 fn add_rectangles_to_the(shapes: &mut Shapes) {
-    let scale_from = |scale_factor_float_2d: &(f32, f32)| {
+    let scale_from = |scale_factor_float_2d_and_name: &(f32, f32, String)| {
         let unoriented_do2d = do2d_float_from(
-            scale_factor_float_2d.0 * MASTER_SCALE * 0.5,
-            scale_factor_float_2d.1 * MASTER_SCALE * 0.5,
+            scale_factor_float_2d_and_name.0 * MASTER_SCALE * 0.5,
+            scale_factor_float_2d_and_name.1 * MASTER_SCALE * 0.5,
         );
         Vertices(
             (0..4)
                 .map(|vert_index| Vertex(unoriented_do2d.orient_by_index(vert_index)))
                 .collect(),
         )
-        .to_hull_scale()
+        .to_hull_scale(scale_factor_float_2d_and_name.2.clone())
     };
     shapes.add_unmirrored_shape_from_scales(
-        RECTANGLE_SCALE_FACTORS
+        RECTANGLE_SCALE_FACTORS_AND_NAMES
             .iter()
             .map(|scale_factor_float_2d| scale_from(scale_factor_float_2d))
             .collect(),

@@ -1,7 +1,4 @@
-use std::{
-    any::Any,
-    fmt::{self, Display},
-};
+use std::fmt::{self, Display};
 
 use crate::{display_oriented_number::DisplayOriented2D, utils::*, Shapes};
 
@@ -182,6 +179,7 @@ impl Block {
                         (0..shape.get_scale_count()).map({
                             let original_block = self.clone();
                             move |scale_index| {
+                                let mut new_block: Block;
                                 if block_variant_index == 0 && shape_index == 0 && scale_index == 0
                                 {
                                     unsafe {
@@ -189,34 +187,39 @@ impl Block {
                                         LAST_VARIANT_BLOCK_ID = BASE_BLOCK_ID;
                                         LAST_SHAPE_BLOCK_ID = BASE_BLOCK_ID;
                                     }
-                                    let mut new_block = original_block.clone();
+                                    new_block = original_block.clone();
                                     new_block.shape = shape.get_id();
                                     new_block.scale = Some(scale_index as u8 + 1);
-                                    new_block
                                 } else if shape_index == 0 && scale_index == 0 {
-                                    let mut new_block = block_variant.clone();
+                                    new_block = block_variant.clone();
                                     unsafe {
                                         new_block.id = Some(BlockId::next());
                                         new_block.extends = BASE_BLOCK_ID;
                                         LAST_VARIANT_BLOCK_ID = new_block.id;
                                         LAST_SHAPE_BLOCK_ID = new_block.id;
                                     }
-                                    new_block
+                                    new_block.blurb = original_block.blurb.clone();
                                 } else if scale_index == 0 {
-                                    let new_block = block!(
+                                    new_block = block!(
                                         extends: unsafe { LAST_VARIANT_BLOCK_ID.unwrap() },
                                         shape: shape.get_id().unwrap()
                                     );
                                     unsafe {
                                         LAST_SHAPE_BLOCK_ID = new_block.id;
                                     }
-                                    new_block
+                                    new_block.blurb = original_block.blurb.clone();
                                 } else {
-                                    block!(
+                                    new_block = block!(
                                         extends: unsafe { LAST_SHAPE_BLOCK_ID.unwrap() },
                                         scale: scale_index as u8 + 1
-                                    )
+                                    );
+                                    new_block.blurb = original_block.blurb.clone();
                                 }
+                                new_block.blurb = match new_block.blurb {
+                                    Some(_) => Some(funky_string!(format!("{}\\n{}", shape.get_scale_name(scale_index), new_block.blurb.unwrap().0))),
+                                    None => panic!(),
+                                };
+                                new_block
                             }
                         })
                     })
