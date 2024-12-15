@@ -15,7 +15,7 @@ pub const MASTER_SCALE: f32 = 10.0;
 pub const PORT_SPACING: f32 = MASTER_SCALE;
 pub const PORT_SPACING_FROM_VERT: f32 = MASTER_SCALE / 2.0;
 
-pub const SQUARE_SCALE_COUNT: usize = 4;
+pub const SQUARE_SCALE_COUNT: usize = 3;
 pub const RIGHT_TRIANGLE_WIDTH_SCALE_FACTORS: [f32; 8] = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
 pub const RIGHT_TRIANGLE_HEIGHT_SCALE_FACTORS: [f32; 3] = [0.5, 1.0, 2.0];
 lazy_static! {
@@ -24,8 +24,8 @@ lazy_static! {
         add_quarter_scales_to(&mut rectangle_scale_factors);
         add_fifth_rects_to(&mut rectangle_scale_factors);
         add_half_rects_to(&mut rectangle_scale_factors);
-        add_octagon_adapting_rects_to(&mut rectangle_scale_factors);
-        add_iscoceles_right_triangle_irrational_side_rects_to(&mut rectangle_scale_factors);
+        add_complementary_reciprocal_root_2_rects_to(&mut rectangle_scale_factors);
+        add_reciprocal_root_2_rects_to(&mut rectangle_scale_factors);
         rectangle_scale_factors
     };
 }
@@ -57,23 +57,23 @@ fn add_half_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
         )
     }));
 }
-fn add_octagon_adapting_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
+fn add_complementary_reciprocal_root_2_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
     rectangle_scale_factors.extend((1..=4).map(|scale_index| {
         (
+            1.0,
             scale_index as f32 * (1.0 - 1.0 / SQRT_2),
-            1.0 * scale_index as f32,
-            format!("OctAdaptingRectS{}", scale_index),
+            format!("ComplementaryReciprocalRoot2rectS{}", scale_index),
         )
     }));
 }
-fn add_iscoceles_right_triangle_irrational_side_rects_to(
+fn add_reciprocal_root_2_rects_to(
     rectangle_scale_factors: &mut Vec<(f32, f32, String)>,
 ) {
     rectangle_scale_factors.extend((1..=4).map(|scale_index| {
         (
             1.0,
             scale_index as f32 * (1.0 / SQRT_2),
-            format!("IRTISrectS{}", scale_index as f32 * 0.5),
+            format!("ReciprocalRoot2rectS{}", scale_index),
         )
     }));
 }
