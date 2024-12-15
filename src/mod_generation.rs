@@ -1,3 +1,5 @@
+use std::f32::consts::SQRT_2;
+
 use crate::block_types::*;
 use crate::configs::*;
 use crate::display_oriented_number::*;
@@ -8,6 +10,7 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
     add_squares_to_the(shapes);
     add_right_triangles_to_the(shapes);
     add_rectangles_to_the(shapes);
+    add_octagons_to_the(shapes);
     blocks.add_blocks(
         block!(
             name: funky_string!("Hull"),
@@ -51,7 +54,7 @@ fn add_squares_to_the(shapes: &mut Shapes) {
         let unoriented_do2d = do2d_float_from(half_square_length, half_square_length);
         Vertices(
             (0..4)
-                .map(|vert_index| Vertex(unoriented_do2d.orient_by_index(vert_index)))
+                .map(|vert_index| Vertex(unoriented_do2d.orient_by_vert_index(vert_index)))
                 .collect(),
         )
         .to_hull_scale(format!("SquareS{}", scale_index))
@@ -97,7 +100,7 @@ fn add_rectangles_to_the(shapes: &mut Shapes) {
         );
         Vertices(
             (0..4)
-                .map(|vert_index| Vertex(unoriented_do2d.orient_by_index(vert_index)))
+                .map(|vert_index| Vertex(unoriented_do2d.orient_by_vert_index(vert_index)))
                 .collect(),
         )
         .to_hull_scale(scale_factor_float_2d_and_name.2.clone())
@@ -106,6 +109,42 @@ fn add_rectangles_to_the(shapes: &mut Shapes) {
         RECTANGLE_SCALE_FACTORS_AND_NAMES
             .iter()
             .map(|scale_factor_float_2d| scale_from(scale_factor_float_2d))
+            .collect(),
+    );
+}
+
+#[rustfmt::skip]
+fn add_octagons_to_the(shapes: &mut Shapes) {
+    let scale_from = |scale_index: usize| {
+        let (half_octagon_bounding_box_length, half_octagon_side_length) = if scale_index == 1 {
+            (
+                0.5 * MASTER_SCALE,
+                (-0.5 + 1.0 / SQRT_2) * MASTER_SCALE,
+            )
+        } else {
+            (
+                (0.5 + 1.0 / SQRT_2) * MASTER_SCALE * (scale_index as f32 - 1.0),
+                0.5 * MASTER_SCALE * (scale_index as f32 - 1.0),
+            )
+        };
+        Vertices(
+            (0..8)
+                .map(|vert_index| {
+                    Vertex(
+                        do2d_float_from(
+                            half_octagon_bounding_box_length,
+                            half_octagon_side_length * if vert_index % 2 == 0 { -1.0 } else { 1.0 },
+                        )
+                        .rotate_by_vert_index((vert_index as i32 / 2) as usize),
+                    )
+                })
+                .collect(),
+        )
+        .to_hull_scale(format!("OctagonS{}", scale_index))
+    };
+    shapes.add_unmirrored_shape_from_scales(
+        (1..=OCTAGON_SCALE_COUNT)
+            .map(|scale_index| scale_from(scale_index))
             .collect(),
     );
 }

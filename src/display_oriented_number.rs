@@ -56,14 +56,36 @@ pub struct DisplayOriented2D {
 }
 
 impl DisplayOriented2D {
-    pub fn orient_by_index(&self, index: usize) -> Self {
+    pub fn orient_by_vert_index(&self, vert_index: usize) -> Self {
         DisplayOriented2D {
             x: DisplayOrientedNumber::Float(
-                self.x.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[index].0,
+                self.x.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[vert_index].0,
             ),
             y: DisplayOrientedNumber::Float(
-                self.y.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[index].1,
+                self.y.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[vert_index].1,
             ),
+        }
+    }
+
+    pub fn rotate_by_vert_index(&self, vert_index: usize) -> Self {
+        if vert_index % 2 == 0 {
+            DisplayOriented2D {
+                x: DisplayOrientedNumber::Float(
+                    self.y.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[vert_index].1,
+                ),
+                y: DisplayOrientedNumber::Float(
+                    self.x.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[vert_index].0,
+                ),
+            }
+        } else {
+            DisplayOriented2D {
+                x: DisplayOrientedNumber::Float(
+                    self.x.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[vert_index].0,
+                ),
+                y: DisplayOrientedNumber::Float(
+                    self.y.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[vert_index].1,
+                ),
+            }
         }
     }
 }

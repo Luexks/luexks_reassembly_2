@@ -57,7 +57,9 @@ fn add_half_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
         )
     }));
 }
-fn add_complementary_reciprocal_root_2_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
+fn add_complementary_reciprocal_root_2_rects_to(
+    rectangle_scale_factors: &mut Vec<(f32, f32, String)>,
+) {
     rectangle_scale_factors.extend((1..=4).map(|scale_index| {
         (
             1.0,
@@ -66,9 +68,7 @@ fn add_complementary_reciprocal_root_2_rects_to(rectangle_scale_factors: &mut Ve
         )
     }));
 }
-fn add_reciprocal_root_2_rects_to(
-    rectangle_scale_factors: &mut Vec<(f32, f32, String)>,
-) {
+fn add_reciprocal_root_2_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
     rectangle_scale_factors.extend((1..=4).map(|scale_index| {
         (
             1.0,
@@ -77,3 +77,5 @@ fn add_reciprocal_root_2_rects_to(
         )
     }));
 }
+
+pub const OCTAGON_SCALE_COUNT: usize = 4;
