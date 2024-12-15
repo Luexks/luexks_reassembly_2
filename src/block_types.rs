@@ -214,6 +214,9 @@ impl Block {
                                         scale: scale_index as u8 + 1
                                     );
                                     new_block.blurb = original_block.blurb.clone();
+                                    if let Some(durability) = original_block.durability {
+                                        new_block.durability = Some(durability + 0.001);
+                                    }
                                 }
                                 new_block.blurb = match new_block.blurb {
                                     Some(_) => Some(funky_string!(format!(

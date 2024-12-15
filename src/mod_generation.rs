@@ -116,15 +116,15 @@ fn add_rectangles_to_the(shapes: &mut Shapes) {
 #[rustfmt::skip]
 fn add_octagons_to_the(shapes: &mut Shapes) {
     let scale_from = |scale_index: usize| {
-        let (half_octagon_bounding_box_length, half_octagon_side_length) = if scale_index == 1 {
+        let (half_octagon_bounding_box_length, half_octagon_side_length) = if scale_index == 0 {
             (
                 0.5 * MASTER_SCALE,
                 (-0.5 + 1.0 / SQRT_2) * MASTER_SCALE,
             )
         } else {
             (
-                (0.5 + 1.0 / SQRT_2) * MASTER_SCALE * (scale_index as f32 - 1.0),
-                0.5 * MASTER_SCALE * (scale_index as f32 - 1.0),
+                (0.5 + 1.0 / SQRT_2) * MASTER_SCALE * scale_index as f32,
+                0.5 * MASTER_SCALE * scale_index as f32,
             )
         };
         Vertices(
@@ -140,10 +140,10 @@ fn add_octagons_to_the(shapes: &mut Shapes) {
                 })
                 .collect(),
         )
-        .to_hull_scale(format!("OctagonS{}", scale_index))
+        .to_hull_scale(if scale_index == 0 { "GridOctagon".to_string() } else { format!("OctagonS{}", scale_index ) })
     };
     shapes.add_unmirrored_shape_from_scales(
-        (1..=OCTAGON_SCALE_COUNT)
+        (0..=OCTAGON_SCALE_COUNT)
             .map(|scale_index| scale_from(scale_index))
             .collect(),
     );

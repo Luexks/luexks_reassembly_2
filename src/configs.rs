@@ -15,7 +15,7 @@ pub const MASTER_SCALE: f32 = 10.0;
 pub const PORT_SPACING: f32 = MASTER_SCALE;
 pub const PORT_SPACING_FROM_VERT: f32 = MASTER_SCALE / 2.0;
 
-pub const SQUARE_SCALE_COUNT: usize = 3;
+pub const SQUARE_SCALE_COUNT: usize = 4;
 pub const RIGHT_TRIANGLE_WIDTH_SCALE_FACTORS: [f32; 8] = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
 pub const RIGHT_TRIANGLE_HEIGHT_SCALE_FACTORS: [f32; 3] = [0.5, 1.0, 2.0];
 lazy_static! {
