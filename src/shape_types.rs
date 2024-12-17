@@ -1,5 +1,5 @@
-use crate::configs::*;
 use crate::display_oriented_number::*;
+use crate::shape_configs::{FUNKY_PORT_FORMATING, MASTER_SCALE, PORT_SPACING};
 use crate::utils::*;
 use std::fmt::{self, Display};
 

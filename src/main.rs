@@ -14,6 +14,7 @@ pub mod block_types;
 use block_types::*;
 pub mod mod_generation;
 use mod_generation::*;
+pub mod shape_configs;
 
 fn main() {
     let mod_path = create_mod_folder();

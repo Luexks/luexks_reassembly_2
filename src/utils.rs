@@ -1,4 +1,5 @@
 use crate::configs::*;
+use crate::shape_configs::SHAPE_ID_BASE;
 use std::fmt::{self, Display};
 
 pub const BLOCKS_NAME: &str = "blocks.lua";
@@ -38,10 +39,10 @@ impl ShapeId {
     }
 }
 
-static mut CURRENT_BLOCK_ID: BlockId = BlockId(BLOCK_ID_BASE);
+static mut CURRENT_BLOCK_ID: BlockId = BLOCK_ID_BASE;
 
 #[derive(Clone, Copy)]
-pub struct BlockId(u32);
+pub struct BlockId(pub u32);
 
 impl Default for BlockId {
     fn default() -> Self {
@@ -199,3 +200,5 @@ impl Display for FunkyString {
         write!(f, "\"{}\"", self.0)
     }
 }
+
+pub const EXTENDED_DURABILITY_DIFFERENCE: f32 = 0.001;

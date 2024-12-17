@@ -1,6 +1,6 @@
 use std::fmt::{self, Display};
 
-use crate::{display_oriented_number::DisplayOriented2D, utils::*, Shapes};
+use crate::{display_oriented_number::DisplayOriented2D, utils::*, Shape, Shapes, BLOCK_ID_BASE};
 
 macro_rules! format_components {
     ($($component:expr => $component_name:expr),*) => {
@@ -75,6 +75,10 @@ impl Blocks {
     pub fn add_blocks(&mut self, blocks: Vec<Block>) {
         self.0.extend(blocks);
     }
+
+    pub fn extend_first_block(&self, block: Block) -> Block {
+        self.0.first().unwrap().extend(block)
+    }
 }
 
 #[derive(Clone)]
@@ -95,12 +99,18 @@ pub struct Block {
     pub name: Option<FunkyString>,
     pub points: Option<i32>,
     pub durability: Option<f32>,
+    pub explicit_durability_for_extensions: Option<f32>,
     pub armor: Option<f32>,
     pub density: Option<f32>,
     pub blurb: Option<FunkyString>,
 }
 
 impl Block {
+    pub fn extend(&self, mut new_block: Block) -> Block {
+        new_block.extends = self.id;
+        new_block.explicit_durability_for_extensions = self.durability;
+        new_block
+    }
     pub fn get_next_scale(&self) -> Block {
         block!(
             extends: self.id.unwrap(),
@@ -118,47 +128,55 @@ impl Block {
         })
     }
 
-    pub fn get_hull_blocks_from_shapes(&self, shapes: &Shapes) -> Vec<Block> {
-        static mut BASE_BLOCK_ID: Option<BlockId> = None;
-        static mut LAST_SHAPE_BLOCK_ID: Option<BlockId> = None;
-        shapes
-            .0
-            .iter()
-            .enumerate()
-            .flat_map(|(shape_index, shape)| {
-                (0..shape.get_scale_count()).map(move |scale_index| {
-                    if scale_index == 0 && shape_index == 0 {
-                        unsafe {
-                            BASE_BLOCK_ID = Some(self.id.unwrap());
-                            LAST_SHAPE_BLOCK_ID = BASE_BLOCK_ID;
-                        }
-                        let mut new_block = self.clone();
-                        new_block.shape = shape.get_id();
-                        new_block.scale = Some(scale_index as u8 + 1);
-                        new_block
-                    } else if scale_index == 0 {
-                        let new_block = block!(
-                            extends: unsafe { BASE_BLOCK_ID.unwrap() },
-                            shape: shape.get_id().unwrap()
-                        );
-                        unsafe {
-                            LAST_SHAPE_BLOCK_ID = Some(new_block.id.unwrap());
-                        }
-                        new_block
-                    } else {
-                        block!(
-                            extends: unsafe { LAST_SHAPE_BLOCK_ID.unwrap() },
-                            scale: scale_index as u8 + 1
-                        )
-                    }
-                })
-            })
-            .collect::<Vec<_>>()
-    }
+    // pub fn to_extended_blocks_from_shapes(self, shapes: &Vec<Shape>) -> Vec<Block> {
+    //     static mut BASE_BLOCK_ID: Option<BlockId> = None;
+    //     static mut LAST_SHAPE_BLOCK_ID: Option<BlockId> = None;
+    //     shapes
+    //         .iter()
+    //         .enumerate()
+    //         .flat_map(|(shape_index, shape)| {
+    //             (0..shape.get_scale_count()).map({
+    //                 let original_block = &self;
+    //                 move |scale_index| {
+    //                     if scale_index == 0 && shape_index == 0 {
+    //                         unsafe {
+    //                             BASE_BLOCK_ID = Some(self.id.unwrap());
+    //                             LAST_SHAPE_BLOCK_ID = BASE_BLOCK_ID;
+    //                         }
+    //                         let mut new_block = original_block.clone();
+    //                         new_block.shape = shape.get_id();
+    //                         new_block.scale = Some(scale_index as u8 + 1);
+    //                         new_block.explicit_durability_for_extensions = None;
+    //                         if let Some(_) = new_block.explicit_durability_for_extensions {
+    //                             new_block.explicit_durability_for_extensions = None;
+    //                         }
+    //                         new_block
+    //                     } else if scale_index == 0 {
+    //                         let new_block = block!(
+    //                             extends: unsafe { BASE_BLOCK_ID.unwrap() },
+    //                             shape: shape.get_id().unwrap()
+    //                         );
+    //                         unsafe {
+    //                             LAST_SHAPE_BLOCK_ID = Some(new_block.id.unwrap());
+    //                         }
+    //                         new_block
+    //                     } else {
+    //                         let new_block = block!(
+    //                             extends: unsafe { LAST_SHAPE_BLOCK_ID.unwrap() },
+    //                             scale: scale_index as u8 + 1,
+    //                             explicit_durability_for_extensions: original_block.explicit_durability_for_extensions.unwrap() + EXTENDED_DURABILITY_DIFFERENCE,
+    //                         );
+    //                         new_block
+    //                     }
+    //                 }
+    //             })
+    //         })
+    //         .collect::<Vec<_>>()
+    // }
 
-    pub fn to_hull_blocks_from_shapes_and_variants(
+    pub fn to_extended_blocks_from_shapes_and_variants(
         self,
-        shapes: &Shapes,
+        shapes: &Vec<Shape>,
         extra_block_variants: Vec<Block>,
     ) -> Vec<Block> {
         let block_variants: Vec<_> = std::iter::once(self.clone())
@@ -172,12 +190,11 @@ impl Block {
             .enumerate()
             .flat_map(move |(block_variant_index, block_variant)| {
                 shapes
-                    .0
                     .iter()
                     .enumerate()
                     .flat_map(|(shape_index, shape)| {
                         (0..shape.get_scale_count()).map({
-                            let original_block = self.clone();
+                            let original_block = &self;
                             move |scale_index| {
                                 let mut new_block: Block;
                                 if block_variant_index == 0 && shape_index == 0 && scale_index == 0
@@ -190,6 +207,9 @@ impl Block {
                                     new_block = original_block.clone();
                                     new_block.shape = shape.get_id();
                                     new_block.scale = Some(scale_index as u8 + 1);
+                                    if let Some(_) = new_block.explicit_durability_for_extensions {
+                                        new_block.explicit_durability_for_extensions = None;
+                                    }
                                 } else if shape_index == 0 && scale_index == 0 {
                                     new_block = block_variant.clone();
                                     unsafe {
@@ -197,6 +217,9 @@ impl Block {
                                         new_block.extends = BASE_BLOCK_ID;
                                         LAST_VARIANT_BLOCK_ID = new_block.id;
                                         LAST_SHAPE_BLOCK_ID = new_block.id;
+                                    }
+                                    if let Some(_) = new_block.explicit_durability_for_extensions {
+                                        new_block.explicit_durability_for_extensions = None;
                                     }
                                     new_block.blurb = original_block.blurb.clone();
                                 } else if scale_index == 0 {
@@ -207,6 +230,9 @@ impl Block {
                                     unsafe {
                                         LAST_SHAPE_BLOCK_ID = new_block.id;
                                     }
+                                    if let Some(_) = new_block.explicit_durability_for_extensions {
+                                        new_block.explicit_durability_for_extensions = None;
+                                    }
                                     new_block.blurb = original_block.blurb.clone();
                                 } else {
                                     new_block = block!(
@@ -214,8 +240,17 @@ impl Block {
                                         scale: scale_index as u8 + 1
                                     );
                                     new_block.blurb = original_block.blurb.clone();
-                                    if let Some(durability) = original_block.durability {
-                                        new_block.durability = Some(durability + 0.001);
+                                    if let Some(block_id) = new_block.extends {
+                                        if block_id.0 != BLOCK_ID_BASE.0 {
+                                            if let Some(durability) = original_block.durability {
+                                                new_block.durability =
+                                                    Some(durability + EXTENDED_DURABILITY_DIFFERENCE);
+                                            }
+                                            if let Some(durability) = original_block.explicit_durability_for_extensions {
+                                                new_block.durability =
+                                                    Some(durability + EXTENDED_DURABILITY_DIFFERENCE);
+                                            }
+                                        }
                                     }
                                 }
                                 new_block.blurb = match new_block.blurb {
@@ -255,6 +290,7 @@ impl Default for Block {
             name: None,
             points: None,
             durability: None,
+            explicit_durability_for_extensions: None,
             armor: None,
             density: None,
             blurb: None,
@@ -286,6 +322,7 @@ impl Display for Block {
                 &self.name => "name",
                 self.points => "points",
                 self.durability => "durability",
+                self.explicit_durability_for_extensions => "durability",
                 self.armor => "armor",
                 self.density => "density",
                 &self.blurb => "blurb"
