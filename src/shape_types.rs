@@ -329,6 +329,26 @@ impl Shape {
             Shape::Mirror { scale_names, .. } => scale_names.get(scale_index).unwrap().clone(),
         }
     }
+
+    pub fn get_scales(&self, range: std::ops::Range<usize>) -> Shape {
+        match self {
+            Shape::Standard { id, scales } => Shape::Standard {
+                id: *id,
+                scales: scales[range].to_vec(),
+            },
+            Shape::Mirror {
+                id,
+                mirror_of,
+                scale_count,
+                scale_names,
+            } => Shape::Mirror {
+                id: *id,
+                mirror_of: *mirror_of,
+                scale_count: range.end + 1,
+                scale_names: scale_names[range].to_vec(),
+            },
+        }
+    }
 }
 
 #[derive(Clone)]
