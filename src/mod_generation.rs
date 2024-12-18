@@ -19,7 +19,7 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
             color_1: Color::new_rrggbb("5555aa"),
             color_2: Color::new_rrggbb("3333aa"),
             line_color: Color::new_rrggbb("ffffff"),
-            durability: 1.0,
+            durability: 1.001,
             density: 0.1,
         )
         .to_extended_blocks_from_shapes_and_variants(

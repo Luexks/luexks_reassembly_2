@@ -200,5 +200,3 @@ impl Display for FunkyString {
         write!(f, "\"{}\"", self.0)
     }
 }
-
-pub const EXTENDED_DURABILITY_DIFFERENCE: f32 = 0.001;

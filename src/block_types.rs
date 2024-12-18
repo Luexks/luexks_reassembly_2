@@ -106,7 +106,6 @@ pub struct Block {
     pub name: Option<FunkyString>,
     pub points: Option<i32>,
     pub durability: Option<f32>,
-    pub explicit_durability_for_extensions: Option<f32>,
     pub armor: Option<f32>,
     pub density: Option<f32>,
     pub blurb: Option<FunkyString>,
@@ -126,17 +125,9 @@ macro_rules! add_scale_name_to_block {
     };
 }
 
-fn add_extended_durability_difference(durability: Option<f32>) -> Option<f32> {
-    match durability {
-        Some(durability) => Some(durability + EXTENDED_DURABILITY_DIFFERENCE),
-        None => None,
-    }
-}
-
 impl Block {
     pub fn extend(&self, mut new_block: Block) -> Block {
         new_block.extends = self.id;
-        new_block.explicit_durability_for_extensions = add_extended_durability_difference(self.durability);
         new_block
     }
 
@@ -182,11 +173,6 @@ impl Block {
                             scale: scale_index as u8 + 1
                         );
                         new_block.blurb = original_block.blurb.clone();
-                        if let Some(block_id) = new_block.extends {
-                            if block_id.0 != BLOCK_ID_BASE.0 {
-                                new_block.durability = add_extended_durability_difference(original_block.durability);
-                            }
-                        }
                         add_scale_name_to_block!(new_block, shape, scale_index);
                         new_block
                     }
@@ -272,12 +258,6 @@ impl Block {
                                 scale: scale_index as u8 + 1
                             );
                             new_block.blurb = original_block.blurb.clone();
-                            if let Some(block_id) = new_block.extends {
-                                if block_id.0 != BLOCK_ID_BASE.0 {
-                                    new_block.durability = add_extended_durability_difference(original_block.durability);
-                                    new_block.durability = add_extended_durability_difference(original_block.explicit_durability_for_extensions);
-                                }
-                            }
                             add_scale_name_to_block!(new_block, shape, scale_index);
                             new_block
                         }
@@ -340,7 +320,6 @@ impl Block {
                                     unsafe {
                                         LAST_SHAPE_BLOCK_ID = new_block.id;
                                     }
-                                    new_block.explicit_durability_for_extensions = add_extended_durability_difference(original_block.durability);
                                     new_block.blurb = original_block.blurb.clone();
                                     add_scale_name_to_block!(new_block, shape, scale_index);
                                     new_block
@@ -381,7 +360,6 @@ impl Default for Block {
             name: None,
             points: None,
             durability: None,
-            explicit_durability_for_extensions: None,
             armor: None,
             density: None,
             blurb: None,
@@ -413,7 +391,6 @@ impl Display for Block {
                 &self.name => "name",
                 self.points => "points",
                 self.durability => "durability",
-                self.explicit_durability_for_extensions => "durability",
                 self.armor => "armor",
                 self.density => "density",
                 &self.blurb => "blurb"
