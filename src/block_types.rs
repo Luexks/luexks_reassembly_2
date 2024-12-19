@@ -1,6 +1,6 @@
 use std::fmt::{self, Display};
 
-use crate::{display_oriented_number::DisplayOriented2D, utils::*, Shape, Shapes, BLOCK_ID_BASE};
+use crate::{display_oriented_number::DisplayOriented2D, utils::*, Shape};
 
 macro_rules! format_components {
     ($($component:expr => $component_name:expr),*) => {
@@ -309,7 +309,10 @@ impl Block {
                                         LAST_VARIANT_BLOCK_ID = new_block.id;
                                         LAST_SHAPE_BLOCK_ID = new_block.id;
                                     }
-                                    new_block.blurb = original_block.blurb.clone();
+                                    option_comparison_prioritising_some!(
+                                        new_block.blurb,
+                                        original_block.blurb.clone(),
+                                    );
                                     add_scale_name_to_block!(new_block, shape, scale_index);
                                     new_block
                                 } else if scale_index == 0 {
@@ -320,7 +323,14 @@ impl Block {
                                     unsafe {
                                         LAST_SHAPE_BLOCK_ID = new_block.id;
                                     }
-                                    new_block.blurb = original_block.blurb.clone();
+                                    option_comparison_prioritising_some!(
+                                        new_block.blurb,
+                                        block_variant.blurb.clone(),
+                                    );
+                                    option_comparison_prioritising_some!(
+                                        new_block.blurb,
+                                        original_block.blurb.clone(),
+                                    );
                                     add_scale_name_to_block!(new_block, shape, scale_index);
                                     new_block
                                 } else {
@@ -328,7 +338,14 @@ impl Block {
                                         extends: unsafe { LAST_SHAPE_BLOCK_ID.unwrap() },
                                         scale: scale_index as u8 + 1
                                     );
-                                    new_block.blurb = original_block.blurb.clone();
+                                    option_comparison_prioritising_some!(
+                                        new_block.blurb,
+                                        block_variant.blurb.clone(),
+                                    );
+                                    option_comparison_prioritising_some!(
+                                        new_block.blurb,
+                                        original_block.blurb.clone(),
+                                    );
                                     add_scale_name_to_block!(new_block, shape, scale_index);
                                     new_block
                                 }

@@ -41,15 +41,15 @@ lazy_static! {
     };
 }
 
-fn add_fifth_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
-    rectangle_scale_factors.extend((1..=5).map(|scale_index| {
-        (
-            0.20,
-            0.20 * scale_index as f32,
-            format!("FifthRectS{}", scale_index),
-        )
-    }));
-}
+// fn add_fifth_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
+//     rectangle_scale_factors.extend((1..=5).map(|scale_index| {
+//         (
+//             0.20,
+//             0.20 * scale_index as f32,
+//             format!("FifthRectS{}", scale_index),
+//         )
+//     }));
+// }
 fn add_quarter_scales_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
     rectangle_scale_factors.extend((1..=4).map(|scale_index| {
         (
@@ -89,7 +89,7 @@ fn add_reciprocal_root_2_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, S
     }));
 }
 
-pub fn add_squares_to_the(shapes: &mut Shapes) {
+pub fn add_squares_to_the(shapes: &mut Shapes) -> usize {
     let scale_from = |scale_index: usize| {
         let half_square_length = 0.5 * MASTER_SCALE * (scale_index as f32);
         let unoriented_do2d = do2d_float_from(half_square_length, half_square_length);
@@ -105,9 +105,10 @@ pub fn add_squares_to_the(shapes: &mut Shapes) {
             .map(|scale_index| scale_from(scale_index))
             .collect(),
     );
+    shapes.0.len() - 1
 }
 
-pub fn add_rect_longs_to_the(shapes: &mut Shapes) {
+pub fn add_rect_longs_to_the(shapes: &mut Shapes) -> usize {
     let scale_from = |width_scale_factor: f32, height_scale_factor: f32| {
         let half_rect_long_width = 0.5 * MASTER_SCALE * (width_scale_factor as f32);
         let half_rect_long_height = half_rect_long_width * (height_scale_factor as f32);
@@ -135,9 +136,10 @@ pub fn add_rect_longs_to_the(shapes: &mut Shapes) {
             })
             .collect::<Vec<_>>(),
     );
+    shapes.0.len() - 1
 }
 
-pub fn add_right_triangles_to_the(shapes: &mut Shapes) {
+pub fn add_right_triangles_to_the(shapes: &mut Shapes) -> usize {
     let scale_from = |width_scale_factor: f32, height_scale_factor: f32| {
         scale_from_alternating_vertices_and_port_distributions!(
             vert!(0.0, 0.0),
@@ -161,9 +163,10 @@ pub fn add_right_triangles_to_the(shapes: &mut Shapes) {
             })
             .collect::<Vec<_>>(),
     );
+    shapes.0.len() - 1
 }
 
-pub fn add_rectangles_to_the(shapes: &mut Shapes) {
+pub fn add_rectangles_to_the(shapes: &mut Shapes) -> usize {
     let scale_from = |scale_factor_float_2d_and_name: &(f32, f32, String)| {
         let unoriented_do2d = do2d_float_from(
             scale_factor_float_2d_and_name.0 * MASTER_SCALE * 0.5,
@@ -182,9 +185,10 @@ pub fn add_rectangles_to_the(shapes: &mut Shapes) {
             .map(|scale_factor_float_2d| scale_from(scale_factor_float_2d))
             .collect(),
     );
+    shapes.0.len() - 1
 }
 
-pub fn add_adapters_to_the(shapes: &mut Shapes) {
+pub fn add_adapters_to_the(shapes: &mut Shapes) -> usize {
     let scale_0 = || {
         let half_adapter_width = 0.25 * MASTER_SCALE;
         let half_adapter_left_side_height = 0.5 * MASTER_SCALE;
@@ -247,10 +251,11 @@ pub fn add_adapters_to_the(shapes: &mut Shapes) {
             )
             .collect(),
     );
+    shapes.0.len() - 1
 }
 
 #[rustfmt::skip]
-pub fn add_octagons_to_the(shapes: &mut Shapes) {
+pub fn add_octagons_to_the(shapes: &mut Shapes) -> usize {
     let scale_from = |scale_index: usize| {
         let (half_octagon_bounding_box_length, half_octagon_side_length) = if scale_index == 0 {
             (
@@ -283,15 +288,15 @@ pub fn add_octagons_to_the(shapes: &mut Shapes) {
             .map(|scale_index| scale_from(scale_index))
             .collect(),
     );
+    shapes.0.len() - 1
 }
 
-pub fn add_isotris_to_the(shapes: &mut Shapes) {
+pub fn add_isotris_to_the(shapes: &mut Shapes) -> usize {
     let scale_from = |angle: Angle, scale_index: usize| {
         let isotri_width =
             MASTER_SCALE * (angle.as_radians().get_value() * 0.25).cos() * scale_index as f32;
         let half_isotri_height =
             MASTER_SCALE * (angle.as_radians().get_value() * 0.25).sin() * scale_index as f32;
-        println!("{}", (isotri_width * isotri_width + half_isotri_height * half_isotri_height).sqrt());
         Vertices(
             (0..=1)
                 .map(|vert_index| {
@@ -302,14 +307,6 @@ pub fn add_isotris_to_the(shapes: &mut Shapes) {
                 })
                 .chain(vec![Vertex(do2d_float_from(0.0, 0.0))])
                 .collect(),
-                // .map(|vert_index| {
-                //     Vertex(
-                //         do2d_float_from(half_isotri_width, half_isotri_height)
-                //             .orient_by_vert_index(vert_index),
-                //     )
-                // })
-                // .chain(vec![Vertex(do2d_float_from(half_isotri_width, 0.0))])
-                // .collect(),
         )
         .to_hull_scale(format!(
             "{}isotriS{}",
@@ -325,4 +322,5 @@ pub fn add_isotris_to_the(shapes: &mut Shapes) {
             })
             .collect(),
     );
+    shapes.0.len() - 1
 }
