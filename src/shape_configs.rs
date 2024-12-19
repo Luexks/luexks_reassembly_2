@@ -21,6 +21,7 @@ pub const RIGHT_TRIANGLE_WIDTH_SCALE_FACTORS: [f32; 8] = [1.0, 2.0, 3.0, 4.0, 5.
 pub const RIGHT_TRIANGLE_HEIGHT_SCALE_FACTORS: [f32; 3] = [0.5, 1.0, 2.0];
 pub const ADAPTER_SCALE_COUNT: usize = 4;
 pub const OCTAGON_SCALE_COUNT: usize = 4;
+pub const COMMAND_SCALE_COUNT: usize = 4;
 lazy_static! {
     pub static ref ISOTRI_ANGLES: Vec<Angle> = vec![
         Angle::Degree(10.0),
@@ -320,6 +321,51 @@ pub fn add_isotris_to_the(shapes: &mut Shapes) -> usize {
             .flat_map(|angle| {
                 (1..=ISOTRI_SCALE_COUNT).map(|scale_index| scale_from(angle.clone(), scale_index))
             })
+            .collect(),
+    );
+    shapes.0.len() - 1
+}
+
+pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
+    let scale_from = |scale_index: usize| {
+        let half_square_length = 0.5 * MASTER_SCALE * (scale_index as f32);
+        let unoriented_do2d = do2d_float_from(half_square_length, half_square_length);
+        let half_octagon_side_length = (-0.5 + 1.0 / SQRT_2) * MASTER_SCALE * scale_index as f32;
+        Vertices(
+            (0..=1)
+                .map(|vert_index| Vertex(unoriented_do2d.orient_by_vert_index(vert_index)))
+                .chain(
+                    [5_usize, 6_usize, 7_usize, 0_usize]
+                        .iter()
+                        .map(|vert_index| {
+                            Vertex(
+                                do2d_float_from(
+                                    half_square_length,
+                                    half_octagon_side_length
+                                        * if vert_index % 2 == 0 { -1.0 } else { 1.0 },
+                                )
+                                .rotate_by_vert_index((*vert_index as i32 / 2) as usize),
+                            )
+                        })
+                        .collect::<Vec<_>>(),
+                )
+                .collect(),
+        )
+        .to_hull_scale_with_distributions(
+            default_port_distribution_from_variants!(
+                Center,
+                TowardsFromCurrentVert,
+                Center,
+                Center,
+                Center,
+                BackwardsFromNextVert,
+            ),
+            format!("CommandS{}", scale_index),
+    )
+    };
+    shapes.add_unmirrored_shape_from_scales(
+        (1..=COMMAND_SCALE_COUNT)
+            .map(|scale_index| scale_from(scale_index))
             .collect(),
     );
     shapes.0.len() - 1

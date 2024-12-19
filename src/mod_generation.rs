@@ -12,6 +12,7 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
     let adapter_index = add_adapters_to_the(shapes);
     let isotri_index = add_isotris_to_the(shapes);
     let octagon_index = add_octagons_to_the(shapes);
+    let command_index = add_commands_to_the(shapes);
     blocks.add_blocks(
         block!(
             name: funky_string!("Hull"),
@@ -58,6 +59,20 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
                 ),
             ),
         ),
+    );
+    blocks.add_blocks(
+        blocks
+            .extend_first_block(block!(
+                name: funky_string!("Command"),
+                blurb: funky_string!("A heart, of a sort"),
+                features: explicit_features!(
+                    Command,
+                ),
+                color_1: Color::new_rrggbb("5555aa"),
+                color_2: Color::new_rrggbb("3333aa"),
+                line_color: Color::new_rrggbb("ffffff"),
+            ))
+            .to_extended_blocks_from_shape(&shapes.0.get(command_index).unwrap()),
     );
     blocks.add_blocks(
         blocks

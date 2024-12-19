@@ -9,14 +9,21 @@ macro_rules! scale_from_alternating_vertices_and_port_distributions {
             vec![$($vertex),*]
         )
         .to_hull_scale_with_distributions(
-            vec![$(
-                default_port_distribution_from_variant!($port_distribution_variant)
-            ),*],
+            default_port_distribution_from_variants!(
+                $($port_distribution_variant),*),
             $name
         )
     };
 }
 pub(crate) use scale_from_alternating_vertices_and_port_distributions;
+
+macro_rules! default_port_distribution_from_variants {
+    ($($port_distribution_variant:ident),* $(,)?) => {
+        vec![$(default_port_distribution_from_variant!($port_distribution_variant)),*]
+    };
+}
+pub(crate) use default_port_distribution_from_variants;
+
 
 macro_rules! default_port_distribution_from_variant {
     (Center) => {
