@@ -24,8 +24,10 @@ macro_rules! default_port_distribution_from_variants {
 }
 pub(crate) use default_port_distribution_from_variants;
 
-
 macro_rules! default_port_distribution_from_variant {
+    (None) => {
+        PortDistribution::None
+    };
     (Center) => {
         PortDistribution::Center
     };
@@ -79,6 +81,7 @@ macro_rules! add_courtesy_port_to_ports {
 }
 
 pub enum PortDistribution {
+    None,
     Center,
     TowardsFromCurrentVert {
         distance_from_current_vert: DisplayOrientedNumber,
@@ -104,6 +107,9 @@ impl<'a> Side<'_> {
     }
 
     fn to_ports_of_distribution(self, port_distribution: &PortDistribution) -> Ports {
+        if let PortDistribution::None = port_distribution {
+            return Ports(Vec::new())
+        }
         let side_length = self.get_side_length();
         let port_count = ((side_length + PORT_COUNT_DECISION_TOLERANCE) / MASTER_SCALE).floor();
         if side_length <= MASTER_SCALE {
@@ -128,6 +134,7 @@ impl<'a> Side<'_> {
                     .collect(),
             );
             match port_distribution {
+                PortDistribution::None => (),
                 PortDistribution::Center => (),
                 PortDistribution::TowardsFromCurrentVert {
                     add_courtesy_port, ..
@@ -170,6 +177,7 @@ fn get_port_position_of_distribution(
 ) -> DisplayOrientedNumber {
     DisplayOrientedNumber::Fraction {
         numerator: Box::new(match &port_distribution {
+            PortDistribution::None => panic!("Can't get port position of distribution type: none."),
             PortDistribution::Center => don_float_from(
                 PortPosition::CENTER * side_length
                     - (PORT_SPACING * (port_count / 2.0 - 0.5))

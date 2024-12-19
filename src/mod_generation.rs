@@ -30,7 +30,8 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
         .to_extended_blocks_from_shapes_and_variants(
             &[
                 rect_long_index,
-                right_triangle_index,
+                right_triangle_index.0,
+                right_triangle_index.1,
                 rectangle_index,
                 adapter_index,
                 isotri_index,
@@ -67,12 +68,36 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
                 blurb: funky_string!("A heart, of a sort"),
                 features: explicit_features!(
                     Command,
+                    Generator { capacity: 50.0, capacity_per_sec: 50.0 },
                 ),
+                capacity: 50.0,
                 color_1: Color::new_rrggbb("5555aa"),
                 color_2: Color::new_rrggbb("3333aa"),
                 line_color: Color::new_rrggbb("ffffff"),
             ))
-            .to_extended_blocks_from_shape(&shapes.0.get(command_index).unwrap()),
+            .to_extended_blocks_from_one_shape_and_variants(
+                &shapes.0.get(command_index).unwrap(),
+                block_variants!(
+                    (
+                        capacity: 200.0,
+                        features: implicit_features!(
+                            Generator { capacity: 200.0, capacity_per_sec: 200.0 },
+                        ),
+                    ),
+                    (
+                        capacity: 450.0,
+                        features: implicit_features!(
+                            Generator { capacity: 450.0, capacity_per_sec: 450.0 },
+                        ),
+                    ),
+                    (
+                        capacity: 800.0,
+                        features: implicit_features!(
+                            Generator { capacity: 800.0, capacity_per_sec: 800.0 },
+                        ),
+                    ),
+                ),
+            ),
     );
     blocks.add_blocks(
         blocks

@@ -140,7 +140,7 @@ pub fn add_rect_longs_to_the(shapes: &mut Shapes) -> usize {
     shapes.0.len() - 1
 }
 
-pub fn add_right_triangles_to_the(shapes: &mut Shapes) -> usize {
+pub fn add_right_triangles_to_the(shapes: &mut Shapes) -> (usize, usize) {
     let scale_from = |width_scale_factor: f32, height_scale_factor: f32| {
         scale_from_alternating_vertices_and_port_distributions!(
             vert!(0.0, 0.0),
@@ -164,7 +164,7 @@ pub fn add_right_triangles_to_the(shapes: &mut Shapes) -> usize {
             })
             .collect::<Vec<_>>(),
     );
-    shapes.0.len() - 1
+    (shapes.0.len() - 2, shapes.0.len() - 1)
 }
 
 pub fn add_rectangles_to_the(shapes: &mut Shapes) -> usize {
@@ -329,31 +329,40 @@ pub fn add_isotris_to_the(shapes: &mut Shapes) -> usize {
 pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
     let scale_from = |scale_index: usize| {
         let half_square_length = 0.5 * MASTER_SCALE * (scale_index as f32);
-        let unoriented_do2d = do2d_float_from(half_square_length, half_square_length);
+        let unoriented_corner = do2d_float_from(half_square_length, half_square_length);
+        let unoriented_corner_for_icon_balancing =
+            do2d_float_from(half_square_length, half_square_length - 0.001);
         let half_octagon_side_length = (-0.5 + 1.0 / SQRT_2) * MASTER_SCALE * scale_index as f32;
         Vertices(
-            (0..=1)
-                .map(|vert_index| Vertex(unoriented_do2d.orient_by_vert_index(vert_index)))
-                .chain(
-                    [5_usize, 6_usize, 7_usize, 0_usize]
-                        .iter()
-                        .map(|vert_index| {
-                            Vertex(
-                                do2d_float_from(
-                                    half_square_length,
-                                    half_octagon_side_length
-                                        * if vert_index % 2 == 0 { -1.0 } else { 1.0 },
-                                )
-                                .rotate_by_vert_index((*vert_index as i32 / 2) as usize),
+            vec![
+                Vertex(unoriented_corner.orient_by_vert_index(0)),
+                Vertex(unoriented_corner_for_icon_balancing.orient_by_vert_index(0)),
+                Vertex(unoriented_corner_for_icon_balancing.orient_by_vert_index(1)),
+                Vertex(unoriented_corner.orient_by_vert_index(1)),
+            ]
+            .into_iter()
+            .chain(
+                [5_usize, 6_usize, 7_usize, 0_usize]
+                    .iter()
+                    .map(|vert_index| {
+                        Vertex(
+                            do2d_float_from(
+                                half_square_length,
+                                half_octagon_side_length
+                                    * if vert_index % 2 == 0 { -1.0 } else { 1.0 },
                             )
-                        })
-                        .collect::<Vec<_>>(),
-                )
-                .collect(),
+                            .rotate_by_vert_index((*vert_index as i32 / 2) as usize),
+                        )
+                    })
+                    .collect::<Vec<_>>(),
+            )
+            .collect(),
         )
         .to_hull_scale_with_distributions(
             default_port_distribution_from_variants!(
+                None,
                 Center,
+                None,
                 TowardsFromCurrentVert,
                 Center,
                 Center,
@@ -361,7 +370,7 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
                 BackwardsFromNextVert,
             ),
             format!("CommandS{}", scale_index),
-    )
+        )
     };
     shapes.add_unmirrored_shape_from_scales(
         (1..=COMMAND_SCALE_COUNT)

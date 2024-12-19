@@ -440,11 +440,11 @@ impl Display for Block {
 
 macro_rules! implicit_features {
     (
-        $($feature:ident $(: { $($feature_component_name:ident: $feature_component_value:expr),*})? $(,)?),*
+        $($feature:ident $( { $($feature_component_name:ident: $feature_component_value:expr),*})? $(,)?),*
     ) => {
         ExtendAccountingFeatureList {
             features: Flags(vec![
-                $(new_feature!($feature $(: {$($feature_component_name: $feature_component_value),*})?)),*,
+                $(new_feature!($feature $( {$($feature_component_name: $feature_component_value),*})?)),*,
             ]),
             feature_list_same_as_extends: true,
         }
@@ -454,11 +454,11 @@ pub(crate) use implicit_features;
 
 macro_rules! explicit_features {
     (
-        $($feature:ident $(: { $($feature_component_name:ident: $feature_component_value:expr),*})? $(,)?),*
+        $($feature:ident $({ $($feature_component_name:ident: $feature_component_value:expr),*})? $(,)?),*
     ) => {
         ExtendAccountingFeatureList {
             features: Flags(vec![
-                $(new_feature!($feature $(: {$($feature_component_name: $feature_component_value),*})?)),*,
+                $(new_feature!($feature $({$($feature_component_name: $feature_component_value),*})?)),*,
             ]),
             feature_list_same_as_extends: false,
         }
@@ -470,7 +470,7 @@ macro_rules! new_feature {
     ($feature_name:ident) => {
         Feature::$feature_name
     };
-    ($feature_name:ident: { $($feature_component_name:ident: $feature_component_value:expr),* }) => {
+    ($feature_name:ident { $($feature_component_name:ident: $feature_component_value:expr),* }) => {
         Feature::$feature_name {
             $(
                 $feature_component_name: Some($feature_component_value),
