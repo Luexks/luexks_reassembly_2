@@ -5,9 +5,11 @@ use crate::shape_types::*;
 use crate::utils::*;
 
 pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
-    add_squares_to_the(shapes);
+    add_rect_longs_to_the(shapes);
     add_right_triangles_to_the(shapes);
     add_rectangles_to_the(shapes);
+    add_adapters_to_the(shapes);
+    add_isotris_to_the(shapes);
     blocks.add_blocks(
         block!(
             name: funky_string!("Hull"),
@@ -43,6 +45,7 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
             ),
         ),
     );
+    add_squares_to_the(shapes);
     add_octagons_to_the(shapes);
     blocks.add_blocks(
         blocks
@@ -55,7 +58,7 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
                 line_color: Color::new_rrggbb("ffffff"),
             ))
             .to_extended_blocks_from_one_shape_and_variants(
-                &shapes.0.last().unwrap().clone().get_scales(0..3),
+                &shapes.0.get(4).unwrap().clone().get_scales(0..3),
                 block_variants!(
                     (
                         capacity: 290.0,
