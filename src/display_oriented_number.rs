@@ -27,6 +27,14 @@ impl DisplayOrientedNumber {
             } => numerator.to_f32() / denominator.to_f32(),
         }
     }
+
+    pub fn get_numerator(&self) -> f32 {
+        if let DisplayOrientedNumber::Fraction { numerator, .. } = self {
+            numerator.to_f32()
+        } else {
+            panic!();
+        }
+    }
 }
 
 impl Display for DisplayOrientedNumber {
@@ -47,6 +55,10 @@ impl Display for DisplayOrientedNumber {
 
 pub fn don_float_from(x: f32) -> DisplayOrientedNumber {
     DisplayOrientedNumber::Float(x)
+}
+
+pub fn don_fraction_from(numerator: f32, denominator: f32) -> DisplayOrientedNumber {
+    DisplayOrientedNumber::Fraction { numerator: Box::new(don_float_from(numerator)), denominator: Box::new(don_float_from(denominator)) }
 }
 
 #[derive(Clone)]

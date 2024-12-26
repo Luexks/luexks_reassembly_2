@@ -329,44 +329,46 @@ pub fn add_isotris_to_the(shapes: &mut Shapes) -> usize {
 pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
     let scale_from = |scale_index: usize| {
         let half_square_length = 0.5 * MASTER_SCALE * (scale_index as f32);
-        let unoriented_corner = do2d_float_from(half_square_length, half_square_length);
-        let unoriented_corner_for_icon_balancing =
-            do2d_float_from(half_square_length, half_square_length - 0.001);
+        let unoriented_left_corner = do2d_float_from(half_square_length, half_square_length);
+        do2d_float_from(half_square_length, half_square_length - 0.001);
         let half_octagon_side_length = (-0.5 + 1.0 / SQRT_2) * MASTER_SCALE * scale_index as f32;
         Vertices(
-            vec![
-                Vertex(unoriented_corner.orient_by_vert_index(0)),
-                Vertex(unoriented_corner_for_icon_balancing.orient_by_vert_index(0)),
-                Vertex(unoriented_corner_for_icon_balancing.orient_by_vert_index(1)),
-                Vertex(unoriented_corner.orient_by_vert_index(1)),
-            ]
-            .into_iter()
-            .chain(
-                [5_usize, 6_usize, 7_usize, 0_usize]
-                    .iter()
-                    .map(|vert_index| {
-                        Vertex(
-                            do2d_float_from(
-                                half_square_length,
-                                half_octagon_side_length
-                                    * if vert_index % 2 == 0 { -1.0 } else { 1.0 },
+            (0..=1)
+                .map(|vert_index| Vertex(unoriented_left_corner.orient_by_vert_index(vert_index)))
+                .chain(
+                    [4, 5, 6, 7, 0, 1]
+                        .iter()
+                        .map(|vert_index| {
+                            Vertex(
+                                do2d_float_from(
+                                    half_square_length,
+                                    half_octagon_side_length
+                                        * if vert_index % 2 == 0 { -1.0 } else { 1.0 },
+                                )
+                                .rotate_by_vert_index((*vert_index as i32 / 2) as usize),
                             )
-                            .rotate_by_vert_index((*vert_index as i32 / 2) as usize),
-                        )
-                    })
-                    .collect::<Vec<_>>(),
-            )
-            .collect(),
+                        })
+                        .collect::<Vec<_>>(),
+                )
+                .collect(),
         )
         .to_hull_scale_with_distributions(
             default_port_distribution_from_variants!(
+                // Center,
+                // JoinWithNext,
+                // TowardsFromCurrentVert,
+                // Center,
+                // Center,
+                // Center,
+                // JoinWithNext,
+                // BackwardsFromNextVert,
                 None,
-                Center,
-                None,
+                JoinWithNext,
                 TowardsFromCurrentVert,
-                Center,
-                Center,
-                Center,
+                None,
+                None,
+                None,
+                JoinWithNext,
                 BackwardsFromNextVert,
             ),
             format!("CommandS{}", scale_index),
