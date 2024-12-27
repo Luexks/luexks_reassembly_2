@@ -58,7 +58,10 @@ pub fn don_float_from(x: f32) -> DisplayOrientedNumber {
 }
 
 pub fn don_fraction_from(numerator: f32, denominator: f32) -> DisplayOrientedNumber {
-    DisplayOrientedNumber::Fraction { numerator: Box::new(don_float_from(numerator)), denominator: Box::new(don_float_from(denominator)) }
+    DisplayOrientedNumber::Fraction {
+        numerator: Box::new(don_float_from(numerator)),
+        denominator: Box::new(don_float_from(denominator)),
+    }
 }
 
 #[derive(Clone)]

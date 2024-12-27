@@ -143,13 +143,13 @@ pub fn add_rect_longs_to_the(shapes: &mut Shapes) -> usize {
 pub fn add_right_triangles_to_the(shapes: &mut Shapes) -> (usize, usize) {
     let scale_from = |width_scale_factor: f32, height_scale_factor: f32| {
         scale_from_alternating_vertices_and_port_distributions!(
+            name: format!("{}x{}rightTriS{}", 1, width_scale_factor, height_scale_factor),
             vert!(0.0, 0.0),
-            TowardsFromCurrentVert,
+            TowardsFromCurrentVert: Some(CourtesyPortDistribution::Halfway),
             vert!(0.0, MASTER_SCALE * height_scale_factor),
-            Center,
+            Center: None,
             vert!(MASTER_SCALE * width_scale_factor * height_scale_factor, 0.0),
-            BackwardsFromNextVert
-            name: format!("{}x{}rightTriS{}", 1, width_scale_factor, height_scale_factor)
+            BackwardsFromNextVert: Some(CourtesyPortDistribution::Halfway),
         )
     };
     shapes.add_mirrored_shape_from_scales(
@@ -354,22 +354,22 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
         )
         .to_hull_scale_with_distributions(
             default_port_distribution_from_variants!(
-                // Center,
-                // JoinWithNext,
-                // TowardsFromCurrentVert,
-                // Center,
-                // Center,
-                // Center,
-                // JoinWithNext,
-                // BackwardsFromNextVert,
-                None,
+                Center,
                 JoinWithNext,
                 TowardsFromCurrentVert,
-                None,
-                None,
-                None,
+                Center,
+                Center,
+                Center,
                 JoinWithNext,
                 BackwardsFromNextVert,
+                // None,
+                // JoinWithNext,
+                // TowardsFromCurrentVert: Some(CourtesyPortDistribution::ContinuePattern),
+                // None,
+                // None,
+                // None,
+                // JoinWithNext,
+                // BackwardsFromNextVert: Some(CourtesyPortDistribution::ContinuePattern),
             ),
             format!("CommandS{}", scale_index),
         )

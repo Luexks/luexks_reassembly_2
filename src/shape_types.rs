@@ -2,16 +2,15 @@ use crate::display_oriented_number::*;
 use crate::shape_configs::{FUNKY_PORT_FORMATING, MASTER_SCALE, PORT_SPACING};
 use crate::utils::*;
 use std::fmt::{self, Display};
-use std::ops::Not;
 
 macro_rules! scale_from_alternating_vertices_and_port_distributions {
-    ($($vertex:expr, $port_distribution_variant:ident),* name: $name:expr) => {
+    (name: $name:expr, $($vertex:expr, $port_distribution_variant:ident $(: $last_port_distribution:expr)?),*,) => {
         Vertices(
             vec![$($vertex),*]
         )
         .to_hull_scale_with_distributions(
             default_port_distribution_from_variants!(
-                $($port_distribution_variant),*),
+                $($port_distribution_variant $(: $last_port_distribution)?),*),
             $name
         )
     };
@@ -19,83 +18,114 @@ macro_rules! scale_from_alternating_vertices_and_port_distributions {
 pub(crate) use scale_from_alternating_vertices_and_port_distributions;
 
 macro_rules! default_port_distribution_from_variants {
-    ($($port_distribution_variant:ident),* $(,)?) => {
-        vec![$(default_port_distribution_from_variant!($port_distribution_variant)),*]
+    (None) => {
+        vec![$(default_port_distribution_from_variant!(None)),*]
+    };
+    ($($port_distribution_variant:ident $(: $last_port_distribution:expr)?),* $(,)?) => {
+        vec![$(default_port_distribution_from_variant!($port_distribution_variant $(: $last_port_distribution)?)),*]
     };
 }
 pub(crate) use default_port_distribution_from_variants;
 
 macro_rules! default_port_distribution_from_variant {
     (None) => {
-        PortDistribution::None
+        None
     };
     (Center) => {
-        PortDistribution::Center
+        Some(PortDistribution::Center {
+            courtesy_port_distribution_option: None,
+        })
+    };
+    (Center: $courtesy_port_distribution:expr) => {
+        Some(PortDistribution::Center {
+            courtesy_port_distribution_option: None,
+        })
     };
     (TowardsFromCurrentVert) => {
-        PortDistribution::TowardsFromCurrentVert {
+        Some(PortDistribution::TowardsFromCurrentVert {
             distance_from_current_vert: don_float_from(PORT_SPACING_FROM_VERT),
-            add_courtesy_port: true,
-        }
+            courtesy_port_distribution_option: None,
+        })
+    };
+    (TowardsFromCurrentVert: $courtesy_port_distribution_option:expr) => {
+        Some(PortDistribution::TowardsFromCurrentVert {
+            distance_from_current_vert: don_float_from(PORT_SPACING_FROM_VERT),
+            courtesy_port_distribution_option: $courtesy_port_distribution_option,
+        })
     };
     (BackwardsFromNextVert) => {
-        PortDistribution::BackwardsFromNextVert {
+        Some(PortDistribution::BackwardsFromNextVert {
             distance_from_next_vert: don_float_from(PORT_SPACING_FROM_VERT),
-            add_courtesy_port: true,
-        }
+            courtesy_port_distribution_option: None,
+        })
+    };
+    (BackwardsFromNextVert: $courtesy_port_distribution_option:expr) => {
+        Some(PortDistribution::BackwardsFromNextVert {
+            distance_from_next_vert: don_float_from(PORT_SPACING_FROM_VERT),
+            courtesy_port_distribution_option: $courtesy_port_distribution_option,
+        })
     };
     (JoinWithNext) => {
-        PortDistribution::JoinWithNext
+        Some(PortDistribution::JoinWithNext)
     };
 }
 pub(crate) use default_port_distribution_from_variant;
 
-macro_rules! add_courtesy_port_to_ports {
-    (ports: $ports:expr, side_index: $side_index:expr, side_length: $side_length:expr, port_count: $port_count:expr, port_distribution: $port_distribution:expr) => {
-        if $side_length > $port_count * MASTER_SCALE {
-            if let PortDistribution::TowardsFromCurrentVert { .. } = $port_distribution {
-                $ports.push(Port {
-                    side_index: $side_index,
-                    position: DisplayOrientedNumber::Fraction {
-                        numerator: Box::new(don_float_from(
-                            PortPosition::CURRENT_VERT * $side_length
-                                + ($side_length + $port_count * MASTER_SCALE) * 0.5,
-                        )),
-                        denominator: Box::new(don_float_from($side_length)),
-                    },
-                    flags: Flags::<PortFlag>::default(),
-                })
-            } else if let PortDistribution::BackwardsFromNextVert { .. } = $port_distribution {
-                $ports.push(Port {
-                    side_index: $side_index,
-                    position: DisplayOrientedNumber::Fraction {
-                        numerator: Box::new(don_float_from(
-                            PortPosition::NEXT_VERT * $side_length
-                                - ($side_length + $port_count * MASTER_SCALE) * 0.5,
-                        )),
-                        denominator: Box::new(don_float_from($side_length)),
-                    },
-                    flags: Flags::<PortFlag>::default(),
-                })
-            } else if let PortDistribution::Center = $port_distribution {
-                panic!("A side with port distribution center cannot have a courtesy port.")
+macro_rules! add_courtesy_ports {
+    (ports: $ports:expr, side_index: $side_index:expr, side_length: $side_length:expr, port_count: $port_count:expr, port_distribution_option: $port_distribution_option:expr) => {
+        if let Some(port_distribution) = $port_distribution_option {
+            if $side_length > $port_count * MASTER_SCALE {
+                if let PortDistribution::TowardsFromCurrentVert { courtesy_port_distribution_option, .. } = port_distribution {
+                    if let Some(courtesy_port_distribution) = courtesy_port_distribution_option {
+                        match courtesy_port_distribution {}
+                    }
+                    $ports.push(Port {
+                        side_index: $side_index,
+                        position: DisplayOrientedNumber::Fraction {
+                            numerator: Box::new(don_float_from(
+                                PortPosition::CURRENT_VERT * $side_length
+                                    + ($side_length + $port_count * MASTER_SCALE) * 0.5,
+                            )),
+                            denominator: Box::new(don_float_from($side_length)),
+                        },
+                        flags: Flags::<PortFlag>::default(),
+                    });
+                } else if let PortDistribution::BackwardsFromNextVert { courtesy_port_distribution_option, .. } = port_distribution {
+                    $ports.push(Port {
+                        side_index: $side_index,
+                        position: DisplayOrientedNumber::Fraction {
+                            numerator: Box::new(don_float_from(
+                                PortPosition::NEXT_VERT * $side_length
+                                    - ($side_length + $port_count * MASTER_SCALE) * 0.5,
+                            )),
+                            denominator: Box::new(don_float_from($side_length)),
+                        },
+                        flags: Flags::<PortFlag>::default(),
+                    });
+                } else if let PortDistribution::Center { courtesy_port_distribution_option } = port_distribution {
+                }
             }
         }
     };
 }
-
 pub enum PortDistribution {
-    None,
-    Center,
+    Center {
+        courtesy_port_distribution_option: Option<CourtesyPortDistribution>,
+    },
     TowardsFromCurrentVert {
         distance_from_current_vert: DisplayOrientedNumber,
-        add_courtesy_port: bool,
+        courtesy_port_distribution_option: Option<CourtesyPortDistribution>,
     },
     BackwardsFromNextVert {
         distance_from_next_vert: DisplayOrientedNumber,
-        add_courtesy_port: bool,
+        courtesy_port_distribution_option: Option<CourtesyPortDistribution>,
     },
     JoinWithNext,
+}
+
+pub enum CourtesyPortDistribution {
+    Halfway,
+    ContinuePattern,
 }
 
 struct Side<'a> {
@@ -111,8 +141,8 @@ impl<'a> Side<'_> {
         .sqrt()
     }
 
-    fn to_ports_of_distribution(&self, port_distribution: &PortDistribution) -> Vec<Port> {
-        if let PortDistribution::None = port_distribution {
+    fn to_ports_of_distribution(&self, port_distribution: Option<&PortDistribution>) -> Vec<Port> {
+        if port_distribution.is_none() {
             return Vec::new();
         }
         let side_length = self.get_side_length();
@@ -136,39 +166,65 @@ impl<'a> Side<'_> {
                     flags: Flags::<PortFlag>::default(),
                 })
                 .collect();
-            match port_distribution {
-                PortDistribution::None => panic!("This code is unreachable"),
-                PortDistribution::JoinWithNext => {
-                    panic!("Can't get port position of distribution type: join with next.")
-                }
-                PortDistribution::Center => (),
-                PortDistribution::TowardsFromCurrentVert {
-                    add_courtesy_port, ..
-                } => {
-                    if *add_courtesy_port {
-                        add_courtesy_port_to_ports!(
-                            ports: ports,
-                            side_index: self.side_index,
-                            side_length: side_length,
-                            port_count: port_count,
-                            port_distribution: port_distribution
-                        )
-                    }
-                }
-                PortDistribution::BackwardsFromNextVert {
-                    add_courtesy_port, ..
-                } => {
-                    if *add_courtesy_port {
-                        add_courtesy_port_to_ports!(
-                            ports: ports,
-                            side_index: self.side_index,
-                            side_length: side_length,
-                            port_count: port_count,
-                            port_distribution: port_distribution
-                        )
-                    }
-                }
-            };
+            add_courtesy_ports!(
+                ports: ports,
+                side_index: self.side_index,
+                side_length: side_length,
+                port_count: port_count,
+                port_distribution_option: port_distribution
+            );
+            // match port_distribution.unwrap() {
+            //     PortDistribution::JoinWithNext => {
+            //         panic!("Can't get port position of distribution type: join with next.")
+            //     }
+            //     PortDistribution::Center { .. } => (),
+            //     PortDistribution::TowardsFromCurrentVert {
+            //         courtesy_port_distribution,
+            //         ..
+            //     } => {
+            //         if let Some(courtesy_port_distribution) = courtesy_port_distribution {
+            //             match courtesy_port_distribution {
+            //                 CourtesyPortDistribution::Halfway => add_courtesy_ports!(
+            //                     ports: ports,
+            //                     side_index: self.side_index,
+            //                     side_length: side_length,
+            //                     port_count: port_count,
+            //                     port_distribution: port_distribution
+            //                 ),
+            //                 CourtesyPortDistribution::ContinuePattern => add_courtesy_ports!(
+            //                     ports: ports,
+            //                     side_index: self.side_index,
+            //                     side_length: side_length,
+            //                     port_count: port_count,
+            //                     port_distribution: port_distribution
+            //                 ),
+            //             }
+            //         }
+            //     }
+            //     PortDistribution::BackwardsFromNextVert {
+            //         courtesy_port_distribution,
+            //         ..
+            //     } => {
+            //         if let Some(courtesy_port_distribution) = courtesy_port_distribution {
+            //             match courtesy_port_distribution {
+            //                 CourtesyPortDistribution::Halfway => add_courtesy_ports!(
+            //                     ports: ports,
+            //                     side_index: self.side_index,
+            //                     side_length: side_length,
+            //                     port_count: port_count,
+            //                     port_distribution: port_distribution
+            //                 ),
+            //                 CourtesyPortDistribution::ContinuePattern => add_courtesy_ports!(
+            //                     ports: ports,
+            //                     side_index: self.side_index,
+            //                     side_length: side_length,
+            //                     port_count: port_count,
+            //                     port_distribution: port_distribution
+            //                 ),
+            //             }
+            //         }
+            //     }
+            // };
             ports
         }
     }
@@ -176,16 +232,15 @@ impl<'a> Side<'_> {
 
 #[rustfmt::skip]
 fn get_port_position_of_distribution(
-    port_distribution: &PortDistribution,
+    port_distribution: &Option<&PortDistribution>,
     side_length: &f32,
     port_count: &f32,
     port_index: usize,
 ) -> DisplayOrientedNumber {
     DisplayOrientedNumber::Fraction {
-        numerator: Box::new(match &port_distribution {
-            PortDistribution::None => panic!("Can't get port position of distribution type: none."),
+        numerator: Box::new(match port_distribution.unwrap() {
             PortDistribution::JoinWithNext => panic!("Can't get port position of distribution type: join with next."),
-            PortDistribution::Center => don_float_from(
+            PortDistribution::Center { .. } => don_float_from(
                 PortPosition::CENTER * side_length
                     - (PORT_SPACING * (port_count / 2.0 - 0.5))
                     + (PORT_SPACING * port_index as f32),
@@ -404,7 +459,11 @@ impl Vertices {
                             vertex_1: vert_1,
                             vertex_2: vert_2,
                         }
-                        .to_ports_of_distribution(&PortDistribution::Center)
+                        .to_ports_of_distribution(Some(
+                            &PortDistribution::Center {
+                                courtesy_port_distribution: None,
+                            },
+                        ))
                     })
                     .collect(),
             ),
@@ -414,7 +473,7 @@ impl Vertices {
 
     pub fn to_hull_scale_with_distributions(
         self,
-        port_distributions: Vec<PortDistribution>,
+        port_distributions: Vec<Option<PortDistribution>>,
         name: String,
     ) -> Scale {
         Scale {
@@ -422,68 +481,81 @@ impl Vertices {
             ports: Ports({
                 let mut ports = Vec::new();
                 let mut join_with_next_vertices = Vec::new();
-                for ((side_index, vertex_1), vertex_2) in self.0.iter().enumerate().zip(self.0.iter().cycle().skip(1)) {
-                    if join_with_next_vertices.is_empty() && !matches!(port_distributions[side_index], PortDistribution::JoinWithNext) {
-                        ports.extend(
-                            Side {
-                                side_index: side_index,
-                                vertex_1: vertex_1,
-                                vertex_2: vertex_2,
-                            }
-                            .to_ports_of_distribution(&port_distributions[side_index])
-                        );
-                    } else if matches!(port_distributions[side_index], PortDistribution::JoinWithNext) {
-                        join_with_next_vertices.push(vertex_1);
-                    } else if !join_with_next_vertices.is_empty() && !matches!(port_distributions[side_index], PortDistribution::JoinWithNext) {
-                        join_with_next_vertices.push(vertex_1);
-                        join_with_next_vertices.push(vertex_2);
-                        let entire_side = Side {
-                            side_index: 0, // Null value hehe
-                            vertex_1: join_with_next_vertices.first().unwrap(),
-                            vertex_2: vertex_2
-                        };
-                        let sub_sides: Vec<_> = join_with_next_vertices[..join_with_next_vertices.len() - 1]
-                            .iter()
-                            .enumerate()
-                            .zip(join_with_next_vertices.iter().skip(1))
-                            .map(|((sub_side_index, sub_vertex_1), sub_vertex_2)| {
+                for ((side_index, vertex_1), vertex_2) in
+                    self.0.iter().enumerate().zip(self.0.iter().cycle().skip(1))
+                {
+                    if let Some(port_distribution) = &port_distributions[side_index] {
+                        if join_with_next_vertices.is_empty()
+                            && !matches!(port_distribution, PortDistribution::JoinWithNext)
+                        {
+                            ports.extend(
                                 Side {
-                                    side_index: side_index - (join_with_next_vertices.len() - 1) + sub_side_index,
-                                    vertex_1: sub_vertex_1,
-                                    vertex_2: sub_vertex_2
+                                    side_index: side_index,
+                                    vertex_1: vertex_1,
+                                    vertex_2: vertex_2,
                                 }
-                            })
-                            .collect();
-                        let new_undistributed_ports = entire_side.to_ports_of_distribution(&port_distributions[side_index]);
-                        let mut new_distributed_ports = Vec::<Port>::new();
-                        for new_undistributed_port in new_undistributed_ports {
-                            let mut sub_side_to_distribute_into = None;
-                            let mut accumulated_sub_side_length = 0.0;
-                            for sub_side in sub_sides.iter() {
-                                accumulated_sub_side_length += sub_side.get_side_length();
-                                if accumulated_sub_side_length >= new_undistributed_port.position.to_f32() / entire_side.get_side_length() {
-                                    accumulated_sub_side_length -= sub_side.get_side_length();
-                                    sub_side_to_distribute_into = Some(sub_side);
-                                    break
-                                }
-                            }
-                            let distributed_port = Port {
-                                side_index: sub_side_to_distribute_into.unwrap().side_index,
-                                position: {
-                                    // don_float_from(((new_undistributed_port.position.to_f32() * entire_side.get_side_length()) - accumulated_sub_side_length))
-                                    don_fraction_from(
-                                        (new_undistributed_port.position.to_f32() * entire_side.get_side_length()) - accumulated_sub_side_length,
-                                        sub_side_to_distribute_into.unwrap().get_side_length(), 
-                                    )
-                                },
-                                flags: Flags::default(),
+                                .to_ports_of_distribution(Some(&port_distribution)),
+                            );
+                        } else if matches!(port_distribution, PortDistribution::JoinWithNext) {
+                            join_with_next_vertices.push(vertex_1);
+                        } else if !join_with_next_vertices.is_empty()
+                            && !matches!(port_distribution, PortDistribution::JoinWithNext)
+                        {
+                            join_with_next_vertices.push(vertex_1);
+                            join_with_next_vertices.push(vertex_2);
+                            let entire_side = Side {
+                                side_index: 0, // Null value hehe
+                                vertex_1: join_with_next_vertices.first().unwrap(),
+                                vertex_2: vertex_2,
                             };
-                            new_distributed_ports.push(distributed_port);
+                            let sub_sides: Vec<_> = join_with_next_vertices
+                                .iter()
+                                .enumerate()
+                                .zip(join_with_next_vertices.iter().skip(1))
+                                .map(|((sub_side_index, sub_vertex_1), sub_vertex_2)| Side {
+                                    side_index: 2 + side_index - join_with_next_vertices.len()
+                                        + sub_side_index,
+                                    vertex_1: sub_vertex_1,
+                                    vertex_2: sub_vertex_2,
+                                })
+                                .collect();
+                            let new_undistributed_ports =
+                                entire_side.to_ports_of_distribution(Some(&port_distribution));
+                            let mut new_distributed_ports = Vec::<Port>::new();
+                            for new_undistributed_port in new_undistributed_ports {
+                                let mut sub_side_to_distribute_into = None;
+                                let mut accumulated_sub_side_lengths_before_new_distributed_port =
+                                    0.0;
+                                for sub_side in sub_sides.iter() {
+                                    accumulated_sub_side_lengths_before_new_distributed_port +=
+                                        sub_side.get_side_length();
+                                    if accumulated_sub_side_lengths_before_new_distributed_port
+                                        >= new_undistributed_port.position.to_f32()
+                                            * entire_side.get_side_length()
+                                    {
+                                        accumulated_sub_side_lengths_before_new_distributed_port -=
+                                            sub_side.get_side_length();
+                                        sub_side_to_distribute_into = Some(sub_side);
+                                        break;
+                                    }
+                                }
+                                let distributed_port = Port {
+                                    side_index: sub_side_to_distribute_into.unwrap().side_index,
+                                    position: {
+                                        don_fraction_from(
+                                            (new_undistributed_port.position.to_f32() * entire_side.get_side_length()) - accumulated_sub_side_lengths_before_new_distributed_port,
+                                            sub_side_to_distribute_into.unwrap().get_side_length(), 
+                                        )
+                                    },
+                                    flags: Flags::default(),
+                                };
+                                new_distributed_ports.push(distributed_port);
+                            }
+                            join_with_next_vertices = Vec::new();
+                            ports.extend(new_distributed_ports);
+                        } else {
+                            panic!()
                         }
-                        join_with_next_vertices = Vec::new();
-                        ports.extend(new_distributed_ports);
-                    } else {
-                        panic!()
                     }
                 }
                 ports
@@ -627,6 +699,12 @@ pub struct Port {
 impl Display for Port {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{{{},{}{}}}", self.side_index, self.position, self.flags)
+    }
+}
+
+impl Port {
+    fn has_valid_position(&self) -> bool {
+        0.0 <= self.position.to_f32() && self.position.to_f32() <= 0.0
     }
 }
 
