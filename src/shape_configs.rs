@@ -145,11 +145,11 @@ pub fn add_right_triangles_to_the(shapes: &mut Shapes) -> (usize, usize) {
         scale_from_alternating_vertices_and_port_distributions!(
             name: format!("{}x{}rightTriS{}", 1, width_scale_factor, height_scale_factor),
             vert!(0.0, 0.0),
-            TowardsFromCurrentVert: Some(CourtesyPortDistribution::Halfway),
+            TowardsFromCurrentVert: CourtesyPortDistribution::HalfwayToEnd,
             vert!(0.0, MASTER_SCALE * height_scale_factor),
             Center: None,
             vert!(MASTER_SCALE * width_scale_factor * height_scale_factor, 0.0),
-            BackwardsFromNextVert: Some(CourtesyPortDistribution::Halfway),
+            BackwardsFromNextVert: CourtesyPortDistribution::HalfwayToEnd,
         )
     };
     shapes.add_mirrored_shape_from_scales(
@@ -331,7 +331,10 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
         let half_square_length = 0.5 * MASTER_SCALE * (scale_index as f32);
         let unoriented_left_corner = do2d_float_from(half_square_length, half_square_length);
         do2d_float_from(half_square_length, half_square_length - 0.001);
-        let half_octagon_side_length = (-0.5 + 1.0 / SQRT_2) * MASTER_SCALE * scale_index as f32;
+        let cut_corner_indent_distance = match scale_index {
+            1 => (-0.5 + 1.0 / SQRT_2) * MASTER_SCALE * scale_index as f32,
+            _ => 0.25 * MASTER_SCALE * scale_index as f32,
+        };
         Vertices(
             (0..=1)
                 .map(|vert_index| Vertex(unoriented_left_corner.orient_by_vert_index(vert_index)))
@@ -342,7 +345,7 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
                             Vertex(
                                 do2d_float_from(
                                     half_square_length,
-                                    half_octagon_side_length
+                                    cut_corner_indent_distance
                                         * if vert_index % 2 == 0 { -1.0 } else { 1.0 },
                                 )
                                 .rotate_by_vert_index((*vert_index as i32 / 2) as usize),
@@ -353,24 +356,22 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
                 .collect(),
         )
         .to_hull_scale_with_distributions(
-            default_port_distribution_from_variants!(
-                Center,
-                JoinWithNext,
-                TowardsFromCurrentVert,
-                Center,
-                Center,
-                Center,
-                JoinWithNext,
-                BackwardsFromNextVert,
-                // None,
-                // JoinWithNext,
-                // TowardsFromCurrentVert: Some(CourtesyPortDistribution::ContinuePattern),
-                // None,
-                // None,
-                // None,
-                // JoinWithNext,
-                // BackwardsFromNextVert: Some(CourtesyPortDistribution::ContinuePattern),
-            ),
+            if scale_index == 1 {
+                default_port_distribution_from_variants!(
+                    Center, None, Center, Center, Center, Center, Center, None,
+                )
+            } else {
+                default_port_distribution_from_variants!(
+                    Center,
+                    JoinWithNext,
+                    TowardsFromCurrentVert: CourtesyPortDistribution::ContinuePattern,
+                    Center,
+                    Center,
+                    Center,
+                    JoinWithNext,
+                    BackwardsFromNextVert: CourtesyPortDistribution::ContinuePattern,
+                )
+            },
             format!("CommandS{}", scale_index),
         )
     };
