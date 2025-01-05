@@ -5,14 +5,14 @@ use crate::shape_types::*;
 use crate::utils::*;
 
 pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
-    let square_index = add_squares_to_the(shapes);
-    let rect_long_index = add_rect_longs_to_the(shapes);
-    let right_triangle_index = add_right_triangles_to_the(shapes);
-    let rectangle_index = add_rectangles_to_the(shapes);
-    let adapter_index = add_adapters_to_the(shapes);
-    let isotri_index = add_isotris_to_the(shapes);
-    let octagon_index = add_octagons_to_the(shapes);
-    let command_index = add_commands_to_the(shapes);
+    let square = add_squares_to_the(shapes);
+    let rect_long = add_rect_longs_to_the(shapes);
+    let right_triangle = add_right_triangles_to_the(shapes);
+    let rectangle = add_rectangles_to_the(shapes);
+    let adapter = add_adapters_to_the(shapes);
+    let isotri = add_isotris_to_the(shapes);
+    let octagon = add_octagons_to_the(shapes);
+    let command = add_commands_to_the(shapes);
     blocks.add_blocks(
         block!(
             name: funky_string!("Hull"),
@@ -27,14 +27,14 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
             durability: 1.001,
             density: 0.1,
         )
-        .to_extended_blocks_from_shapes_and_variants(
+        .to_extended_blocks_from_plural_shapes_and_plural_variants(
             &[
-                rect_long_index,
-                right_triangle_index.0,
-                right_triangle_index.1,
-                rectangle_index,
-                adapter_index,
-                isotri_index,
+                rect_long,
+                right_triangle.0,
+                right_triangle.1,
+                rectangle,
+                adapter,
+                isotri,
             ]
             .iter()
             .map(|&shape_index| shapes.0[shape_index].clone())
@@ -75,68 +75,84 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
                 color_2: Color::new_rrggbb("3333aa"),
                 line_color: Color::new_rrggbb("ffffff"),
             ))
-            .to_extended_blocks_from_one_shape_and_variants(
-                &shapes.0.get(command_index).unwrap(),
-                block_variants!(
-                    (
-                        capacity: 200.0,
-                        features: implicit_features!(
-                            Generator { capacity: 200.0, capacity_per_sec: 200.0 },
-                        ),
-                    ),
-                    (
-                        capacity: 450.0,
-                        features: implicit_features!(
-                            Generator { capacity: 450.0, capacity_per_sec: 450.0 },
-                        ),
-                    ),
-                    (
-                        capacity: 800.0,
-                        features: implicit_features!(
-                            Generator { capacity: 800.0, capacity_per_sec: 800.0 },
-                        ),
-                    ),
-                ),
-            ),
+            .to_extended_blocks_from_singular_shape(shapes.get(command)),
     );
-    blocks.add_blocks(
-        blocks
-            .extend_first_block(block!(
-                name: funky_string!("Command"),
-                blurb: funky_string!("A heart, of a sort"),
-                features: explicit_features!(
-                    Command,
-                    Generator { capacity: 50.0, capacity_per_sec: 50.0 },
-                ),
-                capacity: 50.0,
-                color_1: Color::new_rrggbb("5555aa"),
-                color_2: Color::new_rrggbb("3333aa"),
-                line_color: Color::new_rrggbb("ffffff"),
-            ))
-            .to_extended_blocks_from_one_shape_and_variants(
-                &shapes.0.get(command_index).unwrap(),
-                block_variants!(
-                    (
-                        capacity: 200.0,
-                        features: implicit_features!(
-                            Generator { capacity: 200.0, capacity_per_sec: 200.0 },
-                        ),
-                    ),
-                    (
-                        capacity: 450.0,
-                        features: implicit_features!(
-                            Generator { capacity: 450.0, capacity_per_sec: 450.0 },
-                        ),
-                    ),
-                    (
-                        capacity: 800.0,
-                        features: implicit_features!(
-                            Generator { capacity: 800.0, capacity_per_sec: 800.0 },
-                        ),
-                    ),
-                ),
-            ),
-    );
+    // blocks.add_blocks(
+    //     blocks
+    //         .extend_first_block(block!(
+    //             name: funky_string!("Command"),
+    //             blurb: funky_string!("A heart, of a sort"),
+    //             features: explicit_features!(
+    //                 Command,
+    //                 Generator { capacity: 50.0, capacity_per_sec: 50.0 },
+    //             ),
+    //             capacity: 50.0,
+    //             color_1: Color::new_rrggbb("5555aa"),
+    //             color_2: Color::new_rrggbb("3333aa"),
+    //             line_color: Color::new_rrggbb("ffffff"),
+    //         ))
+    //         .to_extended_blocks_from_one_shape_and_variants(
+    //             &shapes.0.get(command_index).unwrap(),
+    //             block_variants!(
+    //                 (
+    //                     capacity: 200.0,
+    //                     features: implicit_features!(
+    //                         Generator { capacity: 200.0, capacity_per_sec: 200.0 },
+    //                     ),
+    //                 ),
+    //                 (
+    //                     capacity: 450.0,
+    //                     features: implicit_features!(
+    //                         Generator { capacity: 450.0, capacity_per_sec: 450.0 },
+    //                     ),
+    //                 ),
+    //                 (
+    //                     capacity: 800.0,
+    //                     features: implicit_features!(
+    //                         Generator { capacity: 800.0, capacity_per_sec: 800.0 },
+    //                     ),
+    //                 ),
+    //             ),
+    //         ),
+    // );
+    // blocks.add_blocks(
+    //     blocks
+    //         .extend_first_block(block!(
+    //             name: funky_string!("Command"),
+    //             blurb: funky_string!("A heart, of a sort"),
+    //             features: explicit_features!(
+    //                 Command,
+    //                 Generator { capacity: 50.0, capacity_per_sec: 50.0 },
+    //             ),
+    //             capacity: 50.0,
+    //             color_1: Color::new_rrggbb("5555aa"),
+    //             color_2: Color::new_rrggbb("3333aa"),
+    //             line_color: Color::new_rrggbb("ffffff"),
+    //         ))
+    //         .to_extended_blocks_from_one_shape_and_variants(
+    //             &shapes.0.get(command_index).unwrap(),
+    //             block_variants!(
+    //                 (
+    //                     capacity: 200.0,
+    //                     features: implicit_features!(
+    //                         Generator { capacity: 200.0, capacity_per_sec: 200.0 },
+    //                     ),
+    //                 ),
+    //                 (
+    //                     capacity: 450.0,
+    //                     features: implicit_features!(
+    //                         Generator { capacity: 450.0, capacity_per_sec: 450.0 },
+    //                     ),
+    //                 ),
+    //                 (
+    //                     capacity: 800.0,
+    //                     features: implicit_features!(
+    //                         Generator { capacity: 800.0, capacity_per_sec: 800.0 },
+    //                     ),
+    //                 ),
+    //             ),
+    //         ),
+    // );
     blocks.add_blocks(
         blocks
             .extend_first_block(block!(
@@ -147,8 +163,8 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
                 color_2: Color::new_rrggbb("3333aa"),
                 line_color: Color::new_rrggbb("ffffff"),
             ))
-            .to_extended_blocks_from_one_shape_and_variants(
-                &shapes.0.get(octagon_index).unwrap().get_scales(0..3),
+            .to_extended_blocks_from_singular_shape_and_plural_variants(
+                &shapes.get(octagon).get_scales(0..3),
                 block_variants!(
                     (
                         capacity: 290.0,

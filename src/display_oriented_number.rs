@@ -8,7 +8,7 @@ macro_rules! vert {
 }
 pub(crate) use vert;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum DisplayOrientedNumber {
     Float(f32),
     Fraction {
@@ -64,7 +64,7 @@ pub fn don_fraction_from(numerator: f32, denominator: f32) -> DisplayOrientedNum
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DisplayOriented2D {
     pub x: DisplayOrientedNumber,
     pub y: DisplayOrientedNumber,
@@ -74,10 +74,10 @@ impl DisplayOriented2D {
     pub fn orient_by_vert_index(&self, vert_index: usize) -> Self {
         DisplayOriented2D {
             x: DisplayOrientedNumber::Float(
-                self.x.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[vert_index].0,
+                self.x.to_f32().abs() * VERTEX_ORIENTATION_MULTIPLIERS[vert_index].0,
             ),
             y: DisplayOrientedNumber::Float(
-                self.y.to_f32() * VERTEX_ORIENTATION_MULTIPLIERS[vert_index].1,
+                self.y.to_f32().abs() * VERTEX_ORIENTATION_MULTIPLIERS[vert_index].1,
             ),
         }
     }

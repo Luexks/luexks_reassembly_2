@@ -1,7 +1,16 @@
 use crate::display_oriented_number::*;
-use crate::shape_configs::{FUNKY_PORT_FORMATING, MASTER_SCALE, PORT_SPACING};
+use crate::shape_configs::*;
 use crate::utils::*;
 use std::fmt::{self, Display};
+
+// lazy_static! {
+//     pub static ref PORT_DISTRIBUTIONS_TO_ADD_A_SINGLE_HALFWAY_PORT_TO_IF_SIDE_LENGTH_IS_LESS_THAN_MASTER_SCALE: Vec<Option<PortDistribution<'static>>> =
+//         default_port_distribution_from_variants!(
+//                 Center,
+//                 TowardsFromCurrentVert,
+//                 BackwardsFromNextVert,
+//             );
+// }
 
 macro_rules! scale_from_alternating_vertices_and_port_distributions {
     (name: $name:expr, $($vertex:expr, $port_distribution_variant:ident $(: $last_port_distribution:expr)?),*,) => {
@@ -15,14 +24,15 @@ macro_rules! scale_from_alternating_vertices_and_port_distributions {
         )
     };
 }
+// use lazy_static::lazy_static;
 pub(crate) use scale_from_alternating_vertices_and_port_distributions;
 
 macro_rules! default_port_distribution_from_variants {
     (None) => {
         vec![$(default_port_distribution_from_variant!(None)),*]
     };
-    ($($port_distribution_variant:ident $(: $last_port_distribution:expr)?),* $(,)?) => {
-        vec![$(default_port_distribution_from_variant!($port_distribution_variant $(: Some($last_port_distribution))?)),*]
+    ($($port_distribution_variant:ident $(($side:expr, $ports:expr))? $(: $last_port_distribution:expr)?),* $(,)?) => {
+        vec![$(default_port_distribution_from_variant!($port_distribution_variant $( ($side, $ports))? $(: Some($last_port_distribution))?)),*]
     };
 }
 pub(crate) use default_port_distribution_from_variants;
@@ -68,97 +78,111 @@ macro_rules! default_port_distribution_from_variant {
     (JoinWithNext) => {
         Some(PortDistribution::JoinWithNext)
     };
+    (UseIntersectingPortsFrom ($side:expr, $ports:expr)) => {
+        Some(PortDistribution::UseIntersectingPortsFrom {
+            side_with_possibly_intersecting_ports: $side,
+            possibly_intersecting_ports: $ports,
+        })
+    };
 }
 pub(crate) use default_port_distribution_from_variant;
 
 macro_rules! add_courtesy_ports {
-    (ports: $ports:expr, side_index: $side_index:expr, side_length: $side_length:expr, port_count: $port_count:expr, port_distribution_option: $port_distribution_option:expr) => {
-        if let Some(port_distribution) = $port_distribution_option {
-            if $side_length > $port_count * MASTER_SCALE {
-                if let PortDistribution::TowardsFromCurrentVert {
-                    courtesy_port_distribution_option,
-                    ..
-                } = port_distribution {
-                    if let Some(courtesy_port_distribution) = courtesy_port_distribution_option {
-                        match courtesy_port_distribution {
-                            CourtesyPortDistribution::HalfwayToEnd => {
-                                $ports.push(Port {
-                                    side_index: $side_index,
-                                    position: don_fraction_from(
-                                        PortPosition::CURRENT_VERT * $side_length
-                                            + ($side_length + $port_count * MASTER_SCALE) * 0.5,
-                                        $side_length,
-                                    ),
-                                    flags: Flags::<PortFlag>::default(),
-                                });
-                            }
-                            CourtesyPortDistribution::ContinuePattern => {
-                                let possible_courtesy_port = Port {
-                                    side_index: $side_index,
-                                    position: get_port_position_of_distribution(
-                                        &$port_distribution_option,
-                                        &$side_length,
-                                        &$port_count,
-                                        $port_count as usize,
-                                    ),
-                                    flags: Flags::<PortFlag>::default(),
-                                };
-                                if possible_courtesy_port.has_valid_position() {
-                                    $ports.push(possible_courtesy_port)
+    (ports: $ports:expr, side: $side:expr, port_count: $port_count:expr, port_distribution_option: $port_distribution_option:expr) => {
+        {
+            let side_length = $side.get_side_length();
+            if let Some(port_distribution) = $port_distribution_option {
+                if $side.get_side_length() > $port_count * MASTER_SCALE {
+                    if let PortDistribution::TowardsFromCurrentVert {
+                        courtesy_port_distribution_option,
+                        ..
+                    } = port_distribution
+                    {
+                        if let Some(courtesy_port_distribution) = courtesy_port_distribution_option {
+                            match courtesy_port_distribution {
+                                CourtesyPortDistribution::HalfwayToEnd => {
+                                    $ports.push(Port {
+                                        side_index: $side.index,
+                                        position: don_fraction_from(
+                                            PortPosition::CURRENT_VERT * side_length
+                                                + (side_length + $port_count * MASTER_SCALE) * 0.5,
+                                            side_length,
+                                        ),
+                                        flags: Flags::<PortFlag>::default(),
+                                    });
                                 }
-                            },
-                        }
-                    }
-                } else if let PortDistribution::BackwardsFromNextVert {
-                    courtesy_port_distribution_option,
-                    ..
-                } = port_distribution
-                {
-                    if let Some(courtesy_port_distribution) = courtesy_port_distribution_option {
-                        match courtesy_port_distribution {
-                            CourtesyPortDistribution::HalfwayToEnd => {
-                                $ports.push(Port {
-                                    side_index: $side_index,
-                                    position: DisplayOrientedNumber::Fraction {
-                                        numerator: Box::new(don_float_from(
-                                            PortPosition::NEXT_VERT * $side_length
-                                                - ($side_length + $port_count * MASTER_SCALE) * 0.5,
-                                        )),
-                                        denominator: Box::new(don_float_from($side_length)),
-                                    },
-                                    flags: Flags::<PortFlag>::default(),
-                                });
-                            }
-                            CourtesyPortDistribution::ContinuePattern => {
-                                let possible_courtesy_port = Port {
-                                    side_index: $side_index,
-                                    position: get_port_position_of_distribution(
-                                        &$port_distribution_option,
-                                        &$side_length,
-                                        &$port_count,
-                                        1,
-                                    ),
-                                    flags: Flags::<PortFlag>::default(),
-                                };
-                                if possible_courtesy_port.has_valid_position() {
-                                    $ports.push(possible_courtesy_port)
+                                CourtesyPortDistribution::ContinuePattern => {
+                                    let possible_courtesy_port = Port {
+                                        side_index: $side.index,
+                                        position: get_port_position_of_distribution(
+                                            &$port_distribution_option,
+                                            &$side,
+                                            &$port_count,
+                                            $port_count as usize,
+                                        )
+                                        .unwrap(),
+                                        flags: Flags::<PortFlag>::default(),
+                                    };
+                                    if possible_courtesy_port.has_valid_position() {
+                                        $ports.push(possible_courtesy_port)
+                                    }
                                 }
-                            },
+                            }
                         }
-                    }
-                } else if let PortDistribution::Center {
-                    courtesy_port_distribution_option,
-                } = port_distribution
-                {
-                    if let Some(courtesy_port_distribution) = courtesy_port_distribution_option {
-                        {}
+                    } else if let PortDistribution::BackwardsFromNextVert {
+                        courtesy_port_distribution_option,
+                        ..
+                    } = port_distribution
+                    {
+                        if let Some(courtesy_port_distribution) = courtesy_port_distribution_option {
+                            match courtesy_port_distribution {
+                                CourtesyPortDistribution::HalfwayToEnd => {
+                                    $ports.push(Port {
+                                        side_index: $side.index,
+                                        position: DisplayOrientedNumber::Fraction {
+                                            numerator: Box::new(don_float_from(
+                                                PortPosition::NEXT_VERT * side_length
+                                                    - (side_length + $port_count * MASTER_SCALE) * 0.5,
+                                            )),
+                                            denominator: Box::new(don_float_from(side_length)),
+                                        },
+                                        flags: Flags::<PortFlag>::default(),
+                                    });
+                                }
+                                CourtesyPortDistribution::ContinuePattern => {
+                                    let possible_courtesy_port = Port {
+                                        side_index: $side.index,
+                                        position: get_port_position_of_distribution(
+                                            &$port_distribution_option,
+                                            &$side,
+                                            &$port_count,
+                                            $port_count as usize,
+                                        )
+                                        .unwrap(),
+                                        flags: Flags::<PortFlag>::default(),
+                                    };
+                                    if possible_courtesy_port.has_valid_position() {
+                                        $ports.push(possible_courtesy_port)
+                                    }
+                                }
+                            }
+                        }
+                    } else if let PortDistribution::Center {
+                        // courtesy_port_distribution_option,
+                        ..
+                    } = port_distribution
+                    {
+                        // if let Some(courtesy_port_distribution) = courtesy_port_distribution_option {
+                        //     {}
+                        // }
                     }
                 }
             }
         }
     };
 }
-pub enum PortDistribution {
+
+pub enum PortDistribution<'a> {
     Center {
         courtesy_port_distribution_option: Option<CourtesyPortDistribution>,
     },
@@ -171,6 +195,21 @@ pub enum PortDistribution {
         courtesy_port_distribution_option: Option<CourtesyPortDistribution>,
     },
     JoinWithNext,
+    UseIntersectingPortsFrom {
+        side_with_possibly_intersecting_ports: &'a Side<'a>,
+        possibly_intersecting_ports: &'a Vec<Port>,
+    },
+}
+
+impl PortDistribution<'_> {
+    fn should_add_a_single_halfway_port_to_if_side_length_is_less_than_master_scale(&self) -> bool {
+        match self {
+            PortDistribution::Center { .. } => true,
+            PortDistribution::TowardsFromCurrentVert { .. } => true,
+            PortDistribution::BackwardsFromNextVert { .. } => true,
+            _ => false,
+        }
+    }
 }
 
 pub enum CourtesyPortDistribution {
@@ -178,10 +217,11 @@ pub enum CourtesyPortDistribution {
     ContinuePattern,
 }
 
-struct Side<'a> {
-    side_index: usize,
-    vertex_1: &'a Vertex,
-    vertex_2: &'a Vertex,
+#[derive(Debug)]
+pub struct Side<'a> {
+    pub index: usize,
+    pub vertex_1: &'a Vertex,
+    pub vertex_2: &'a Vertex,
 }
 
 impl<'a> Side<'_> {
@@ -191,103 +231,120 @@ impl<'a> Side<'_> {
         .sqrt()
     }
 
-    fn to_ports_of_distribution(&self, port_distribution: Option<&PortDistribution>) -> Vec<Port> {
+    pub fn to_ports_of_distribution(
+        &self,
+        port_distribution: Option<&PortDistribution>,
+    ) -> Vec<Port> {
         if port_distribution.is_none() {
             return Vec::new();
         }
         let side_length = self.get_side_length();
-        let port_count = ((side_length + PORT_COUNT_DECISION_TOLERANCE) / MASTER_SCALE).floor();
-        if side_length <= MASTER_SCALE {
-            vec![Port {
-                side_index: self.side_index,
+        let port_count = if let Some(PortDistribution::UseIntersectingPortsFrom {
+            possibly_intersecting_ports,
+            ..
+        }) = port_distribution
+        {
+            possibly_intersecting_ports.len() as f32
+        } else {
+            ((side_length + PORT_COUNT_DECISION_TOLERANCE) / MASTER_SCALE).floor()
+        };
+        if port_distribution
+            .unwrap()
+            .should_add_a_single_halfway_port_to_if_side_length_is_less_than_master_scale()
+            && side_length <= MASTER_SCALE
+        {
+            return vec![Port {
+                side_index: self.index,
                 position: DisplayOrientedNumber::Float(PortPosition::CENTER),
                 flags: Flags::<PortFlag>::default(),
-            }]
-        } else {
-            let mut ports: Vec<_> = (0..port_count as usize)
-                .map(|port_index| Port {
-                    side_index: self.side_index,
-                    position: get_port_position_of_distribution(
-                        &port_distribution,
-                        &side_length,
-                        &port_count,
-                        port_index,
-                    ),
+            }];
+        }
+        let mut ports: Vec<_> = (0..port_count as usize)
+            .filter_map(|port_index| {
+                let possible_port_position = get_port_position_of_distribution(
+                    &port_distribution,
+                    &self,
+                    &port_count,
+                    port_index,
+                );
+                possible_port_position.map(|port_position| Port {
+                    side_index: self.index,
+                    position: port_position,
                     flags: Flags::<PortFlag>::default(),
                 })
-                .collect();
-            add_courtesy_ports!(
-                ports: ports,
-                side_index: self.side_index,
-                side_length: side_length,
-                port_count: port_count,
-                port_distribution_option: port_distribution
-            );
-            // match port_distribution.unwrap() {
-            //     PortDistribution::JoinWithNext => {
-            //         panic!("Can't get port position of distribution type: join with next.")
-            //     }
-            //     PortDistribution::Center { .. } => (),
-            //     PortDistribution::TowardsFromCurrentVert {
-            //         courtesy_port_distribution,
-            //         ..
-            //     } => {
-            //         if let Some(courtesy_port_distribution) = courtesy_port_distribution {
-            //             match courtesy_port_distribution {
-            //                 CourtesyPortDistribution::Halfway => add_courtesy_ports!(
-            //                     ports: ports,
-            //                     side_index: self.side_index,
-            //                     side_length: side_length,
-            //                     port_count: port_count,
-            //                     port_distribution: port_distribution
-            //                 ),
-            //                 CourtesyPortDistribution::ContinuePattern => add_courtesy_ports!(
-            //                     ports: ports,
-            //                     side_index: self.side_index,
-            //                     side_length: side_length,
-            //                     port_count: port_count,
-            //                     port_distribution: port_distribution
-            //                 ),
-            //             }
-            //         }
-            //     }
-            //     PortDistribution::BackwardsFromNextVert {
-            //         courtesy_port_distribution,
-            //         ..
-            //     } => {
-            //         if let Some(courtesy_port_distribution) = courtesy_port_distribution {
-            //             match courtesy_port_distribution {
-            //                 CourtesyPortDistribution::Halfway => add_courtesy_ports!(
-            //                     ports: ports,
-            //                     side_index: self.side_index,
-            //                     side_length: side_length,
-            //                     port_count: port_count,
-            //                     port_distribution: port_distribution
-            //                 ),
-            //                 CourtesyPortDistribution::ContinuePattern => add_courtesy_ports!(
-            //                     ports: ports,
-            //                     side_index: self.side_index,
-            //                     side_length: side_length,
-            //                     port_count: port_count,
-            //                     port_distribution: port_distribution
-            //                 ),
-            //             }
-            //         }
-            //     }
-            // };
-            ports
-        }
+            })
+            .collect();
+        add_courtesy_ports!(
+            ports: ports,
+            side: &self,
+            port_count: port_count,
+            port_distribution_option: port_distribution
+        );
+        // match port_distribution.unwrap() {
+        //     PortDistribution::JoinWithNext => {
+        //         panic!("Can't get port position of distribution type: join with next.")
+        //     }
+        //     PortDistribution::Center { .. } => (),
+        //     PortDistribution::TowardsFromCurrentVert {
+        //         courtesy_port_distribution,
+        //         ..
+        //     } => {
+        //         if let Some(courtesy_port_distribution) = courtesy_port_distribution {
+        //             match courtesy_port_distribution {
+        //                 CourtesyPortDistribution::Halfway => add_courtesy_ports!(
+        //                     ports: ports,
+        //                     side_index: self.side_index,
+        //                     side_length: side_length,
+        //                     port_count: port_count,
+        //                     port_distribution: port_distribution
+        //                 ),
+        //                 CourtesyPortDistribution::ContinuePattern => add_courtesy_ports!(
+        //                     ports: ports,
+        //                     side_index: self.side_index,
+        //                     side_length: side_length,
+        //                     port_count: port_count,
+        //                     port_distribution: port_distribution
+        //                 ),
+        //             }
+        //         }
+        //     }
+        //     PortDistribution::BackwardsFromNextVert {
+        //         courtesy_port_distribution,
+        //         ..
+        //     } => {
+        //         if let Some(courtesy_port_distribution) = courtesy_port_distribution {
+        //             match courtesy_port_distribution {
+        //                 CourtesyPortDistribution::Halfway => add_courtesy_ports!(
+        //                     ports: ports,
+        //                     side_index: self.side_index,
+        //                     side_length: side_length,
+        //                     port_count: port_count,
+        //                     port_distribution: port_distribution
+        //                 ),
+        //                 CourtesyPortDistribution::ContinuePattern => add_courtesy_ports!(
+        //                     ports: ports,
+        //                     side_index: self.side_index,
+        //                     side_length: side_length,
+        //                     port_count: port_count,
+        //                     port_distribution: port_distribution
+        //                 ),
+        //             }
+        //         }
+        //     }
+        // };
+        ports
     }
 }
 
 #[rustfmt::skip]
 fn get_port_position_of_distribution(
     port_distribution: &Option<&PortDistribution>,
-    side_length: &f32,
+    side: &Side,
     port_count: &f32,
     port_index: usize,
-) -> DisplayOrientedNumber {
-    DisplayOrientedNumber::Fraction {
+) -> Option<DisplayOrientedNumber> {
+    let side_length = side.get_side_length();
+    Some(DisplayOrientedNumber::Fraction {
         numerator: Box::new(match port_distribution.unwrap() {
             PortDistribution::JoinWithNext => panic!("Can't get port position of distribution type: join with next."),
             PortDistribution::Center { .. } => don_float_from(
@@ -309,9 +366,54 @@ fn get_port_position_of_distribution(
                     - distance_from_next_vert.to_f32()
                     - (PORT_SPACING * port_index as f32)
             ),
+            PortDistribution::UseIntersectingPortsFrom { side_with_possibly_intersecting_ports, possibly_intersecting_ports } => {
+                let possibly_intersecting_port = &possibly_intersecting_ports[port_index];
+                let possibly_intersecting_port_do2d = do2d_float_from(
+                    side_with_possibly_intersecting_ports.vertex_1.0.x.to_f32() + (side_with_possibly_intersecting_ports.vertex_2.0.x.to_f32() - side_with_possibly_intersecting_ports.vertex_1.0.x.to_f32()) * possibly_intersecting_port.position.to_f32(),
+                    side_with_possibly_intersecting_ports.vertex_1.0.y.to_f32() + (side_with_possibly_intersecting_ports.vertex_2.0.y.to_f32() - side_with_possibly_intersecting_ports.vertex_1.0.y.to_f32()) * possibly_intersecting_port.position.to_f32(),
+                );
+                let intersecting_port_position = if side.vertex_1.0.x.to_f32() == side.vertex_2.0.x.to_f32() {
+                    if possibly_intersecting_port_do2d.x.to_f32() != side.vertex_1.0.x.to_f32() {
+                        return None;
+                    }
+                    let intersecting_port_do2d = possibly_intersecting_port_do2d;
+                    let intersecting_port_position = don_float_from((intersecting_port_do2d.y.to_f32() - side.vertex_1.0.y.to_f32()) / (side.vertex_2.0.y.to_f32() - side.vertex_1.0.y.to_f32()));
+                    // println!("{}, {}", intersecting_port_do2d, intersecting_port_position);
+                    if !is_port_position_valid(&intersecting_port_position) {
+                        return None;
+                    }
+                    intersecting_port_position
+                } else if side.vertex_1.0.y.to_f32() == side.vertex_2.0.y.to_f32() {
+                    if possibly_intersecting_port_do2d.y.to_f32() != side.vertex_1.0.y.to_f32() {
+                        return None;
+                    }
+                    let intersecting_port_do2d = possibly_intersecting_port_do2d;
+                    let intersecting_port_position = don_float_from((intersecting_port_do2d.x.to_f32() - side.vertex_1.0.x.to_f32()) / (side.vertex_2.0.x.to_f32() - side.vertex_1.0.x.to_f32()));
+                    // println!("{}", intersecting_port_position.to_f32());
+                    if !is_port_position_valid(&intersecting_port_position) {
+                        return None;
+                    }
+                    intersecting_port_position
+                } else {
+                    let line_gradient = (side.vertex_2.0.x.to_f32() - side.vertex_2.0.x.to_f32()) / (side.vertex_2.0.y.to_f32() - side.vertex_2.0.y.to_f32());
+                    let line_y_intercept = side.vertex_1.0.y.to_f32() - side.vertex_1.0.x.to_f32() * line_gradient;
+                    let line_y = line_gradient * possibly_intersecting_port_do2d.x.to_f32() + line_y_intercept;
+                    println!("{}, {}", possibly_intersecting_port_do2d, line_gradient);
+                    if possibly_intersecting_port_do2d.y.to_f32() != line_y {
+                        return None;
+                    }
+                    let intersecting_port_do2d = possibly_intersecting_port_do2d;
+                    let intersecting_port_position = don_float_from(((intersecting_port_do2d.x.to_f32() - side.vertex_1.0.x.to_f32()).powf(2.0) + (intersecting_port_do2d.y.to_f32() - side.vertex_1.0.y.to_f32()).powf(2.0)).sqrt() / ((side.vertex_2.0.x.to_f32() - side.vertex_1.0.x.to_f32()).powf(2.0) + (side.vertex_2.0.y.to_f32() - side.vertex_1.0.y.to_f32()).powf(2.0)).sqrt());
+                    if !is_port_position_valid(&intersecting_port_position) {
+                        return None;
+                    }
+                    intersecting_port_position
+                };
+                don_float_from(intersecting_port_position.to_f32() * side_length)
+            },
         }),
-        denominator: Box::new(don_float_from(*side_length)),
-    }
+        denominator: Box::new(don_float_from(side_length)),
+    })
 }
 
 pub struct Shapes(pub Vec<Shape>);
@@ -353,6 +455,10 @@ impl Shapes {
 
         self.0.push(new_shape);
         self.0.push(mirrored_new_shape);
+    }
+
+    pub fn get(&self, shape_id: usize) -> &Shape {
+        &self.0.get(shape_id).unwrap()
     }
 }
 
@@ -505,7 +611,7 @@ impl Vertices {
                     .zip(self.0.iter().cycle().skip(1))
                     .flat_map(|((side_index, vert_1), vert_2)| {
                         Side {
-                            side_index: side_index,
+                            index: side_index,
                             vertex_1: vert_1,
                             vertex_2: vert_2,
                         }
@@ -540,7 +646,7 @@ impl Vertices {
                         {
                             ports.extend(
                                 Side {
-                                    side_index: side_index,
+                                    index: side_index,
                                     vertex_1: vertex_1,
                                     vertex_2: vertex_2,
                                 }
@@ -554,7 +660,7 @@ impl Vertices {
                             join_with_next_vertices.push(vertex_1);
                             join_with_next_vertices.push(vertex_2);
                             let entire_side = Side {
-                                side_index: 0, // Null value hehe
+                                index: 0, // Null value hehe
                                 vertex_1: join_with_next_vertices.first().unwrap(),
                                 vertex_2: vertex_2,
                             };
@@ -563,7 +669,7 @@ impl Vertices {
                                 .enumerate()
                                 .zip(join_with_next_vertices.iter().skip(1))
                                 .map(|((sub_side_index, sub_vertex_1), sub_vertex_2)| Side {
-                                    side_index: 2 + side_index - join_with_next_vertices.len()
+                                    index: 2 + side_index - join_with_next_vertices.len()
                                         + sub_side_index,
                                     vertex_1: sub_vertex_1,
                                     vertex_2: sub_vertex_2,
@@ -590,7 +696,7 @@ impl Vertices {
                                     }
                                 }
                                 let distributed_port = Port {
-                                    side_index: sub_side_to_distribute_into.unwrap().side_index,
+                                    side_index: sub_side_to_distribute_into.unwrap().index,
                                     position: {
                                         don_fraction_from(
                                             (new_undistributed_port.position.to_f32() * entire_side.get_side_length()) - accumulated_sub_side_lengths_before_new_distributed_port,
@@ -670,7 +776,7 @@ impl Display for Vertices {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Vertex(pub DisplayOriented2D);
 #[derive(Clone)]
 pub struct Ports(Vec<Port>);
@@ -739,11 +845,11 @@ fn funky_output_from_side_sorted_port_matrix(
         .join("\n")
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Port {
-    side_index: usize,
-    position: DisplayOrientedNumber,
-    flags: Flags<PortFlag>,
+    pub side_index: usize,
+    pub position: DisplayOrientedNumber,
+    pub flags: Flags<PortFlag>,
 }
 
 impl Display for Port {
@@ -754,11 +860,15 @@ impl Display for Port {
 
 impl Port {
     fn has_valid_position(&self) -> bool {
-        0.0 <= self.position.to_f32() && self.position.to_f32() <= 1.0
+        is_port_position_valid(&self.position)
     }
 }
 
-#[derive(Clone)]
+fn is_port_position_valid(position: &DisplayOrientedNumber) -> bool {
+    0.0 <= position.to_f32() && position.to_f32() <= 1.0
+}
+
+#[derive(Clone, Debug)]
 pub enum PortFlag {
     ThrusterOut,
     ThrusterIn,

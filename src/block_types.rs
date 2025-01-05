@@ -148,7 +148,7 @@ impl Block {
         })
     }
 
-    pub fn to_extended_blocks_from_shape(self, shape: &Shape) -> Vec<Block> {
+    pub fn to_extended_blocks_from_singular_shape(self, shape: &Shape) -> Vec<Block> {
         static mut BASE_BLOCK_ID: Option<BlockId> = None;
         static mut LAST_VARIANT_BLOCK_ID: Option<BlockId> = None;
         static mut LAST_SHAPE_BLOCK_ID: Option<BlockId> = None;
@@ -181,7 +181,7 @@ impl Block {
             .collect()
     }
 
-    pub fn to_extended_blocks_from_one_shape_and_variants(
+    pub fn to_extended_blocks_from_singular_shape_and_plural_variants(
         self,
         shape: &Shape,
         extra_variants: Vec<Block>,
@@ -219,7 +219,7 @@ impl Block {
             .collect()
     }
 
-    pub fn to_extended_blocks_from_shapes(self, shapes: &Vec<Shape>) -> Vec<Block> {
+    pub fn to_extended_blocks_from_plural_shapes(self, shapes: &Vec<Shape>) -> Vec<Block> {
         static mut BASE_BLOCK_ID: Option<BlockId> = None;
         static mut LAST_VARIANT_BLOCK_ID: Option<BlockId> = None;
         static mut LAST_SHAPE_BLOCK_ID: Option<BlockId> = None;
@@ -267,7 +267,7 @@ impl Block {
             .collect::<Vec<_>>()
     }
 
-    pub fn to_extended_blocks_from_shapes_and_variants(
+    pub fn to_extended_blocks_from_plural_shapes_and_plural_variants(
         self,
         shapes: &Vec<Shape>,
         extra_block_variants: Vec<Block>,
@@ -632,7 +632,7 @@ impl Display for Feature {
                 Feature::Teleporter { .. } => "TELEPORTER",
                 Feature::Deactivates => "DEACTIVATES",
                 Feature::Telespawn => "TELESPAWN",
-                Feature::NoClipAlly => "NOCLIPALY",
+                Feature::NoClipAlly => "NOCLIP_ALLY",
                 Feature::IntLines => "INTLINES",
                 Feature::OneUse => "ONEUSE",
                 Feature::NoRecolor => "NORECOLOR",

@@ -5,6 +5,7 @@ use lazy_static::lazy_static;
 use crate::display_oriented_number::*;
 use crate::shape_types::*;
 use crate::Angle;
+use crate::Flags;
 
 pub const SHAPE_ID_BASE: u32 = 129873000;
 
@@ -335,11 +336,12 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
             1 => (-0.5 + 1.0 / SQRT_2) * MASTER_SCALE * scale_index as f32,
             _ => 0.25 * MASTER_SCALE * scale_index as f32,
         };
-        Vertices(
+        let vertex_indices_not_on_the_left_side_in_clockwise_order = [4, 5, 6, 7, 0, 1];
+        let vertices = Vertices(
             (0..=1)
                 .map(|vert_index| Vertex(unoriented_left_corner.orient_by_vert_index(vert_index)))
                 .chain(
-                    [4, 5, 6, 7, 0, 1]
+                    vertex_indices_not_on_the_left_side_in_clockwise_order
                         .iter()
                         .map(|vert_index| {
                             Vertex(
@@ -354,24 +356,77 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
                         .collect::<Vec<_>>(),
                 )
                 .collect(),
-        )
-        .to_hull_scale_with_distributions(
-            if scale_index == 1 {
-                default_port_distribution_from_variants!(
-                    Center, None, Center, Center, Center, Center, Center, None,
-                )
-            } else {
+        );
+        let vertex_1_of_side_with_ports_to_intersect_with_the_bottom_side =
+            &Vertex(vertices.0.get(0).unwrap().clone().0.orient_by_vert_index(3));
+        let vertex_2_of_side_with_ports_to_intersect_with_the_bottom_side =
+            &Vertex(vertices.0.get(1).unwrap().clone().0.orient_by_vert_index(0));
+        let side_with_ports_to_intersect_with_the_bottom_side = Side {
+            vertex_1: vertex_1_of_side_with_ports_to_intersect_with_the_bottom_side,
+            vertex_2: vertex_2_of_side_with_ports_to_intersect_with_the_bottom_side,
+            index: 0,
+        };
+        let ports_to_intersect_with_the_bottom_side = &side_with_ports_to_intersect_with_the_bottom_side
+            .to_ports_of_distribution(Some(&PortDistribution::Center {
+                courtesy_port_distribution_option: None,
+            }));
+        let vertex_1_of_side_with_ports_to_intersect_with_the_top_side =
+            &Vertex(vertices.0.get(0).unwrap().clone().0.orient_by_vert_index(1));
+        let vertex_2_of_side_with_ports_to_intersect_with_the_top_side =
+            &Vertex(vertices.0.get(1).unwrap().clone().0.orient_by_vert_index(2));
+        let side_with_ports_to_intersect_with_the_top_side = Side {
+            vertex_1: vertex_1_of_side_with_ports_to_intersect_with_the_top_side,
+            vertex_2: vertex_2_of_side_with_ports_to_intersect_with_the_top_side,
+            index: 0,
+        };
+        let ports_to_intersect_with_the_top_side = &side_with_ports_to_intersect_with_the_top_side
+            .to_ports_of_distribution(Some(&PortDistribution::Center {
+                courtesy_port_distribution_option: None,
+            }));
+        // println!("{:?}", ports_to_intersect_with_the_top_side.len());
+        let vertex_1_of_side_with_ports_to_intersect_with_the_right_side =
+            &Vertex(vertices.0.get(0).unwrap().clone().0.orient_by_vert_index(2));
+        let vertex_2_of_side_with_ports_to_intersect_with_the_right_side =
+            &Vertex(vertices.0.get(1).unwrap().clone().0.orient_by_vert_index(3));
+        let side_with_ports_to_intersect_with_the_right_side = Side {
+            vertex_1: vertex_1_of_side_with_ports_to_intersect_with_the_right_side,
+            vertex_2: vertex_2_of_side_with_ports_to_intersect_with_the_right_side,
+            index: 0,
+        };
+        // println!("{:?}", side_with_ports_to_intersect_with_the_right_side);
+        let ports_to_intersect_with_the_right_side =
+            &side_with_ports_to_intersect_with_the_right_side.to_ports_of_distribution(Some(
+                &PortDistribution::Center {
+                    courtesy_port_distribution_option: None,
+                },
+            ));
+        vertices.to_hull_scale_with_distributions(
+            // if scale_index == 1 {
+            //     default_port_distribution_from_variants!(
+            //         Center, None, Center, Center, Center, Center, Center, None,
+            //     )
+            // } else {
                 default_port_distribution_from_variants!(
                     Center,
                     JoinWithNext,
-                    TowardsFromCurrentVert: CourtesyPortDistribution::ContinuePattern,
+                    // TowardsFromCurrentVert: CourtesyPortDistribution::ContinuePattern,
+                    UseIntersectingPortsFrom(&side_with_ports_to_intersect_with_the_top_side, ports_to_intersect_with_the_top_side),
                     Center,
-                    Center,
+                    UseIntersectingPortsFrom(&side_with_ports_to_intersect_with_the_right_side, ports_to_intersect_with_the_right_side),
                     Center,
                     JoinWithNext,
-                    BackwardsFromNextVert: CourtesyPortDistribution::ContinuePattern,
-                )
-            },
+                    UseIntersectingPortsFrom(&side_with_ports_to_intersect_with_the_bottom_side, ports_to_intersect_with_the_bottom_side),
+                    // BackwardsFromNextVert: CourtesyPortDistribution::ContinuePattern,
+                    // Center,
+                    // JoinWithNext,
+                    // TowardsFromCurrentVert: CourtesyPortDistribution::ContinuePattern,
+                    // Center,
+                    // Center,
+                    // Center,
+                    // JoinWithNext,
+                    // BackwardsFromNextVert: CourtesyPortDistribution::ContinuePattern,
+                ),
+            // },
             format!("CommandS{}", scale_index),
         )
     };

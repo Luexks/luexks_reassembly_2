@@ -87,7 +87,7 @@ impl BlockSort {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Flags<T: Display>(pub Vec<T>);
 
 impl<T: Display> Default for Flags<T> {
