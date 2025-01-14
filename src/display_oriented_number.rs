@@ -153,3 +153,8 @@ impl Display for DisplayOriented3D {
         write!(f, "{{{},{},{}}}", self.x, self.y, self.z)
     }
 }
+
+pub fn distance_and_angle_to_do2d(distance: f32, angle: Angle) -> DisplayOriented2D {
+    let angle = angle.as_radians().get_value();
+    do2d_float_from(distance * angle.cos(), distance * angle.sin())
+}

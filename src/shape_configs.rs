@@ -4,6 +4,7 @@ use std::f32::consts::SQRT_2;
 use crate::display_oriented_number::*;
 use crate::shape_types::*;
 use crate::Angle;
+use crate::utils::repeat_expression;
 
 pub const SHAPE_ID_BASE: u32 = 129873000;
 
@@ -21,7 +22,13 @@ pub const RIGHT_TRIANGLE_HEIGHT_SCALE_FACTORS: [f32; 3] = [0.5, 1.0, 2.0];
 pub const ADAPTER_SCALE_COUNT: usize = 4;
 pub const OCTAGON_SCALE_COUNT: usize = 4;
 pub const COMMAND_SCALE_COUNT: usize = 4;
-
+pub const HARDPOINT_SCALE_COUNT: usize = 4;
+pub const HARDPOINT_ANGLE_PER_SIDE: Angle = Angle::Degree(15.0);
+// assert_eq!(0.0, 360.0 % HARDPOINT_ANGLE_PER_SIDE.as_degrees().get_value());
+lazy_static! {
+    static ref HARDPOINT_SIDE_COUNT: usize =
+        (360.0 / HARDPOINT_ANGLE_PER_SIDE.as_degrees().get_value()).floor() as usize;
+}
 const ISOTRI_ANGLES: [Angle; 3] = [
     Angle::Degree(10.0),
     Angle::Degree(20.0),
@@ -451,6 +458,58 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
     };
     shapes.add_unmirrored_shape_from_scales(
         (1..=COMMAND_SCALE_COUNT)
+            .map(|scale_index| scale_from(scale_index))
+            .collect(),
+    );
+    shapes.0.len() - 1
+}
+
+pub fn add_hardpoints_to_the_shapes(shapes: &mut Shapes) -> usize {
+    let scale_from = |scale_index: usize| {
+        let radius = 0.5 * MASTER_SCALE * scale_index as f32;
+        println!("{}", *HARDPOINT_SIDE_COUNT);
+        Vertices(
+            (0..*HARDPOINT_SIDE_COUNT)
+                .map(|vertex_index| {
+                    let angle =
+                        Angle::Degree(-0.5 * HARDPOINT_ANGLE_PER_SIDE.get_value() * (0.5 + vertex_index as f32));
+                    Vertex(distance_and_angle_to_do2d(radius, angle))
+                })
+                .collect(),
+        )
+        .to_hull_scale_with_distributions(
+            default_port_distribution_from_variants!(
+                // repeat_ident!(24, Center)
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+                Center,
+            ),
+            format!("HardpointS{}", scale_index),
+        )
+    };
+    shapes.add_unmirrored_shape_from_scales(
+        (1..=HARDPOINT_SCALE_COUNT)
             .map(|scale_index| scale_from(scale_index))
             .collect(),
     );

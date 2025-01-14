@@ -199,6 +199,9 @@ pub enum PortDistribution<'a> {
         side_with_possibly_intersecting_ports: &'a Side<'a>,
         possibly_intersecting_ports: &'a Vec<Port>,
     },
+    SingleWeaponOutHalfWay,
+    SingleWeaponInHalfWay,
+    SingleWeaponInOutHalfWay,
 }
 
 impl PortDistribution<'_> {
@@ -207,6 +210,15 @@ impl PortDistribution<'_> {
             PortDistribution::Center { .. } => true,
             PortDistribution::TowardsFromCurrentVert { .. } => true,
             PortDistribution::BackwardsFromNextVert { .. } => true,
+            _ => false,
+        }
+    }
+
+    fn is_single(&self) -> bool {
+        match self {
+            Self::SingleWeaponOutHalfWay => true,
+            Self::SingleWeaponInHalfWay => true,
+            Self::SingleWeaponInOutHalfWay => true,
             _ => false,
         }
     }
@@ -245,6 +257,8 @@ impl<'a> Side<'_> {
         }) = port_distribution
         {
             possibly_intersecting_ports.len() as f32
+        } else if port_distribution.unwrap().is_single() {
+            1.0
         } else {
             ((side_length + PORT_COUNT_DECISION_TOLERANCE) / MASTER_SCALE).floor()
         };
@@ -352,6 +366,15 @@ fn get_port_position_of_distribution(
                     - (PORT_SPACING * (port_count / 2.0 - 0.5))
                     + (PORT_SPACING * port_index as f32),
             ),
+            PortDistribution::SingleWeaponInHalfWay => {
+                get_port_position_of_distribution(&Some(&PortDistribution::Center { courtesy_port_distribution_option: None }), side, &1.0, 0).unwrap()
+            },
+            PortDistribution::SingleWeaponOutHalfWay => {
+                get_port_position_of_distribution(&Some(&PortDistribution::Center { courtesy_port_distribution_option: None }), side, &1.0, 0).unwrap()
+            },
+            PortDistribution::SingleWeaponInOutHalfWay => {
+                get_port_position_of_distribution(&Some(&PortDistribution::Center { courtesy_port_distribution_option: None }), side, &1.0, 0).unwrap()
+            },
             PortDistribution::TowardsFromCurrentVert {
                 distance_from_current_vert, ..
             } => don_float_from(

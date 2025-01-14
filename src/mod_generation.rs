@@ -13,6 +13,7 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
     let isotri = add_isotris_to_the(shapes);
     let octagon = add_octagons_to_the(shapes);
     let command = add_commands_to_the(shapes);
+    let hardpoint = add_hardpoints_to_the_shapes(shapes);
     blocks.add_blocks(
         block!(
             name: funky_string!("Hull"),
@@ -35,6 +36,7 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
                 rectangle,
                 adapter,
                 isotri,
+                hardpoint,
             ]
             .iter()
             .map(|&shape_index| shapes.0[shape_index].clone())

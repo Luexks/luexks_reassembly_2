@@ -235,3 +235,14 @@ macro_rules! option_comparison_prioritising_some {
        // };
 }
 pub(crate) use option_comparison_prioritising_some;
+
+macro_rules! repeat_expression {
+    (0, $ident:ident) => {};
+    (1, $ident:ident) => {
+        $ident
+    };
+    ($count:expr, $ident:ident) => {
+        $ident, repeat_expression!(($count - 1), $ident)
+    };
+}
+pub(crate) use repeat_expression;
