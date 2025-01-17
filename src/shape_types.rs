@@ -32,7 +32,7 @@ macro_rules! default_port_distribution_from_variants {
         vec![$(default_port_distribution_from_variant!(None)),*]
     };
     ($($port_distribution_variant:ident $(($side:expr, $ports:expr))? $(: $last_port_distribution:expr)?),* $(,)?) => {
-        vec![$(default_port_distribution_from_variant!($port_distribution_variant $( ($side, $ports))? $(: Some($last_port_distribution))?)),*]
+        vec![$(default_port_distribution_from_variant!($port_distribution_variant $( ($side, $ports))? $(: $last_port_distribution)?)),*]
     };
 }
 pub(crate) use default_port_distribution_from_variants;
@@ -40,6 +40,15 @@ pub(crate) use default_port_distribution_from_variants;
 macro_rules! default_port_distribution_from_variant {
     (None) => {
         None
+    };
+    (SingleWeaponInHalfWay) => {
+        Some(PortDistribution::SingleWeaponInHalfWay)
+    };
+    (SingleWeaponOutHalfWay) => {
+        Some(PortDistribution::SingleWeaponOutHalfWay)
+    };
+    (SingleWeaponInOutHalfWay) => {
+        Some(PortDistribution::SingleWeaponInOutHalfWay)
     };
     (Center) => {
         Some(PortDistribution::Center {
@@ -57,10 +66,10 @@ macro_rules! default_port_distribution_from_variant {
             courtesy_port_distribution_option: None,
         })
     };
-    (TowardsFromCurrentVert: $courtesy_port_distribution_option:expr) => {
+    (TowardsFromCurrentVert: $courtesy_port_distribution:expr) => {
         Some(PortDistribution::TowardsFromCurrentVert {
             distance_from_current_vert: don_float_from(PORT_SPACING_FROM_VERT),
-            courtesy_port_distribution_option: $courtesy_port_distribution_option,
+            courtesy_port_distribution_option: Some($courtesy_port_distribution),
         })
     };
     (BackwardsFromNextVert) => {
@@ -69,10 +78,10 @@ macro_rules! default_port_distribution_from_variant {
             courtesy_port_distribution_option: None,
         })
     };
-    (BackwardsFromNextVert: $courtesy_port_distribution_option:expr) => {
+    (BackwardsFromNextVert: $courtesy_port_distribution:expr) => {
         Some(PortDistribution::BackwardsFromNextVert {
             distance_from_next_vert: don_float_from(PORT_SPACING_FROM_VERT),
-            courtesy_port_distribution_option: $courtesy_port_distribution_option,
+            courtesy_port_distribution_option: Some($courtesy_port_distribution),
         })
     };
     (JoinWithNext) => {
@@ -222,6 +231,17 @@ impl PortDistribution<'_> {
             _ => false,
         }
     }
+
+    fn get_default_flag(&self) -> Flags<PortFlag> {
+        match self {
+            PortDistribution::SingleWeaponInHalfWay => Flags(vec![PortFlag::WeaponIn]),
+            PortDistribution::SingleWeaponInOutHalfWay => {
+                Flags(vec![PortFlag::WeaponIn, PortFlag::WeaponOut])
+            }
+            PortDistribution::SingleWeaponOutHalfWay => Flags(vec![PortFlag::WeaponOut]),
+            _ => Flags::<PortFlag>::default(),
+        }
+    }
 }
 
 pub enum CourtesyPortDistribution {
@@ -267,11 +287,7 @@ impl<'a> Side<'_> {
             .should_add_a_single_halfway_port_to_if_side_length_is_less_than_master_scale()
             && side_length <= MASTER_SCALE
         {
-            return vec![Port {
-                side_index: self.index,
-                position: DisplayOrientedNumber::Float(PortPosition::CENTER),
-                flags: Flags::<PortFlag>::default(),
-            }];
+            return vec![halfway_port(self.index)];
         }
         let mut ports: Vec<_> = (0..port_count as usize)
             .filter_map(|port_index| {
@@ -284,7 +300,7 @@ impl<'a> Side<'_> {
                 possible_port_position.map(|port_position| Port {
                     side_index: self.index,
                     position: port_position,
-                    flags: Flags::<PortFlag>::default(),
+                    flags: port_distribution.unwrap().get_default_flag(),
                 })
             })
             .collect();
@@ -367,13 +383,13 @@ fn get_port_position_of_distribution(
                     + (PORT_SPACING * port_index as f32),
             ),
             PortDistribution::SingleWeaponInHalfWay => {
-                get_port_position_of_distribution(&Some(&PortDistribution::Center { courtesy_port_distribution_option: None }), side, &1.0, 0).unwrap()
+                don_float_from(PortPosition::CENTER)
             },
             PortDistribution::SingleWeaponOutHalfWay => {
-                get_port_position_of_distribution(&Some(&PortDistribution::Center { courtesy_port_distribution_option: None }), side, &1.0, 0).unwrap()
+                don_float_from(PortPosition::CENTER)
             },
             PortDistribution::SingleWeaponInOutHalfWay => {
-                get_port_position_of_distribution(&Some(&PortDistribution::Center { courtesy_port_distribution_option: None }), side, &1.0, 0).unwrap()
+                don_float_from(PortPosition::CENTER)
             },
             PortDistribution::TowardsFromCurrentVert {
                 distance_from_current_vert, ..
@@ -655,6 +671,7 @@ impl Vertices {
         port_distributions: Vec<Option<PortDistribution>>,
         name: String,
     ) -> Scale {
+        assert_eq!(self.0.len(), port_distributions.len());
         Scale {
             verts: self.clone(),
             ports: Ports({
@@ -889,6 +906,14 @@ impl Port {
 
 fn is_port_position_valid(position: &DisplayOrientedNumber) -> bool {
     0.0 <= position.to_f32() && position.to_f32() <= 1.0
+}
+
+fn halfway_port(side_index: usize) -> Port {
+    Port {
+        side_index: side_index,
+        position: DisplayOrientedNumber::Float(PortPosition::CENTER),
+        flags: Flags::<PortFlag>::default(),
+    }
 }
 
 #[derive(Clone, Debug)]

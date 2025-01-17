@@ -3,8 +3,8 @@ use std::f32::consts::SQRT_2;
 
 use crate::display_oriented_number::*;
 use crate::shape_types::*;
-use crate::Angle;
 use crate::utils::repeat_expression;
+use crate::Angle;
 
 pub const SHAPE_ID_BASE: u32 = 129873000;
 
@@ -466,47 +466,50 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
 
 pub fn add_hardpoints_to_the_shapes(shapes: &mut Shapes) -> usize {
     let scale_from = |scale_index: usize| {
+        let port_distributions = {
+            let mut port_distributions = Vec::new();
+            port_distributions.extend(
+                (0..*HARDPOINT_SIDE_COUNT - 1)
+                    .map(|_| default_port_distribution_from_variant!(SingleWeaponInHalfWay)),
+            );
+            port_distributions.push(default_port_distribution_from_variant!(None));
+            port_distributions.push(default_port_distribution_from_variant!(BackwardsFromNextVert: CourtesyPortDistribution::HalfwayToEnd));
+            port_distributions.push(default_port_distribution_from_variant!(Center));
+            port_distributions.push(default_port_distribution_from_variant!(TowardsFromCurrentVert: CourtesyPortDistribution::HalfwayToEnd));
+            port_distributions.push(default_port_distribution_from_variant!(None));
+            port_distributions
+        };
+        let half_square_length = 0.5 * MASTER_SCALE * (scale_index as f32);
+        let unoriented_do2d = do2d_float_from(half_square_length, half_square_length);
         let radius = 0.5 * MASTER_SCALE * scale_index as f32;
-        println!("{}", *HARDPOINT_SIDE_COUNT);
+        // println!("{}", *HARDPOINT_SIDE_COUNT);
         Vertices(
             (0..*HARDPOINT_SIDE_COUNT)
                 .map(|vertex_index| {
-                    let angle =
-                        Angle::Degree(-0.5 * HARDPOINT_ANGLE_PER_SIDE.get_value() * (0.5 + vertex_index as f32));
+                    let angle = Angle::Degree(
+                        45.0 + -0.25
+                            * HARDPOINT_ANGLE_PER_SIDE.get_value()
+                            * (0.5 + vertex_index as f32),
+                    );
                     Vertex(distance_and_angle_to_do2d(radius, angle))
                 })
+                .chain(std::iter::once(Vertex(do2d_float_from(
+                    0.0,
+                    -half_square_length,
+                ))))
+                .chain(std::iter::once(Vertex(
+                    unoriented_do2d.orient_by_vert_index(0),
+                )))
+                .chain(std::iter::once(Vertex(
+                    unoriented_do2d.orient_by_vert_index(1),
+                )))
+                .chain(std::iter::once(Vertex(do2d_float_from(
+                    0.0,
+                    half_square_length,
+                ))))
                 .collect(),
         )
-        .to_hull_scale_with_distributions(
-            default_port_distribution_from_variants!(
-                // repeat_ident!(24, Center)
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-                Center,
-            ),
-            format!("HardpointS{}", scale_index),
-        )
+        .to_hull_scale_with_distributions(port_distributions, format!("HardpointS{}", scale_index))
     };
     shapes.add_unmirrored_shape_from_scales(
         (1..=HARDPOINT_SCALE_COUNT)
