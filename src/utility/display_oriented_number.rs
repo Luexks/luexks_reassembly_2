@@ -1,12 +1,6 @@
-use crate::utils::*;
+use crate::shapes::shape_constants::*;
+use crate::utility::angle::Angle;
 use std::fmt::{self, Display};
-
-macro_rules! vert {
-    ($x:expr, $y:expr) => {
-        Vertex(DisplayOriented2D::simple($x, $y))
-    };
-}
-pub(crate) use vert;
 
 #[derive(Clone, Debug)]
 pub enum DisplayOrientedNumber {

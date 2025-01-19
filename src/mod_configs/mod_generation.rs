@@ -1,11 +1,15 @@
-use crate::block_types::*;
-use crate::configs::*;
-use crate::shape_configs::*;
-use crate::shape_types::*;
-use crate::utils::*;
+use crate::blocks::blocks::*;
+use crate::blocks::block::*;
+use crate::blocks::feature::*;
+use crate::mod_configs::mod_metadata::*;
+use crate::mod_configs::shape_configs::*;
+use crate::shapes::shapes::Shapes;
+use crate::utility::color::Color;
+use crate::utility::flags::*;
+use crate::utility::funky_string::*;
 
 pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
-    let square = add_squares_to_the(shapes);
+    let _square = add_squares_to_the(shapes);
     let rect_long = add_rect_longs_to_the(shapes);
     let right_triangle = add_right_triangles_to_the(shapes);
     let rectangle = add_rectangles_to_the(shapes);

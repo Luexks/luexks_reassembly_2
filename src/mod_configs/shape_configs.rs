@@ -1,14 +1,18 @@
 use lazy_static::lazy_static;
 use std::f32::consts::SQRT_2;
 
-use crate::display_oriented_number::*;
-use crate::shape_types::*;
-use crate::utils::repeat_expression;
-use crate::Angle;
+use crate::shapes::{
+    courtesy_port_distribution::*,
+    port_distribution::*,
+    shapes::Shapes,
+    side::Side,
+    vertex::{vert, Vertex},
+    vertices::Vertices,
+};
+use crate::utility::angle::Angle;
+use crate::utility::display_oriented_number::*;
 
 pub const SHAPE_ID_BASE: u32 = 129873000;
-
-pub const FUNKY_PORT_FORMATING: bool = true;
 
 pub const MASTER_SCALE: f32 = 10.0;
 pub const PORT_SPACING: f32 = MASTER_SCALE;

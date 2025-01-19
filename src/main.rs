@@ -2,19 +2,16 @@ use std::fs::{self, File};
 use std::io::Write;
 use std::path::PathBuf;
 
-mod configs;
-use configs::*;
-mod utils;
-use utils::*;
-pub mod display_oriented_number;
-
-pub mod shape_types;
-use shape_types::*;
-pub mod block_types;
-use block_types::*;
-pub mod mod_generation;
-use mod_generation::*;
-pub mod shape_configs;
+mod blocks;
+use blocks::block_constants::BLOCKS_NAME;
+mod mod_configs;
+use blocks::blocks::Blocks;
+use mod_configs::mod_generation::*;
+use mod_configs::mod_metadata::*;
+mod shapes;
+use shapes::shape_constants::SHAPES_NAME;
+use shapes::shapes::Shapes;
+mod utility;
 
 fn main() {
     let mod_path = create_mod_folder();
@@ -23,8 +20,11 @@ fn main() {
 }
 
 fn create_mod_folder() -> PathBuf {
-    let generator_path = std::env::current_dir().expect("Failed to get generator folder");
-    let reassembly_mods_path = generator_path
+    let src_path = std::env::current_dir().expect("Failed to get generator folder");
+    let rust_project_path = src_path
+        .parent()
+        .expect("Failed to get reassembly mods folder");
+    let reassembly_mods_path = rust_project_path
         .parent()
         .expect("Failed to get reassembly mods folder");
 
