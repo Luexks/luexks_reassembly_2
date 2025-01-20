@@ -4,7 +4,7 @@ use crate::shapes::port::*;
 use crate::shapes::port_distribution::PortDistribution;
 use crate::shapes::shape_constants::*;
 use crate::shapes::vertex::Vertex;
-use crate::utility::display_oriented_number::*;
+use crate::utility::display_oriented_math::*;
 
 #[derive(Debug)]
 pub struct Side<'a> {
@@ -67,58 +67,6 @@ impl<'a> Side<'_> {
             port_count: port_count,
             port_distribution_option: port_distribution
         );
-        // match port_distribution.unwrap() {
-        //     PortDistribution::JoinWithNext => {
-        //         panic!("Can't get port position of distribution type: join with next.")
-        //     }
-        //     PortDistribution::Center { .. } => (),
-        //     PortDistribution::TowardsFromCurrentVert {
-        //         courtesy_port_distribution,
-        //         ..
-        //     } => {
-        //         if let Some(courtesy_port_distribution) = courtesy_port_distribution {
-        //             match courtesy_port_distribution {
-        //                 CourtesyPortDistribution::Halfway => add_courtesy_ports!(
-        //                     ports: ports,
-        //                     side_index: self.side_index,
-        //                     side_length: side_length,
-        //                     port_count: port_count,
-        //                     port_distribution: port_distribution
-        //                 ),
-        //                 CourtesyPortDistribution::ContinuePattern => add_courtesy_ports!(
-        //                     ports: ports,
-        //                     side_index: self.side_index,
-        //                     side_length: side_length,
-        //                     port_count: port_count,
-        //                     port_distribution: port_distribution
-        //                 ),
-        //             }
-        //         }
-        //     }
-        //     PortDistribution::BackwardsFromNextVert {
-        //         courtesy_port_distribution,
-        //         ..
-        //     } => {
-        //         if let Some(courtesy_port_distribution) = courtesy_port_distribution {
-        //             match courtesy_port_distribution {
-        //                 CourtesyPortDistribution::Halfway => add_courtesy_ports!(
-        //                     ports: ports,
-        //                     side_index: self.side_index,
-        //                     side_length: side_length,
-        //                     port_count: port_count,
-        //                     port_distribution: port_distribution
-        //                 ),
-        //                 CourtesyPortDistribution::ContinuePattern => add_courtesy_ports!(
-        //                     ports: ports,
-        //                     side_index: self.side_index,
-        //                     side_length: side_length,
-        //                     port_count: port_count,
-        //                     port_distribution: port_distribution
-        //                 ),
-        //             }
-        //         }
-        //     }
-        // };
         ports
     }
 }
@@ -174,7 +122,6 @@ fn get_port_position_of_distribution(
                     }
                     let intersecting_port_do2d = possibly_intersecting_port_do2d;
                     let intersecting_port_position = don_float_from((intersecting_port_do2d.y.to_f32() - side.vertex_1.0.y.to_f32()) / (side.vertex_2.0.y.to_f32() - side.vertex_1.0.y.to_f32()));
-                    // println!("{}, {}", intersecting_port_do2d, intersecting_port_position);
                     if !is_port_position_valid(&intersecting_port_position) {
                         return None;
                     }
@@ -185,7 +132,6 @@ fn get_port_position_of_distribution(
                     }
                     let intersecting_port_do2d = possibly_intersecting_port_do2d;
                     let intersecting_port_position = don_float_from((intersecting_port_do2d.x.to_f32() - side.vertex_1.0.x.to_f32()) / (side.vertex_2.0.x.to_f32() - side.vertex_1.0.x.to_f32()));
-                    // println!("{}", intersecting_port_position.to_f32());
                     if !is_port_position_valid(&intersecting_port_position) {
                         return None;
                     }

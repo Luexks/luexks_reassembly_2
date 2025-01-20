@@ -1,13 +1,13 @@
-use std::fmt::{self, Display};
 use crate::blocks::block_id::BlockId;
 use crate::blocks::block_sort::BlockSort;
 use crate::blocks::extend_accounting_feature_list::ExtendAccountingFeatureList;
-use crate::utility::color::Color;
-use crate::utility::option_comparison_prioritising_some::option_comparison_prioritising_some;
-use crate::utility::component_formatting::{format_component, format_components};
-use crate::utility::funky_string::{FunkyString, funky_string};
-use crate::shapes::shape_id::ShapeId;
 use crate::shapes::shape::Shape;
+use crate::shapes::shape_id::ShapeId;
+use crate::utility::color::Color;
+use crate::utility::component_formatting::{format_component, format_components};
+use crate::utility::funky_string::{funky_string, FunkyString};
+use crate::utility::option_comparison_prioritising_some::option_comparison_prioritising_some;
+use std::fmt::{self, Display};
 
 macro_rules! block {
     ($($component_name:ident: $component_value:expr),* $(,)?) => {

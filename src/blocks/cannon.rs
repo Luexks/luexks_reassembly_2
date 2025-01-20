@@ -1,10 +1,10 @@
-use std::fmt::{self, Display};
-use crate::utility::flags::Flags;
-use crate::utility::color::Color;
 use crate::blocks::explosive::Explosive;
-use crate::blocks::pattern::Pattern;
 use crate::blocks::fragment::Fragment;
+use crate::blocks::pattern::Pattern;
+use crate::utility::color::Color;
 use crate::utility::component_formatting::format_components;
+use crate::utility::flags::Flags;
+use std::fmt::{self, Display};
 
 #[derive(Clone)]
 pub struct Cannon {

@@ -1,8 +1,8 @@
-use std::fmt::{self, Display};
-use crate::utility::flags::Flags;
-use crate::utility::color::Color;
 use crate::blocks::explosive::Explosive;
+use crate::utility::color::Color;
 use crate::utility::component_formatting::format_components;
+use crate::utility::flags::Flags;
+use std::fmt::{self, Display};
 
 #[derive(Clone)]
 pub struct Laser {

@@ -4,7 +4,7 @@ use crate::shapes::ports::*;
 use crate::shapes::scale::*;
 use crate::shapes::side::Side;
 use crate::shapes::vertex::*;
-use crate::utility::display_oriented_number::*;
+use crate::utility::display_oriented_math::*;
 use crate::utility::flags::Flags;
 use std::fmt::Display;
 
@@ -127,48 +127,10 @@ impl Vertices {
                     }
                 }
                 ports
-                // self.0
-                //     .iter()
-                //     .enumerate()
-                //     .zip(self.0.iter().cycle().skip(1))
-                //     .flat_map(|((side_index, vert_1), vert_2)| {
-                //         Side {
-                //             side_index: side_index,
-                //             vert_1: vert_1,
-                //             vert_2: vert_2,
-                //         }
-                //         .to_ports_of_distribution(&port_distributions[side_index])
-                //     })
-                //     .collect(),
             }),
             name: name,
         }
     }
-    // pub fn to_hull_scale_with_distributions(
-    //     self,
-    //     port_distributions: Vec<PortDistribution>,
-    //     name: String,
-    // ) -> Scale {
-    //     Scale {
-    //         verts: self.clone(),
-    //         ports: Ports(
-    //             self.0
-    //                 .iter()
-    //                 .enumerate()
-    //                 .zip(self.0.iter().cycle().skip(1))
-    //                 .flat_map(|((side_index, vert_1), vert_2)| {
-    //                     Side {
-    //                         side_index: side_index,
-    //                         vert_1: vert_1,
-    //                         vert_2: vert_2,
-    //                     }
-    //                     .to_ports_of_distribution(&port_distributions[side_index])
-    //                 })
-    //                 .collect(),
-    //         ),
-    //         name: name,
-    //     }
-    // }
 }
 
 impl Display for Vertices {

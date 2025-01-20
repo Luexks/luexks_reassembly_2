@@ -1,5 +1,5 @@
-use crate::utility::flags::Flags;
 use crate::blocks::feature::Feature;
+use crate::utility::flags::Flags;
 
 #[derive(Clone)]
 pub struct ExtendAccountingFeatureList {

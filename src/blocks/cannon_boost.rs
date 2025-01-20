@@ -1,5 +1,5 @@
-use std::fmt::{self, Display};
 use crate::utility::component_formatting::*;
+use std::fmt::{self, Display};
 
 #[derive(Clone)]
 pub struct CannonBoost {

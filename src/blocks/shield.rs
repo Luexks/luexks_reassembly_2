@@ -1,6 +1,6 @@
-use std::fmt::{self, Display};
 use crate::utility::color::Color;
 use crate::utility::component_formatting::format_components;
+use std::fmt::{self, Display};
 
 #[derive(Clone)]
 pub struct Shield {

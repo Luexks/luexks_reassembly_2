@@ -1,13 +1,13 @@
-use std::fmt::{self, Display};
-use crate::utility::color::Color;
-use crate::utility::angle::Angle;
-use crate::utility::display_oriented_number::DisplayOriented2D;
-use crate::utility::component_formatting::{format_component, format_components};
+use crate::blocks::block::Block;
 use crate::blocks::cannon::Cannon;
 use crate::blocks::cannon_boost::CannonBoost;
 use crate::blocks::laser::Laser;
 use crate::blocks::shield::Shield;
-use crate::blocks::block::Block;
+use crate::utility::angle::Angle;
+use crate::utility::color::Color;
+use crate::utility::component_formatting::{format_component, format_components};
+use crate::utility::display_oriented_math::DisplayOriented2D;
+use std::fmt::{self, Display};
 
 const NO_FEATURE_DATA_NEEDED: &str = "";
 
@@ -15,7 +15,7 @@ macro_rules! implicit_features {
     (
         $($feature:ident $( { $($feature_component_name:ident: $feature_component_value:expr),*})? $(,)?),*
     ) => {
-        ExtendAccountingFeatureList {
+        crate::blocks::extend_accounting_feature_list::ExtendAccountingFeatureList {
             features: Flags(vec![
                 $(new_feature!($feature $( {$($feature_component_name: $feature_component_value),*})?)),*,
             ]),

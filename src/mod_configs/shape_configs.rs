@@ -10,7 +10,7 @@ use crate::shapes::{
     vertices::Vertices,
 };
 use crate::utility::angle::Angle;
-use crate::utility::display_oriented_number::*;
+use crate::utility::display_oriented_math::*;
 
 pub const SHAPE_ID_BASE: u32 = 129873000;
 
@@ -28,7 +28,6 @@ pub const OCTAGON_SCALE_COUNT: usize = 4;
 pub const COMMAND_SCALE_COUNT: usize = 4;
 pub const HARDPOINT_SCALE_COUNT: usize = 4;
 pub const HARDPOINT_ANGLE_PER_SIDE: Angle = Angle::Degree(15.0);
-// assert_eq!(0.0, 360.0 % HARDPOINT_ANGLE_PER_SIDE.as_degrees().get_value());
 lazy_static! {
     static ref HARDPOINT_SIDE_COUNT: usize =
         (360.0 / HARDPOINT_ANGLE_PER_SIDE.as_degrees().get_value()).floor() as usize;
@@ -42,7 +41,6 @@ pub const ISOTRI_SCALE_COUNT: usize = 4;
 lazy_static! {
     static ref RECTANGLE_SCALE_FACTORS_AND_NAMES: Vec<(f32, f32, String)> = {
         let mut rectangle_scale_factors: Vec<(f32, f32, String)> = Vec::new();
-        // add_fifth_rects_to(&mut rectangle_scale_factors);
         add_quarter_scales_to(&mut rectangle_scale_factors);
         add_half_rects_to(&mut rectangle_scale_factors);
         add_complementary_reciprocal_root_2_rects_to(&mut rectangle_scale_factors);
@@ -50,15 +48,6 @@ lazy_static! {
         rectangle_scale_factors
     };
 }
-// fn add_fifth_rects_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
-//     rectangle_scale_factors.extend((1..=5).map(|scale_index| {
-//         (
-//             0.20,
-//             0.20 * scale_index as f32,
-//             format!("FifthRectS{}", scale_index),
-//         )
-//     }));
-// }
 fn add_quarter_scales_to(rectangle_scale_factors: &mut Vec<(f32, f32, String)>) {
     rectangle_scale_factors.extend((1..=4).map(|scale_index| {
         (
@@ -201,17 +190,6 @@ pub fn add_adapters_to_the(shapes: &mut Shapes) -> usize {
     let scale_0 = || {
         let half_adapter_width = 0.25 * MASTER_SCALE;
         let half_adapter_left_side_height = 0.5 * MASTER_SCALE;
-        // Vertices(vec![
-        //     Vertex(
-        //         do2d_float_from(half_adapter_width, half_adapter_left_side_height)
-        //             .orient_by_vert_index(0),
-        //     ),
-        //     Vertex(
-        //         do2d_float_from(half_adapter_width, half_adapter_left_side_height)
-        //             .orient_by_vert_index(1),
-        //     ),
-        //     Vertex(do2d_float_from(half_adapter_width, 0.0).orient_by_vert_index(2)),
-        // ])
         Vertices(
             (0..=1)
                 .map(|vert_index| {
@@ -364,36 +342,6 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
                 )
                 .collect(),
         );
-        // let (
-        //     side_with_ports_to_intersect_with_the_bottom_side, ports_to_intersect_with_the_bottom_side,
-        //     side_with_ports_to_intersect_with_the_right_side, ports_to_intersect_with_the_right_side,
-        //     side_with_ports_to_intersect_with_the_top_side, ports_to_intersect_with_the_top_side
-        // ): (Side, Vec<Port>, Side, Vec<Port>, Side, Vec<Port>) =
-        // let vertices_cloned = vertices.clone();
-        // let sides_with_ports_and_ports_to_intersect_with_sides_of_the_side: Vec<(Side, Vec<Port>)> =
-        //     (0..3).map(|side_index| {
-        //             let vertex_1_of_side_with_ports_to_intersect_with_the_side =
-        //                 Vertex(vertices_cloned.0[0].0.orient_by_vert_index([1, 2, 3][side_index]));
-        //             let vertex_2_of_side_with_ports_to_intersect_with_the_side =
-        //                 Vertex(vertices_cloned.0[1].0.orient_by_vert_index([2, 3, 0][side_index]));
-        //             let side_with_ports_to_intersect_with_the_side = Side {
-        //                 vertex_1: &vertex_1_of_side_with_ports_to_intersect_with_the_side.clone(),
-        //                 vertex_2: &vertex_2_of_side_with_ports_to_intersect_with_the_side.clone(),
-        //                 index: 0,
-        //             };
-        //             let ports_to_intersect_with_the_side = side_with_ports_to_intersect_with_the_side
-        //                 .to_ports_of_distribution(Some(&PortDistribution::Center {
-        //                     courtesy_port_distribution_option: None,
-        //                 }));
-        //             (
-        //                 side_with_ports_to_intersect_with_the_side,
-        //                 ports_to_intersect_with_the_side
-        //             )
-        //         })
-        //         .collect();
-        // let (side_with_ports_to_intersect_with_the_top_side, ports_to_intersect_with_the_top_side) = &sides_with_ports_and_ports_to_intersect_with_sides_of_the_side[0];
-        // let (side_with_ports_to_intersect_with_the_right_side, ports_to_intersect_with_the_right_side) = &sides_with_ports_and_ports_to_intersect_with_sides_of_the_side[1];
-        // let (side_with_ports_to_intersect_with_the_bottom_side, ports_to_intersect_with_the_bottom_side) = &sides_with_ports_and_ports_to_intersect_with_sides_of_the_side[2];
         let vertex_1_of_side_with_ports_to_intersect_with_the_bottom_side =
             &Vertex(vertices.0.get(0).unwrap().clone().0.orient_by_vert_index(3));
         let vertex_2_of_side_with_ports_to_intersect_with_the_bottom_side =
@@ -486,7 +434,6 @@ pub fn add_hardpoints_to_the_shapes(shapes: &mut Shapes) -> usize {
         let half_square_length = 0.5 * MASTER_SCALE * (scale_index as f32);
         let unoriented_do2d = do2d_float_from(half_square_length, half_square_length);
         let radius = 0.5 * MASTER_SCALE * scale_index as f32;
-        // println!("{}", *HARDPOINT_SIDE_COUNT);
         Vertices(
             (0..*HARDPOINT_SIDE_COUNT)
                 .map(|vertex_index| {
@@ -522,114 +469,3 @@ pub fn add_hardpoints_to_the_shapes(shapes: &mut Shapes) -> usize {
     );
     shapes.0.len() - 1
 }
-
-// pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
-//     let scale_from = |scale_index: usize| {
-//         let half_square_length = 0.5 * MASTER_SCALE * (scale_index as f32);
-//         let unoriented_left_corner = do2d_float_from(half_square_length, half_square_length);
-//         do2d_float_from(half_square_length, half_square_length - 0.001);
-//         let cut_corner_indent_distance = match scale_index {
-//             1 => (-0.5 + 1.0 / SQRT_2) * MASTER_SCALE * scale_index as f32,
-//             _ => 0.25 * MASTER_SCALE * scale_index as f32,
-//         };
-//         let vertex_indices_not_on_the_left_side_in_clockwise_order = [4, 5, 6, 7, 0, 1];
-//         let vertices = Vertices(
-//             (0..=1)
-//                 .map(|vert_index| Vertex(unoriented_left_corner.orient_by_vert_index(vert_index)))
-//                 .chain(
-//                     vertex_indices_not_on_the_left_side_in_clockwise_order
-//                         .iter()
-//                         .map(|vert_index| {
-//                             Vertex(
-//                                 do2d_float_from(
-//                                     half_square_length,
-//                                     cut_corner_indent_distance
-//                                         * if vert_index % 2 == 0 { -1.0 } else { 1.0 },
-//                                 )
-//                                 .rotate_by_vert_index((*vert_index as i32 / 2) as usize),
-//                             )
-//                         })
-//                         .collect::<Vec<_>>(),
-//                 )
-//                 .collect(),
-//         );
-//         let vertex_1_of_side_with_ports_to_intersect_with_the_bottom_side =
-//             &Vertex(vertices.0.get(0).unwrap().clone().0.orient_by_vert_index(3));
-//         let vertex_2_of_side_with_ports_to_intersect_with_the_bottom_side =
-//             &Vertex(vertices.0.get(1).unwrap().clone().0.orient_by_vert_index(0));
-//         let side_with_ports_to_intersect_with_the_bottom_side = Side {
-//             vertex_1: vertex_1_of_side_with_ports_to_intersect_with_the_bottom_side,
-//             vertex_2: vertex_2_of_side_with_ports_to_intersect_with_the_bottom_side,
-//             index: 0,
-//         };
-//         let ports_to_intersect_with_the_bottom_side = &side_with_ports_to_intersect_with_the_bottom_side
-//             .to_ports_of_distribution(Some(&PortDistribution::Center {
-//                 courtesy_port_distribution_option: None,
-//             }));
-//         let vertex_1_of_side_with_ports_to_intersect_with_the_top_side =
-//             &Vertex(vertices.0.get(0).unwrap().clone().0.orient_by_vert_index(1));
-//         let vertex_2_of_side_with_ports_to_intersect_with_the_top_side =
-//             &Vertex(vertices.0.get(1).unwrap().clone().0.orient_by_vert_index(2));
-//         let side_with_ports_to_intersect_with_the_top_side = Side {
-//             vertex_1: vertex_1_of_side_with_ports_to_intersect_with_the_top_side,
-//             vertex_2: vertex_2_of_side_with_ports_to_intersect_with_the_top_side,
-//             index: 0,
-//         };
-//         let ports_to_intersect_with_the_top_side = &side_with_ports_to_intersect_with_the_top_side
-//             .to_ports_of_distribution(Some(&PortDistribution::Center {
-//                 courtesy_port_distribution_option: None,
-//             }));
-//         // println!("{:?}", ports_to_intersect_with_the_top_side.len());
-//         let vertex_1_of_side_with_ports_to_intersect_with_the_right_side =
-//             &Vertex(vertices.0.get(0).unwrap().clone().0.orient_by_vert_index(2));
-//         let vertex_2_of_side_with_ports_to_intersect_with_the_right_side =
-//             &Vertex(vertices.0.get(1).unwrap().clone().0.orient_by_vert_index(3));
-//         let side_with_ports_to_intersect_with_the_right_side = Side {
-//             vertex_1: vertex_1_of_side_with_ports_to_intersect_with_the_right_side,
-//             vertex_2: vertex_2_of_side_with_ports_to_intersect_with_the_right_side,
-//             index: 0,
-//         };
-//         // println!("{:?}", side_with_ports_to_intersect_with_the_right_side);
-//         let ports_to_intersect_with_the_right_side =
-//             &side_with_ports_to_intersect_with_the_right_side.to_ports_of_distribution(Some(
-//                 &PortDistribution::Center {
-//                     courtesy_port_distribution_option: None,
-//                 },
-//             ));
-//         vertices.to_hull_scale_with_distributions(
-//             // if scale_index == 1 {
-//             //     default_port_distribution_from_variants!(
-//             //         Center, None, Center, Center, Center, Center, Center, None,
-//             //     )
-//             // } else {
-//                 default_port_distribution_from_variants!(
-//                     Center,
-//                     JoinWithNext,
-//                     // TowardsFromCurrentVert: CourtesyPortDistribution::ContinuePattern,
-//                     UseIntersectingPortsFrom(&side_with_ports_to_intersect_with_the_top_side, ports_to_intersect_with_the_top_side),
-//                     Center,
-//                     UseIntersectingPortsFrom(&side_with_ports_to_intersect_with_the_right_side, ports_to_intersect_with_the_right_side),
-//                     Center,
-//                     JoinWithNext,
-//                     UseIntersectingPortsFrom(&side_with_ports_to_intersect_with_the_bottom_side, ports_to_intersect_with_the_bottom_side),
-//                     // BackwardsFromNextVert: CourtesyPortDistribution::ContinuePattern,
-//                     // Center,
-//                     // JoinWithNext,
-//                     // TowardsFromCurrentVert: CourtesyPortDistribution::ContinuePattern,
-//                     // Center,
-//                     // Center,
-//                     // Center,
-//                     // JoinWithNext,
-//                     // BackwardsFromNextVert: CourtesyPortDistribution::ContinuePattern,
-//                 ),
-//             // },
-//             format!("CommandS{}", scale_index),
-//         )
-//     };
-//     shapes.add_unmirrored_shape_from_scales(
-//         (1..=COMMAND_SCALE_COUNT)
-//             .map(|scale_index| scale_from(scale_index))
-//             .collect(),
-//     );
-//     shapes.0.len() - 1
-// }

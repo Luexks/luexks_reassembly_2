@@ -1,6 +1,6 @@
 use crate::shapes::port_flags::*;
 use crate::shapes::shape_constants::PortPosition;
-use crate::utility::display_oriented_number::DisplayOrientedNumber;
+use crate::utility::display_oriented_math::DisplayOrientedNumber;
 use crate::utility::flags::*;
 use std::fmt::{self, Display};
 

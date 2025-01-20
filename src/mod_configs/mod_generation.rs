@@ -1,5 +1,5 @@
-use crate::blocks::blocks::*;
 use crate::blocks::block::*;
+use crate::blocks::blocks::*;
 use crate::blocks::feature::*;
 use crate::mod_configs::mod_metadata::*;
 use crate::mod_configs::shape_configs::*;
@@ -81,84 +81,30 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
                 color_2: Color::new_rrggbb("3333aa"),
                 line_color: Color::new_rrggbb("ffffff"),
             ))
-            .to_extended_blocks_from_singular_shape(shapes.get(command)),
+            .to_extended_blocks_from_singular_shape_and_plural_variants(
+                &shapes.0.get(command).unwrap(),
+                block_variants!(
+                    (
+                        capacity: 200.0,
+                        features: implicit_features!(
+                            Generator { capacity: 200.0, capacity_per_sec: 200.0 },
+                        ),
+                    ),
+                    (
+                        capacity: 450.0,
+                        features: implicit_features!(
+                            Generator { capacity: 450.0, capacity_per_sec: 450.0 },
+                        ),
+                    ),
+                    (
+                        capacity: 800.0,
+                        features: implicit_features!(
+                            Generator { capacity: 800.0, capacity_per_sec: 800.0 },
+                        ),
+                    ),
+                ),
+            ),
     );
-    // blocks.add_blocks(
-    //     blocks
-    //         .extend_first_block(block!(
-    //             name: funky_string!("Command"),
-    //             blurb: funky_string!("A heart, of a sort"),
-    //             features: explicit_features!(
-    //                 Command,
-    //                 Generator { capacity: 50.0, capacity_per_sec: 50.0 },
-    //             ),
-    //             capacity: 50.0,
-    //             color_1: Color::new_rrggbb("5555aa"),
-    //             color_2: Color::new_rrggbb("3333aa"),
-    //             line_color: Color::new_rrggbb("ffffff"),
-    //         ))
-    //         .to_extended_blocks_from_one_shape_and_variants(
-    //             &shapes.0.get(command_index).unwrap(),
-    //             block_variants!(
-    //                 (
-    //                     capacity: 200.0,
-    //                     features: implicit_features!(
-    //                         Generator { capacity: 200.0, capacity_per_sec: 200.0 },
-    //                     ),
-    //                 ),
-    //                 (
-    //                     capacity: 450.0,
-    //                     features: implicit_features!(
-    //                         Generator { capacity: 450.0, capacity_per_sec: 450.0 },
-    //                     ),
-    //                 ),
-    //                 (
-    //                     capacity: 800.0,
-    //                     features: implicit_features!(
-    //                         Generator { capacity: 800.0, capacity_per_sec: 800.0 },
-    //                     ),
-    //                 ),
-    //             ),
-    //         ),
-    // );
-    // blocks.add_blocks(
-    //     blocks
-    //         .extend_first_block(block!(
-    //             name: funky_string!("Command"),
-    //             blurb: funky_string!("A heart, of a sort"),
-    //             features: explicit_features!(
-    //                 Command,
-    //                 Generator { capacity: 50.0, capacity_per_sec: 50.0 },
-    //             ),
-    //             capacity: 50.0,
-    //             color_1: Color::new_rrggbb("5555aa"),
-    //             color_2: Color::new_rrggbb("3333aa"),
-    //             line_color: Color::new_rrggbb("ffffff"),
-    //         ))
-    //         .to_extended_blocks_from_one_shape_and_variants(
-    //             &shapes.0.get(command_index).unwrap(),
-    //             block_variants!(
-    //                 (
-    //                     capacity: 200.0,
-    //                     features: implicit_features!(
-    //                         Generator { capacity: 200.0, capacity_per_sec: 200.0 },
-    //                     ),
-    //                 ),
-    //                 (
-    //                     capacity: 450.0,
-    //                     features: implicit_features!(
-    //                         Generator { capacity: 450.0, capacity_per_sec: 450.0 },
-    //                     ),
-    //                 ),
-    //                 (
-    //                     capacity: 800.0,
-    //                     features: implicit_features!(
-    //                         Generator { capacity: 800.0, capacity_per_sec: 800.0 },
-    //                     ),
-    //                 ),
-    //             ),
-    //         ),
-    // );
     blocks.add_blocks(
         blocks
             .extend_first_block(block!(

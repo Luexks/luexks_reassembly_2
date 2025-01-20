@@ -1,8 +1,8 @@
 pub mod block;
-pub mod blocks;
 pub mod block_constants;
 pub mod block_id;
 pub mod block_sort;
+pub mod blocks;
 mod cannon;
 mod cannon_boost;
 mod explosive;

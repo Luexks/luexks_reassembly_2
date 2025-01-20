@@ -1,5 +1,5 @@
-use std::fmt::{self, Display};
 use crate::blocks::block::Block;
+use std::fmt::{self, Display};
 
 pub struct Blocks(pub Vec<Block>);
 
