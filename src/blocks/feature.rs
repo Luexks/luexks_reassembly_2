@@ -275,7 +275,7 @@ impl Feature {
             } => format_components!(explode_damage => "explodeDamage",
                 explode_radius => "explodeRadius",
                 explode_std_dev => "explodeStdDev",
-                explode_faction => "explodeFactioN"
+                explode_faction => "explodeFaction"
             ),
             Feature::Assembler => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Regrower => NO_FEATURE_DATA_NEEDED.to_string(),

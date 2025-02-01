@@ -22,9 +22,7 @@ pub enum PortDistribution<'a> {
         side_with_possibly_intersecting_ports: &'a Side<'a>,
         possibly_intersecting_ports: &'a Vec<Port>,
     },
-    SingleWeaponOutHalfWay,
-    SingleWeaponInHalfWay,
-    SingleWeaponInOutHalfWay,
+    Single { position: DisplayOrientedNumber},
 }
 
 impl PortDistribution<'_> {
@@ -36,26 +34,6 @@ impl PortDistribution<'_> {
             PortDistribution::TowardsFromCurrentVert { .. } => true,
             PortDistribution::BackwardsFromNextVert { .. } => true,
             _ => false,
-        }
-    }
-
-    pub fn is_single(&self) -> bool {
-        match self {
-            Self::SingleWeaponOutHalfWay => true,
-            Self::SingleWeaponInHalfWay => true,
-            Self::SingleWeaponInOutHalfWay => true,
-            _ => false,
-        }
-    }
-
-    pub fn get_default_flag(&self) -> Flags<PortFlag> {
-        match self {
-            PortDistribution::SingleWeaponInHalfWay => Flags(vec![PortFlag::WeaponIn]),
-            PortDistribution::SingleWeaponInOutHalfWay => {
-                Flags(vec![PortFlag::WeaponIn, PortFlag::WeaponOut])
-            }
-            PortDistribution::SingleWeaponOutHalfWay => Flags(vec![PortFlag::WeaponOut]),
-            _ => Flags::<PortFlag>::default(),
         }
     }
 }

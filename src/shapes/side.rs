@@ -87,14 +87,8 @@ fn get_port_position_of_distribution(
                     - (PORT_SPACING * (port_count / 2.0 - 0.5))
                     + (PORT_SPACING * port_index as f32),
             ),
-            PortDistribution::SingleWeaponInHalfWay => {
-                don_float_from(PortPosition::CENTER)
-            },
-            PortDistribution::SingleWeaponOutHalfWay => {
-                don_float_from(PortPosition::CENTER)
-            },
-            PortDistribution::SingleWeaponInOutHalfWay => {
-                don_float_from(PortPosition::CENTER)
+            PortDistribution::Single { position } => {
+                position
             },
             PortDistribution::TowardsFromCurrentVert {
                 distance_from_current_vert, ..
