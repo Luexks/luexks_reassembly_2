@@ -13,7 +13,11 @@ pub struct Port {
 
 impl Display for Port {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{{{},{}{}}}", self.side_index, self.position, self.flags)
+        write!(
+            f,
+            "{{{},{},{}}}",
+            self.side_index, self.position, self.flags
+        )
     }
 }
 

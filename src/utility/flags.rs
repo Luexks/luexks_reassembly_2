@@ -22,3 +22,10 @@ impl<T: Display> Display for Flags<T> {
         )
     }
 }
+
+macro_rules! flags {
+    ($($item:expr),* $(,)?) => {
+        Flags(vec![$($item),*])
+    };
+}
+pub(crate) use flags;

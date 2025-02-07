@@ -32,3 +32,10 @@ impl Display for PortFlag {
         )
     }
 }
+
+macro_rules! no_port_flags {
+    () => {
+        Flags::default()
+    };
+}
+pub(crate) use no_port_flags;

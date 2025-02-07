@@ -1,6 +1,8 @@
 use lazy_static::lazy_static;
 use std::f32::consts::SQRT_2;
 
+use crate::shapes::port_flags::PortFlag;
+use crate::shapes::port_module::*;
 use crate::shapes::{
     courtesy_port_distribution::*,
     port_distribution::*,
@@ -11,6 +13,7 @@ use crate::shapes::{
 };
 use crate::utility::angle::Angle;
 use crate::utility::display_oriented_math::*;
+use crate::utility::flags::{flags, Flags};
 
 pub const SHAPE_ID_BASE: u32 = 129873000;
 
@@ -352,11 +355,9 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
             index: 0,
         };
         let ports_to_intersect_with_the_bottom_side =
-            &side_with_ports_to_intersect_with_the_bottom_side.to_ports_of_distribution(Some(
-                &PortDistribution::Center {
-                    courtesy_port_distribution_option: None,
-                },
-            ));
+            &side_with_ports_to_intersect_with_the_bottom_side.to_ports_of_module_option(
+                PortModule::no_flags(default_port_distribution_from_variant!(Center)),
+            );
         let vertex_1_of_side_with_ports_to_intersect_with_the_top_side =
             &Vertex(vertices.0.get(0).unwrap().clone().0.orient_by_vert_index(1));
         let vertex_2_of_side_with_ports_to_intersect_with_the_top_side =
@@ -367,9 +368,9 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
             index: 0,
         };
         let ports_to_intersect_with_the_top_side = &side_with_ports_to_intersect_with_the_top_side
-            .to_ports_of_distribution(Some(&PortDistribution::Center {
-                courtesy_port_distribution_option: None,
-            }));
+            .to_ports_of_module_option(PortModule::no_flags(
+                default_port_distribution_from_variant!(Center),
+            ));
         let vertex_1_of_side_with_ports_to_intersect_with_the_right_side =
             &Vertex(vertices.0.get(0).unwrap().clone().0.orient_by_vert_index(2));
         let vertex_2_of_side_with_ports_to_intersect_with_the_right_side =
@@ -380,13 +381,11 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
             index: 0,
         };
         let ports_to_intersect_with_the_right_side =
-            &side_with_ports_to_intersect_with_the_right_side.to_ports_of_distribution(Some(
-                &PortDistribution::Center {
-                    courtesy_port_distribution_option: None,
-                },
-            ));
-        vertices.to_hull_scale_with_distributions(
-            default_port_distribution_from_variants!(
+            &side_with_ports_to_intersect_with_the_right_side.to_ports_of_module_option(
+                PortModule::no_flags(default_port_distribution_from_variant!(Center)),
+            );
+        vertices.to_hull_scale_with_modules(
+            PortModule::option_list_from_distributions(default_port_distribution_from_variants!(
                 Center,
                 JoinWithNext,
                 UseIntersectingPortsFrom(
@@ -404,7 +403,7 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
                     &side_with_ports_to_intersect_with_the_bottom_side,
                     ports_to_intersect_with_the_bottom_side
                 ),
-            ),
+            )),
             format!("CommandS{}", scale_index),
         )
     };
@@ -418,19 +417,14 @@ pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
 
 pub fn add_hardpoints_to_the_shapes(shapes: &mut Shapes) -> usize {
     let scale_from = |scale_index: usize| {
-        let port_distributions = {
-            let mut port_distributions = Vec::new();
-            port_distributions.extend(
-                (0..*HARDPOINT_SIDE_COUNT - 1)
-                    .map(|_| default_port_distribution_from_variant!(SingleWeaponInHalfWay)),
-            );
-            port_distributions.push(default_port_distribution_from_variant!(None));
-            port_distributions.push(default_port_distribution_from_variant!(BackwardsFromNextVert: CourtesyPortDistribution::HalfwayToEnd));
-            port_distributions.push(default_port_distribution_from_variant!(Center));
-            port_distributions.push(default_port_distribution_from_variant!(TowardsFromCurrentVert: CourtesyPortDistribution::HalfwayToEnd));
-            port_distributions.push(default_port_distribution_from_variant!(None));
-            port_distributions
-        };
+        let port_modules = (0..*HARDPOINT_SIDE_COUNT - 1)
+            .map(|_| PortModule::some(flags!(PortFlag::WeaponOut), default_port_distribution_from_variant!(Single)))
+            .chain(std::iter::once(PortModule::explicit_none()))
+            .chain(std::iter::once(PortModule::no_flags(default_port_distribution_from_variant!(BackwardsFromNextVert: CourtesyPortDistribution::HalfwayToEnd))))
+            .chain(std::iter::once(PortModule::no_flags(default_port_distribution_from_variant!(Center))))
+            .chain(std::iter::once(PortModule::no_flags(default_port_distribution_from_variant!(TowardsFromCurrentVert: CourtesyPortDistribution::HalfwayToEnd))))
+            .chain(std::iter::once(PortModule::explicit_none()))
+            .collect::<Vec<_>>();
         let half_square_length = 0.5 * MASTER_SCALE * (scale_index as f32);
         let unoriented_do2d = do2d_float_from(half_square_length, half_square_length);
         let radius = 0.5 * MASTER_SCALE * scale_index as f32;
@@ -460,7 +454,7 @@ pub fn add_hardpoints_to_the_shapes(shapes: &mut Shapes) -> usize {
                 ))))
                 .collect(),
         )
-        .to_hull_scale_with_distributions(port_distributions, format!("HardpointS{}", scale_index))
+        .to_hull_scale_with_modules(port_modules, format!("HardpointS{}", scale_index))
     };
     shapes.add_unmirrored_shape_from_scales(
         (1..=HARDPOINT_SCALE_COUNT)

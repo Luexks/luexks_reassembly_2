@@ -20,10 +20,7 @@ fn main() {
 }
 
 fn create_mod_folder() -> PathBuf {
-    let src_path = std::env::current_dir().expect("Failed to get generator folder");
-    let rust_project_path = src_path
-        .parent()
-        .expect("Failed to get reassembly mods folder");
+    let rust_project_path = std::env::current_dir().expect("Failed to get generator folder");
     let reassembly_mods_path = rust_project_path
         .parent()
         .expect("Failed to get reassembly mods folder");

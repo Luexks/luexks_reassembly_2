@@ -1,7 +1,8 @@
 pub mod courtesy_port_distribution;
 mod port;
 pub mod port_distribution;
-mod port_flags;
+pub mod port_flags;
+pub mod port_module;
 mod ports;
 mod scale;
 pub mod shape;

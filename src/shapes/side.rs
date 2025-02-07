@@ -1,10 +1,12 @@
 use crate::mod_configs::shape_configs::*;
 use crate::shapes::courtesy_port_distribution::add_courtesy_ports;
-use crate::shapes::port::*;
 use crate::shapes::port_distribution::PortDistribution;
 use crate::shapes::shape_constants::*;
 use crate::shapes::vertex::Vertex;
+use crate::shapes::{port::*, port_module};
 use crate::utility::display_oriented_math::*;
+
+use super::port_module::PortModule;
 
 #[derive(Debug)]
 pub struct Side<'a> {
@@ -20,27 +22,30 @@ impl<'a> Side<'_> {
         .sqrt()
     }
 
-    pub fn to_ports_of_distribution(
-        &self,
-        port_distribution: Option<&PortDistribution>,
-    ) -> Vec<Port> {
-        if port_distribution.is_none() {
+    pub fn to_ports_of_module_option(&self, port_module_option: Option<PortModule>) -> Vec<Port> {
+        if port_module_option.is_none() {
             return Vec::new();
         }
+        let port_module = port_module_option.unwrap();
+        if let PortDistribution::Single { position } = &port_module.port_distribution {
+            return vec![Port {
+                side_index: self.index,
+                position: position.clone(),
+                flags: port_module.port_flags.clone(),
+            }];
+        }
         let side_length = self.get_side_length();
-        let port_count = if let Some(PortDistribution::UseIntersectingPortsFrom {
+        let port_count = if let PortDistribution::UseIntersectingPortsFrom {
             possibly_intersecting_ports,
             ..
-        }) = port_distribution
+        } = port_module.port_distribution
         {
             possibly_intersecting_ports.len() as f32
-        } else if port_distribution.unwrap().is_single() {
-            1.0
         } else {
             ((side_length + PORT_COUNT_DECISION_TOLERANCE) / MASTER_SCALE).floor()
         };
-        if port_distribution
-            .unwrap()
+        if port_module
+            .port_distribution
             .should_add_a_single_halfway_port_to_if_side_length_is_less_than_master_scale()
             && side_length <= MASTER_SCALE
         {
@@ -49,7 +54,7 @@ impl<'a> Side<'_> {
         let mut ports: Vec<_> = (0..port_count as usize)
             .filter_map(|port_index| {
                 let possible_port_position = get_port_position_of_distribution(
-                    &port_distribution,
+                    &Some(&port_module.port_distribution),
                     &self,
                     &port_count,
                     port_index,
@@ -57,7 +62,7 @@ impl<'a> Side<'_> {
                 possible_port_position.map(|port_position| Port {
                     side_index: self.index,
                     position: port_position,
-                    flags: port_distribution.unwrap().get_default_flag(),
+                    flags: port_module.port_flags.clone(),
                 })
             })
             .collect();
@@ -65,7 +70,7 @@ impl<'a> Side<'_> {
             ports: ports,
             side: &self,
             port_count: port_count,
-            port_distribution_option: port_distribution
+            port_module: port_module
         );
         ports
     }
@@ -88,7 +93,7 @@ fn get_port_position_of_distribution(
                     + (PORT_SPACING * port_index as f32),
             ),
             PortDistribution::Single { position } => {
-                position
+                position.clone()
             },
             PortDistribution::TowardsFromCurrentVert {
                 distance_from_current_vert, ..
