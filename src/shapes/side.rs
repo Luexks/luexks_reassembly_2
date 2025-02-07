@@ -1,4 +1,4 @@
-use crate::mod_configs::shape_configs::*;
+use crate::mod_configs::shape_configs::shape_configs::*;
 use crate::shapes::courtesy_port_distribution::add_courtesy_ports;
 use crate::shapes::port_distribution::PortDistribution;
 use crate::shapes::shape_constants::*;

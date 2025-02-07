@@ -42,7 +42,7 @@ impl PortDistribution<'_> {
 macro_rules! scale_from_alternating_vertices_and_port_distributions {
     (name: $name:expr, $($vertex:expr, $port_distribution_variant:ident $(: $last_port_distribution:expr)?),*,) => {
         {
-            use crate::shapes::port_module::PortModule;
+            use crate::shapes::{ port_module::PortModule, port_distribution::default_port_distribution_from_variants};
             Vertices(
                 vec![$($vertex),*]
             )
@@ -61,132 +61,94 @@ macro_rules! default_port_distribution_from_variants {
         vec![$(default_port_distribution_from_variant!(None)),*]
     };
     ($($port_distribution_variant:ident $(($side:expr, $ports:expr))? $(: $last_port_distribution:expr)?),* $(,)?) => {
-        vec![$(default_port_distribution_from_variant!($port_distribution_variant $( ($side, $ports))? $(: $last_port_distribution)?)),*]
+        {
+            use crate::shapes::port_distribution::default_port_distribution_from_variant;
+            vec![$(default_port_distribution_from_variant!($port_distribution_variant $( ($side, $ports))? $(: $last_port_distribution)?)),*]
+        }
     };
 }
 pub(crate) use default_port_distribution_from_variants;
 
 macro_rules! default_port_distribution_from_variant {
     (Single) => {{
-        use crate::shapes::shape_constants::PortPosition;
+        use crate::{
+            shapes::{port_distribution::PortDistribution, shape_constants::PortPosition},
+            utility::display_oriented_math::don_float_from,
+        };
         PortDistribution::Single {
             position: don_float_from(PortPosition::CENTER),
         }
     }};
-    (Center) => {
+    (Center) => {{
+        use crate::shapes::port_distribution::PortDistribution;
         PortDistribution::Center {
             courtesy_port_distribution_option: None,
         }
-    };
-    (Center: $courtesy_port_distribution:expr) => {
+    }};
+    (Center: $courtesy_port_distribution:expr) => {{
+        use crate::shapes::port_distribution::PortDistribution;
         PortDistribution::Center {
             courtesy_port_distribution_option: None,
         }
-    };
-    (TowardsFromCurrentVert) => {
+    }};
+    (TowardsFromCurrentVert) => {{
+        use crate::{
+            shape_configs::shape_configs::PORT_SPACING_FROM_VERT,
+            shapes::port_distribution::PortDistribution,
+        };
         PortDistribution::TowardsFromCurrentVert {
             distance_from_current_vert: crate::utility::display_oriented_math::don_float_from(
                 PORT_SPACING_FROM_VERT,
             ),
             courtesy_port_distribution_option: None,
         }
-    };
-    (TowardsFromCurrentVert: $courtesy_port_distribution:expr) => {
+    }};
+    (TowardsFromCurrentVert: $courtesy_port_distribution:expr) => {{
+        use crate::{
+            mod_configs::shape_configs::shape_configs::PORT_SPACING_FROM_VERT,
+            shapes::port_distribution::PortDistribution,
+        };
         PortDistribution::TowardsFromCurrentVert {
             distance_from_current_vert: crate::utility::display_oriented_math::don_float_from(
                 PORT_SPACING_FROM_VERT,
             ),
             courtesy_port_distribution_option: Some($courtesy_port_distribution),
         }
-    };
-    (BackwardsFromNextVert) => {
+    }};
+    (BackwardsFromNextVert) => {{
+        use crate::{
+            mod_configs::shape_configs::shape_configs::PORT_SPACING_FROM_VERT,
+            shapes::port_distribution::PortDistribution,
+        };
         PortDistribution::BackwardsFromNextVert {
             distance_from_next_vert: crate::utility::display_oriented_math::don_float_from(
                 PORT_SPACING_FROM_VERT,
             ),
             courtesy_port_distribution_option: None,
         }
-    };
-    (BackwardsFromNextVert: $courtesy_port_distribution:expr) => {
+    }};
+    (BackwardsFromNextVert: $courtesy_port_distribution:expr) => {{
+        use crate::{
+            mod_configs::shape_configs::shape_configs::PORT_SPACING_FROM_VERT,
+            shapes::port_distribution::PortDistribution,
+        };
         PortDistribution::BackwardsFromNextVert {
             distance_from_next_vert: crate::utility::display_oriented_math::don_float_from(
                 PORT_SPACING_FROM_VERT,
             ),
             courtesy_port_distribution_option: Some($courtesy_port_distribution),
         }
-    };
-    (JoinWithNext) => {
+    }};
+    (JoinWithNext) => {{
+        use crate::shapes::port_distribution::PortDistribution;
         PortDistribution::JoinWithNext
-    };
-    (UseIntersectingPortsFrom ($side:expr, $ports:expr)) => {
+    }};
+    (UseIntersectingPortsFrom ($side:expr, $ports:expr)) => {{
+        use crate::shapes::port_distribution::PortDistribution;
         PortDistribution::UseIntersectingPortsFrom {
             side_with_possibly_intersecting_ports: $side,
             possibly_intersecting_ports: $ports,
         }
-    };
+    }};
 }
 pub(crate) use default_port_distribution_from_variant;
-
-// macro_rules! default_port_distribution_from_variant {
-// (None) => {
-// None
-// };
-// (Single) => {{
-// use crate::shapes::shape_constants::PortPosition;
-// Some(PortDistribution::Single {
-// position: don_float_from(PortPosition::CENTER),
-// })
-// }};
-// (Center) => {
-// Some(PortDistribution::Center {
-// courtesy_port_distribution_option: None,
-// })
-// };
-// (Center: $courtesy_port_distribution:expr) => {
-// Some(PortDistribution::Center {
-// courtesy_port_distribution_option: None,
-// })
-// };
-// (TowardsFromCurrentVert) => {
-// Some(PortDistribution::TowardsFromCurrentVert {
-// distance_from_current_vert: crate::utility::display_oriented_math::don_float_from(
-// PORT_SPACING_FROM_VERT,
-// ),
-// courtesy_port_distribution_option: None,
-// })
-// };
-// (TowardsFromCurrentVert: $courtesy_port_distribution:expr) => {
-// Some(PortDistribution::TowardsFromCurrentVert {
-// distance_from_current_vert: crate::utility::display_oriented_math::don_float_from(
-// PORT_SPACING_FROM_VERT,
-// ),
-// courtesy_port_distribution_option: Some($courtesy_port_distribution),
-// })
-// };
-// (BackwardsFromNextVert) => {
-// Some(PortDistribution::BackwardsFromNextVert {
-// distance_from_next_vert: crate::utility::display_oriented_math::don_float_from(
-// PORT_SPACING_FROM_VERT,
-// ),
-// courtesy_port_distribution_option: None,
-// })
-// };
-// (BackwardsFromNextVert: $courtesy_port_distribution:expr) => {
-// Some(PortDistribution::BackwardsFromNextVert {
-// distance_from_next_vert: crate::utility::display_oriented_math::don_float_from(
-// PORT_SPACING_FROM_VERT,
-// ),
-// courtesy_port_distribution_option: Some($courtesy_port_distribution),
-// })
-// };
-// (JoinWithNext) => {
-// Some(PortDistribution::JoinWithNext)
-// };
-// (UseIntersectingPortsFrom ($side:expr, $ports:expr)) => {
-// Some(PortDistribution::UseIntersectingPortsFrom {
-// side_with_possibly_intersecting_ports: $side,
-// possibly_intersecting_ports: $ports,
-// })
-// };
-// }
-// pub(crate) use default_port_distribution_from_variant;

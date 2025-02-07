@@ -24,8 +24,9 @@ impl<T: Display> Display for Flags<T> {
 }
 
 macro_rules! flags {
-    ($($item:expr),* $(,)?) => {
+    ($($item:expr),* $(,)?) => {{
+        use crate::utility::flags::Flags;
         Flags(vec![$($item),*])
-    };
+    }};
 }
 pub(crate) use flags;

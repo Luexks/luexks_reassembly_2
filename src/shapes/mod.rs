@@ -1,10 +1,10 @@
 pub mod courtesy_port_distribution;
-mod port;
+pub mod port;
 pub mod port_distribution;
 pub mod port_flags;
 pub mod port_module;
-mod ports;
-mod scale;
+pub mod ports;
+pub mod scale;
 pub mod shape;
 pub mod shape_constants;
 pub mod shape_id;

@@ -1,4 +1,4 @@
-use crate::mod_configs::shape_configs::SHAPE_ID_BASE;
+use crate::mod_configs::shape_configs::shape_configs::SHAPE_ID_BASE;
 use std::fmt::{self, Display};
 
 static mut CURRENT_SHAPE_ID: ShapeId = ShapeId(SHAPE_ID_BASE);
