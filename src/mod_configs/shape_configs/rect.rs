@@ -1,5 +1,7 @@
 use crate::{
-    shapes::{scale::Scale, shapes::Shapes, vertex::Vertex, vertices::Vertices},
+    shapes::{
+        nomenclature::shape_name, scale::Scale, shapes::Shapes, vertex::Vertex, vertices::Vertices,
+    },
     utility::display_oriented_math::do2d_float_from,
 };
 use lazy_static::lazy_static;
@@ -30,47 +32,53 @@ fn scale_from(scale_factor_float_2d_and_name: &(f32, f32, String)) -> Scale {
     .to_hull_scale(scale_factor_float_2d_and_name.2.clone())
 }
 
+fn generate_rectangle_scale_factors_and_name(
+    name: &str,
+    scale_count: usize,
+    width_scale_fn: impl Fn(usize) -> f32,
+    height_scale_fn: impl Fn(usize) -> f32,
+) -> Vec<(f32, f32, String)> {
+    (1..=scale_count)
+        .map(|scale_index| {
+            (
+                width_scale_fn(scale_index),
+                height_scale_fn(scale_index),
+                shape_name(name, Some(scale_index)),
+            )
+        })
+        .collect::<Vec<_>>()
+}
+
 lazy_static! {
-    static ref QUARTER: Vec<(f32, f32, String)> = (1..=4)
-        .map(|scale_index| {
-            (
-                0.25,
-                0.25 * scale_index as f32,
-                format!("QuarterRectS{}", scale_index),
-            )
-        })
-        .collect::<Vec<_>>();
-    static ref HALF: Vec<(f32, f32, String)> = (1..=4)
-        .map(|scale_index| {
-            (
-                0.5,
-                0.5 * scale_index as f32,
-                format!("HalfRectS{}", scale_index),
-            )
-        })
-        .collect::<Vec<_>>();
-    static ref COMPLEMENTARY_RECIPROCAL_ROOT_2: Vec<(f32, f32, String)> = (1..=4)
-        .map(|scale_index| {
-            (
-                1.0,
-                scale_index as f32 * (1.0 - 1.0 / SQRT_2),
-                format!("ComplementaryReciprocalRoot2rectS{}", scale_index),
-            )
-        })
-        .collect::<Vec<_>>();
-    static ref RECIPROCAL_ROOT_2: Vec<(f32, f32, String)> = (1..=4)
-        .map(|scale_index| {
-            (
-                1.0,
-                scale_index as f32 * (1.0 / SQRT_2),
-                format!("ReciprocalRoot2rectS{}", scale_index),
-            )
-        })
-        .collect();
+    static ref QUARTER: Vec<(f32, f32, String)> = generate_rectangle_scale_factors_and_name(
+        "QuarterRect",
+        4,
+        |_| 0.25,
+        |scale_index| 0.25 * scale_index as f32
+    );
+    static ref HALF: Vec<(f32, f32, String)> = generate_rectangle_scale_factors_and_name(
+        "HalfRect",
+        4,
+        |_| 0.5,
+        |scale_index| 0.5 * scale_index as f32
+    );
+    static ref COMPLEMENTARY_RECIPROCAL_ROOT_2: Vec<(f32, f32, String)> =
+        generate_rectangle_scale_factors_and_name(
+            "ComplementaryReciprocalRoot2rect",
+            4,
+            |_| 1.0,
+            |scale_index| (1.0 - 1.0 / SQRT_2) * scale_index as f32
+        );
+    static ref RECIPROCAL_ROOT_2: Vec<(f32, f32, String)> =
+        generate_rectangle_scale_factors_and_name(
+            "ReciprocalRoot2rect",
+            4,
+            |_| 1.0,
+            |scale_index| scale_index as f32 * (1.0 / SQRT_2),
+        );
     static ref RECTANGLE_SCALE_FACTORS_AND_NAMES: Vec<(f32, f32, String)> = {
-        Vec::new()
+        QUARTER
             .iter()
-            .chain(QUARTER.iter())
             .chain(HALF.iter())
             .chain(COMPLEMENTARY_RECIPROCAL_ROOT_2.iter())
             .chain(RECIPROCAL_ROOT_2.iter())

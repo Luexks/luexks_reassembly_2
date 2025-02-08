@@ -1,4 +1,5 @@
 pub mod courtesy_port_distribution;
+pub mod nomenclature;
 pub mod port;
 pub mod port_distribution;
 pub mod port_flags;

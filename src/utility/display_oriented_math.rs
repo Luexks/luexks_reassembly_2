@@ -112,6 +112,17 @@ impl DisplayOriented2D {
             y: DisplayOrientedNumber::Float(y),
         }
     }
+
+    pub fn translation_by_angle_and_distance(
+        self,
+        angle: Angle,
+        distance: f32,
+    ) -> DisplayOriented2D {
+        DisplayOriented2D {
+            x: don_float_from(self.x.to_f32() + distance * angle.as_radians().get_value().cos()),
+            y: don_float_from(self.y.to_f32() + distance * angle.as_radians().get_value().sin()),
+        }
+    }
 }
 
 pub fn do2d_float_from(x: f32, y: f32) -> DisplayOriented2D {

@@ -18,7 +18,7 @@ pub enum PortDistribution<'a> {
     },
     JoinWithNext,
     UseIntersectingPortsFrom {
-        side_with_possibly_intersecting_ports: &'a Side<'a>,
+        side_with_possibly_intersecting_ports: Side,
         possibly_intersecting_ports: &'a Vec<Port>,
     },
     Single {

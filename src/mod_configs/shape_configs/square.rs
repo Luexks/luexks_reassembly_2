@@ -1,5 +1,7 @@
 use crate::{
-    shapes::{scale::Scale, shapes::Shapes, vertex::Vertex, vertices::Vertices},
+    shapes::{
+        nomenclature::shape_name, scale::Scale, shapes::Shapes, vertex::Vertex, vertices::Vertices,
+    },
     utility::display_oriented_math::do2d_float_from,
 };
 
@@ -24,5 +26,5 @@ fn scale_from(scale_index: usize) -> Scale {
             .map(|vert_index| Vertex(unoriented_do2d.orient_by_vert_index(vert_index)))
             .collect(),
     )
-    .to_hull_scale(format!("SquareS{}", scale_index))
+    .to_hull_scale(shape_name("Square", Some(scale_index)))
 }

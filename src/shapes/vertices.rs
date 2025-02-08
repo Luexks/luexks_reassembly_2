@@ -26,10 +26,10 @@ impl Vertices {
                     .flat_map(|((side_index, vert_1), vert_2)| {
                         Side {
                             index: side_index,
-                            vertex_1: vert_1,
-                            vertex_2: vert_2,
+                            vertex_1: vert_1.clone(),
+                            vertex_2: vert_2.clone(),
                         }
-                        .to_ports_of_module_option(PortModule::no_flags(
+                        .to_ports_of(PortModule::no_flags(
                             default_port_distribution_from_variant!(Center),
                         ))
                     })
@@ -64,15 +64,13 @@ impl Vertices {
                             ports.extend(
                                 Side {
                                     index: side_index,
-                                    vertex_1: vertex_1,
-                                    vertex_2: vertex_2,
+                                    vertex_1: vertex_1.clone(),
+                                    vertex_2: vertex_2.clone(),
                                 }
-                                .to_ports_of_module_option(Some(
-                                    PortModule {
-                                        port_flags: flags.clone(),
-                                        port_distribution: port_distribution.clone(),
-                                    },
-                                )),
+                                .to_ports_of(Some(PortModule {
+                                    port_flags: flags.clone(),
+                                    port_distribution: port_distribution.clone(),
+                                })),
                             );
                         } else if matches!(port_distribution, PortDistribution::JoinWithNext) {
                             join_with_next_vertices.push(vertex_1);
@@ -83,8 +81,8 @@ impl Vertices {
                             join_with_next_vertices.push(vertex_2);
                             let entire_side = Side {
                                 index: 0, // Null value hehe
-                                vertex_1: join_with_next_vertices.first().unwrap(),
-                                vertex_2: vertex_2,
+                                vertex_1: join_with_next_vertices.first().unwrap().clone().clone(),
+                                vertex_2: vertex_2.clone(),
                             };
                             let sub_sides: Vec<_> = join_with_next_vertices
                                 .iter()
@@ -93,13 +91,12 @@ impl Vertices {
                                 .map(|((sub_side_index, sub_vertex_1), sub_vertex_2)| Side {
                                     index: 2 + side_index - join_with_next_vertices.len()
                                         + sub_side_index,
-                                    vertex_1: sub_vertex_1,
-                                    vertex_2: sub_vertex_2,
+                                    vertex_1: sub_vertex_1.clone().clone(),
+                                    vertex_2: sub_vertex_2.clone().clone(),
                                 })
                                 .collect();
-                            let new_undistributed_ports = entire_side.to_ports_of_module_option(
-                                PortModule::no_flags(port_distribution.clone()),
-                            );
+                            let new_undistributed_ports = entire_side
+                                .to_ports_of(PortModule::no_flags(port_distribution.clone()));
                             let mut new_distributed_ports = Vec::<Port>::new();
                             for new_undistributed_port in new_undistributed_ports {
                                 let mut sub_side_to_distribute_into = None;
@@ -141,6 +138,22 @@ impl Vertices {
             }),
             name: name,
         }
+    }
+
+    pub fn get_nth_side(&self, side_index: usize) -> Option<Side> {
+        if self.0.is_empty() {
+            // panic!("What are you doing?");
+            return None;
+        }
+
+        self.0.get(side_index).map(|vertex_1| {
+            let vertex_2 = &self.0[(side_index + 1) % self.0.len()];
+            Side {
+                vertex_1: vertex_1.clone(),
+                vertex_2: vertex_2.clone(),
+                index: 0,
+            }
+        })
     }
 }
 

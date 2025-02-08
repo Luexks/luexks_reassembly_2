@@ -1,28 +1,28 @@
 use crate::mod_configs::shape_configs::shape_configs::*;
 use crate::shapes::courtesy_port_distribution::add_courtesy_ports;
+use crate::shapes::port::*;
 use crate::shapes::port_distribution::PortDistribution;
 use crate::shapes::shape_constants::*;
 use crate::shapes::vertex::Vertex;
-use crate::shapes::{port::*, port_module};
 use crate::utility::display_oriented_math::*;
 
 use super::port_module::PortModule;
 
-#[derive(Debug)]
-pub struct Side<'a> {
+#[derive(Clone)]
+pub struct Side {
     pub index: usize,
-    pub vertex_1: &'a Vertex,
-    pub vertex_2: &'a Vertex,
+    pub vertex_1: Vertex,
+    pub vertex_2: Vertex,
 }
 
-impl<'a> Side<'_> {
+impl Side {
     pub fn get_side_length(&self) -> f32 {
         ((self.vertex_1.0.x.to_f32() - self.vertex_2.0.x.to_f32()).powi(2)
             + (self.vertex_1.0.y.to_f32() - self.vertex_2.0.y.to_f32()).powi(2))
         .sqrt()
     }
 
-    pub fn to_ports_of_module_option(&self, port_module_option: Option<PortModule>) -> Vec<Port> {
+    pub fn to_ports_of(&self, port_module_option: Option<PortModule>) -> Vec<Port> {
         if port_module_option.is_none() {
             return Vec::new();
         }
