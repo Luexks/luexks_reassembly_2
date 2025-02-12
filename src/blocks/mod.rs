@@ -12,3 +12,5 @@ mod fragment;
 mod laser;
 mod pattern;
 mod shield;
+mod shroud;
+mod shrouds;
