@@ -25,9 +25,9 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
                 Palette,
             ),
             group: GROUP,
-            color_1: Color::new_rrggbb("fc4807"),
-            color_2: Color::new_rrggbb("301400"),
-            line_color: Color::new_rrggbb("FFFFFF"),
+            color_1: Color::new_rrggbb("7f6538"),
+            color_2: Color::new_rrggbb("49351f"),
+            line_color: Color::new_rrggbb("221e0f"),
             durability: 4.0,
             density: 0.2,
         )
@@ -46,9 +46,9 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
             block_variants!(
                 (
                     name: funky_string!("Exo Titus"),
-                    color_1: Color::new_rrggbb("55aa55"),
-                    color_2: Color::new_rrggbb("33aa33"),
-                    line_color: Color::new_rrggbb("ffffff"),
+                    color_1: Color::new_rrggbb("5b2619"),
+                    color_2: Color::new_rrggbb("442c23"),
+                    line_color: Color::new_rrggbb("a02f10"),
                 ),
                 (
                     name: funky_string!("Gamma Compounds"),

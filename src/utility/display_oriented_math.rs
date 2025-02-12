@@ -97,15 +97,6 @@ impl DisplayOriented2D {
             }
         }
     }
-}
-
-impl Display for DisplayOriented2D {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{{{},{}}}", self.x, self.y)
-    }
-}
-
-impl DisplayOriented2D {
     pub fn simple(x: f32, y: f32) -> DisplayOriented2D {
         DisplayOriented2D {
             x: DisplayOrientedNumber::Float(x),
@@ -122,6 +113,12 @@ impl DisplayOriented2D {
             x: don_float_from(self.x.to_f32() + distance * angle.as_radians().get_value().cos()),
             y: don_float_from(self.y.to_f32() + distance * angle.as_radians().get_value().sin()),
         }
+    }
+}
+
+impl Display for DisplayOriented2D {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{{{},{}}}", self.x, self.y)
     }
 }
 
