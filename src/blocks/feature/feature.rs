@@ -1,8 +1,5 @@
 use crate::blocks::block::Block;
-use crate::blocks::cannon::Cannon;
-use crate::blocks::cannon_boost::CannonBoost;
-use crate::blocks::laser::Laser;
-use crate::blocks::shield::Shield;
+use crate::blocks::feature::*;
 use crate::utility::angle::Angle;
 use crate::utility::color::Color;
 use crate::utility::component_formatting::{format_component, format_components};
@@ -48,6 +45,8 @@ macro_rules! new_feature {
             $(
                 $feature_component_name: Some($feature_component_value),
             )*
+            // ..Default::default()
+            // ..Feature::$feature_name.default_for_variant()
         }
     };
 }
@@ -156,6 +155,46 @@ pub enum Feature {
     NeverFire,
     NoIcon,
 }
+
+// macro_rules! impl_default_for_feature {
+//     ($($variant:ident { $($field:ident),* }),* $(,)?) => {
+//         impl Default for Feature {
+//             fn default() -> Self {
+//                 Feature::Command
+//             }
+//         }
+
+//         impl Feature {
+//             pub fn default_for_variant(variant: &Feature) -> Feature {
+//                 match variant {
+//                     $(Feature::$variant { .. } => Feature::$variant {
+//                         $($field: None),*
+//                     },)*
+//                     _ => variant.clone(),
+//                 }
+//             }
+//         }
+//     };
+// }
+
+// impl_default_for_feature!(
+//     Thruster { force, boost, boost_time, color_1, color_2 },
+//     Generator { capacity, capacity_per_sec },
+//     Perishable { lifetime },
+//     Turret { speed, limit, barrel_size, barrel_count, barrel_taper },
+//     Cannon { cannon },
+//     Laser { laser },
+//     Shield { shield },
+//     Torquer { torque },
+//     Launcher { replicate_block, speed, power, out_speed, ang_vel },
+//     Explode { explode_damage, explode_radius, explode_std_dev, explode_faction },
+//     Tractor { range },
+//     Photosynth { per_sec },
+//     Seed { lifetime },
+//     Melee { damage },
+//     Charging { max_time, min },
+//     Teleporter { power, radius },
+// );
 
 impl Display for Feature {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

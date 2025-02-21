@@ -1,4 +1,4 @@
-use crate::blocks::explosive::Explosive;
+use crate::blocks::feature::explosive::Explosive;
 use crate::utility::color::Color;
 use crate::utility::component_formatting::format_components;
 use crate::utility::flags::Flags;
