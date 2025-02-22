@@ -18,3 +18,21 @@ pub use cannon_boost::*;
 
 pub mod explosive;
 pub use explosive::*;
+
+pub mod thruster;
+pub use thruster::*;
+
+pub mod generator;
+pub use generator::*;
+
+pub mod perishable;
+pub use perishable::*;
+
+pub mod turret;
+pub use turret::*;
+
+pub mod torquer;
+pub use torquer::*;
+
+pub mod launcher;
+pub use launcher::*;

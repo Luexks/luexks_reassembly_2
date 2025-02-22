@@ -5,7 +5,7 @@ use crate::blocks::shrouds::Shrouds;
 use crate::shapes::shape::Shape;
 use crate::shapes::shape_id::ShapeId;
 use crate::utility::color::Color;
-use crate::utility::component_formatting::{format_component, format_components};
+use crate::utility::component_formatting::{format_component_option, format_component_options};
 use crate::utility::funky_string::{funky_string, FunkyString};
 use crate::utility::option_comparison_prioritising_some::option_comparison_prioritising_some;
 use std::fmt::{self, Display};
@@ -353,7 +353,7 @@ impl Display for Block {
                 Some(value) => value.to_string(),
                 None => String::new(),
             },
-            format_components!(
+            format_component_options!(
                 self.extends => "extends",
                 self.group => "group",
                 self.sort => "sort",
@@ -378,7 +378,7 @@ impl Display for Block {
                     match extend_accounting_feature_list.feature_list_same_as_extends {
                         true => "".to_string(),
                         false => {
-                            format_component!(Some(&extend_accounting_feature_list.features) => "features")
+                            format_component_option!(Some(&extend_accounting_feature_list.features) => "features")
                         }
                     }
                 }

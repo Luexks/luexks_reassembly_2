@@ -1,9 +1,13 @@
-use crate::blocks::feature::explosive::Explosive;
 use crate::blocks::feature::fragment::Fragment;
 use crate::blocks::pattern::Pattern;
 use crate::utility::color::Color;
-use crate::utility::component_formatting::format_components;
+use crate::utility::component_formatting::{
+    format_bracket_layer, format_component, format_component_options,
+};
 use crate::utility::flags::Flags;
+use crate::{
+    blocks::feature::explosive::Explosive, utility::component_formatting::format_component_option,
+};
 use std::fmt::{self, Display};
 
 macro_rules! cannon {
@@ -61,23 +65,26 @@ impl Display for Cannon {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{{{}}}",
-            format_components!(
-                self.rounds_per_sec => "roundsPerSec",
-                self.rounds_per_burst => "roundsPerBurst",
-                &self.explosive => "explosive",
-                &self.pattern => "pattern",
-                self.burstyness => "burstyness",
-                self.muzzle_vel => "muzzleVel",
-                self.spread => "spread",
-                self.range_std_dev => "rangeStdDev",
-                self.power => "power",
-                self.damage => "damage",
-                self.range => "range",
-                self.explode_radius => "explodeRadius",
-                &self.color => "color",
-                self.projectile_size => "projectileSize",
-                &self.fragment => "fragment"
+            "{}",
+            format_component(
+                format_bracket_layer(format_component_options!(
+                    self.rounds_per_sec => "roundsPerSec",
+                    self.rounds_per_burst => "roundsPerBurst",
+                    &self.explosive => "explosive",
+                    &self.pattern => "pattern",
+                    self.burstyness => "burstyness",
+                    self.muzzle_vel => "muzzleVel",
+                    self.spread => "spread",
+                    self.range_std_dev => "rangeStdDev",
+                    self.power => "power",
+                    self.damage => "damage",
+                    self.range => "range",
+                    self.explode_radius => "explodeRadius",
+                    &self.color => "color",
+                    self.projectile_size => "projectileSize",
+                    &self.fragment => "fragment"
+                )),
+                "cannon"
             )
         )
     }

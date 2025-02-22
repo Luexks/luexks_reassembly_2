@@ -2,7 +2,7 @@ use crate::{
     shapes::shape_id::ShapeId,
     utility::{
         angle::Angle,
-        component_formatting::format_components,
+        component_formatting::{format_bracket_layer, format_component, format_component_options},
         display_oriented_math::{DisplayOriented2D, DisplayOriented3D},
     },
 };
@@ -24,8 +24,8 @@ impl Display for Shroud {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{{{}}}",
-            format_components!(
+            "{}",
+            format_bracket_layer(format_component_options!(
                 self.shape => "shape",
                 &self.size => "size",
                 &self.offset => "offset",
@@ -34,7 +34,7 @@ impl Display for Shroud {
                 &self.line_color => "line_color_id",
                 &self.angle => "angle",
                 self.taper => "taper",
-            )
+            ))
         )
     }
 }

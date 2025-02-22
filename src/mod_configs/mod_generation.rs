@@ -128,11 +128,11 @@ pub fn create_mod_specifics(blocks: &mut Blocks, shapes: &mut Shapes) {
         vec![blocks.extend_first_block(block!(
             name: funky_string!("War Acid"),
             blurb: funky_string!("Cheap and effective."),
-            features: implicit_features!(
-                // Turret {
-                //     speed: Angle::Degree(180.0)
-                // },
-                Cannon { cannon: cannon!() }
+            features: explicit_features!(
+                Turret {
+                    speed: Angle::Degree(180.0)
+                    // Not all the components need to be defined.
+                },
             )
         ))], // .to_extended_blocks_from_singular_shape_and_plural_variants(
              //     &shapes.get(rect_long),

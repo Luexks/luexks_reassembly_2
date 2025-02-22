@@ -16,15 +16,18 @@ impl Display for CannonBoost {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{{{}}}",
-            format_components!(&self.rounds_per_sec => "roundsPerSec",
-                &self.muzzle_vel => "muzzleVel",
-                &self.power => "power",
-                &self.damage => "damage",
-                &self.range => "range",
-                &self.explode_radius => "explodeRadius",
-                &self.spread => "spread"
-            )
+            "{}",
+            format_component(
+                format_component_options!(&self.rounds_per_sec => "roundsPerSec",
+                    &self.muzzle_vel => "muzzleVel",
+                    &self.power => "power",
+                    &self.damage => "damage",
+                    &self.range => "range",
+                    &self.explode_radius => "explodeRadius",
+                    &self.spread => "spread"
+                ),
+                "boost"
+            ),
         )
     }
 }

@@ -2,7 +2,7 @@ use crate::blocks::block::Block;
 use crate::blocks::feature::*;
 use crate::utility::angle::Angle;
 use crate::utility::color::Color;
-use crate::utility::component_formatting::{format_component, format_components};
+use crate::utility::component_formatting::{format_component_option, format_component_options};
 use crate::utility::display_oriented_math::DisplayOriented2D;
 use std::fmt::{self, Display};
 
@@ -41,13 +41,22 @@ macro_rules! new_feature {
         Feature::$feature_name
     };
     ($feature_name:ident { $($feature_component_name:ident: $feature_component_value:expr),* }) => {
-        Feature::$feature_name {
-            $(
-                $feature_component_name: Some($feature_component_value),
-            )*
+        Feature::$feature_name(
+            Some(
+                {
+                    let mut feature_data = default_feature_of_variant!($feature_name);
+                    $(
+                        feature_data.$feature_component_name = Some($feature_component_value);
+                    )*
+                    feature_data
+                }
+            )
+            // $(
+            //     $feature_component_name: Some($feature_component_value),
+            // )*
             // ..Default::default()
             // ..Feature::$feature_name.default_for_variant()
-        }
+        )
     };
 }
 pub(crate) use new_feature;
@@ -55,48 +64,17 @@ pub(crate) use new_feature;
 #[derive(Clone)]
 pub enum Feature {
     Command,
-    Thruster {
-        force: Option<f32>,
-        boost: Option<f32>,
-        boost_time: Option<f32>,
-        color_1: Option<Color>,
-        color_2: Option<Color>,
-    },
-    Generator {
-        capacity: Option<f32>,
-        capacity_per_sec: Option<f32>,
-    },
-    Perishable {
-        lifetime: Option<f32>,
-    },
-    Turret {
-        speed: Option<Angle>,
-        limit: Option<Angle>,
-        barrel_size: Option<DisplayOriented2D>,
-        barrel_count: Option<i32>,
-        barrel_taper: Option<f32>,
-    },
-    // Launch,
-    Cannon {
-        cannon: Option<Cannon>,
-    },
-    Laser {
-        laser: Option<Laser>,
-    },
+    Thruster(Option<Thruster>),
+    Generator(Option<Generator>),
+    Perishable(Option<Perishable>),
+    Turret(Option<Turret>),
+    // Launch,\
+    Cannon(Option<Cannon>),
+    Laser(Option<Laser>),
     Autofire,
-    Shield {
-        shield: Option<Shield>,
-    },
-    Torquer {
-        torque: Option<f32>,
-    },
-    Launcher {
-        replicate_block: Option<Block>,
-        speed: Option<f32>,
-        power: Option<f32>,
-        out_speed: Option<f32>,
-        ang_vel: Option<f32>,
-    },
+    Shield(Option<Shield>),
+    Torquer(Option<Torquer>),
+    Launcher(Option<Launcher>),
     Explode {
         explode_damage: Option<f32>,
         explode_radius: Option<f32>,
@@ -155,6 +133,51 @@ pub enum Feature {
     NeverFire,
     NoIcon,
 }
+
+macro_rules! default_feature_of_variant {
+    (Thruster) => {
+        Thruster::default()
+    };
+    (Generator) => {
+        Generator::default()
+    };
+    (Turret) => {
+        Turret::default()
+    };
+       // ($feature_variant:ident) => {
+       //     // {
+       //     //     if let Feature::Thruster(_) = Feature::$feature_variant(None) {
+       //     //         Thruster::default()
+       //     //     } else if let Feature::Generator(_) = Feature::$feature_variant(None) {
+       //     //         Generator::default()
+       //     //     } else {
+       //     //         panic!()
+       //     //     }
+       //     // }
+       //     match Feature::$feature_variant(None) {
+       //         // Feature::Thruster(_) => Thruster::default(),
+       //         // Feature::Generator(_) => Generator::default(),
+       //         // Feature::Perishable(_) => Perishable::default(),
+       //         // Feature::Turret(_) => Turret::default(),
+       //         // Feature::Cannon(_) => Cannon::default(),
+       //         // Feature::Laser(_) => Laser::default(),
+       //         // Feature::Shield(_) => Shield::default(),
+       //         // Feature::Torquer(_) => Torquer::default(),
+       //         // Feature::Launcher(_) => Launcher::default(),
+       //         Feature::Thruster(_) => Feature::Thruster(Some(Thruster::default())),
+       //         Feature::Generator(_) => Feature::Generator(Some(Generator::default())),
+       //         Feature::Perishable(_) => Feature::Perishable(Some(Perishable::default())),
+       //         Feature::Turret(_) => Feature::Turret(Some(Turret::default())),
+       //         Feature::Cannon(_) => Feature::Cannon(Some(Cannon::default())),
+       //         Feature::Laser(_) => Feature::Laser(Some(Laser::default())),
+       //         Feature::Shield(_) => Feature::Shield(Some(Shield::default())),
+       //         Feature::Torquer(_) => Feature::Torquer(Some(Torquer::default())),
+       //         Feature::Launcher(_) => Feature::Launcher(Some(Launcher::default())),
+       //         _ => todo!(),
+       //     }
+       // };
+}
+pub(crate) use default_feature_of_variant;
 
 // macro_rules! impl_default_for_feature {
 //     ($($variant:ident { $($field:ident),* }),* $(,)?) => {
@@ -257,92 +280,76 @@ impl Feature {
     pub fn components_to_string(&self) -> String {
         match self {
             Feature::Command => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Thruster {
-                force,
-                boost,
-                boost_time,
-                color_1,
-                color_2,
-            } => format_components!(
-                force => "thrusterForce",
-                boost => "thrusterBoost",
-                boost_time => "thrusterBoostTime",
-                color_1 => "thrusterColor",
-                color_2 => "thrusterColor1"
-            ),
-            Feature::Generator {
-                capacity,
-                capacity_per_sec,
-            } => format_components!(
-                capacity => "powerCapacity",
-                capacity_per_sec => "generatorCapacityPerSec"
-            ),
-            Feature::Perishable { lifetime } => format_component!(lifetime => "lifetime"),
-            Feature::Turret {
-                speed,
-                limit,
-                barrel_size,
-                barrel_count,
-                barrel_taper,
-            } => format_components!(
-                speed => "turretSpeed",
-                limit => "turretLimit",
-                barrel_size => "barrelSize",
-                barrel_count => "barrelCount",
-                barrel_taper => "barrelTaper"
-            ),
+            Feature::Thruster(thruster_option) => thruster_option
+                .clone()
+                .map_or(String::new(), |thruster| thruster.to_string()),
+            Feature::Generator(generator_option) => generator_option
+                .clone()
+                .map_or(String::new(), |generator| generator.to_string()),
+            Feature::Perishable(perishable_option) => perishable_option
+                .clone()
+                .map_or(String::new(), |perishable| perishable.to_string()),
+            Feature::Turret(turret_option) => turret_option
+                .clone()
+                .map_or(String::new(), |turret| turret.to_string()),
             // Feature::Launch => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Cannon { cannon } => format_component!(cannon => "cannon"),
-            Feature::Laser { laser } => format_component!(laser => "laser"),
+            Feature::Cannon(cannon_option) => cannon_option
+                .clone()
+                .map_or(String::new(), |cannon| cannon.to_string()),
+            Feature::Laser(laser_option) => laser_option
+                .clone()
+                .map_or(String::new(), |laser| laser.to_string()),
             Feature::Autofire => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Shield { shield } => format_component!(shield => "shield"),
-            Feature::Torquer { torque } => format_component!(torque => "torquerTorque"),
-            Feature::Launcher {
-                replicate_block,
-                speed,
-                power,
-                out_speed,
-                ang_vel,
-            } => {
-                format_components!(replicate_block => "replicateBlock", speed => "launcherOutSpeed", power => "launcherPower", out_speed => "launcherOutSpeed", ang_vel => "launcherAngVel")
-            }
+            Feature::Shield(shield_option) => shield_option
+                .clone()
+                .map_or(String::new(), |shield| shield.to_string()),
+            Feature::Torquer(torquer_option) => torquer_option
+                .clone()
+                .map_or(String::new(), |torquer| torquer.to_string()),
+            Feature::Launcher(launcher_option) => launcher_option
+                .clone()
+                .map_or(String::new(), |launcher| launcher.to_string()),
             Feature::Explode {
                 explode_damage,
                 explode_radius,
                 explode_std_dev,
                 explode_faction,
-            } => format_components!(explode_damage => "explodeDamage",
+            } => format_component_options!(explode_damage => "explodeDamage",
                 explode_radius => "explodeRadius",
                 explode_std_dev => "explodeStdDev",
                 explode_faction => "explodeFaction"
             ),
             Feature::Assembler => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Regrower => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::CannonBoost(cannon_boost) => format_component!(cannon_boost => "cannonBoost"),
+            Feature::CannonBoost(cannon_boost) => {
+                format_component_option!(cannon_boost => "cannonBoost")
+            }
             Feature::Invulnerable => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::NoRegen => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Persistent => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Environmental => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Tractor { range } => format_component!(range => "tractorRange"),
+            Feature::Tractor { range } => format_component_option!(range => "tractorRange"),
             Feature::Root => NO_FEATURE_DATA_NEEDED.to_string(),
             // Feature::Grow => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Photosynth { per_sec } => format_component!(per_sec => "photosynthPerSec"),
+            Feature::Photosynth { per_sec } => {
+                format_component_option!(per_sec => "photosynthPerSec")
+            }
             Feature::Autolaunch => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::FreeRes => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Factory => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Seed { lifetime } => format_component!(lifetime => "seedLifetime"),
-            Feature::Melee { damage } => format_component!(damage => "meleeDamage"),
+            Feature::Seed { lifetime } => format_component_option!(lifetime => "seedLifetime"),
+            Feature::Melee { damage } => format_component_option!(damage => "meleeDamage"),
             // Feature::Ungrow => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Unique => NO_FEATURE_DATA_NEEDED.to_string(),
             Self::Charging { max_time, min } => {
-                format_components!(max_time => "chargingMaxTime", min => "chargingMin")
+                format_component_options!(max_time => "chargingMaxTime", min => "chargingMin")
             }
             Feature::SelfFactory => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::NoClip => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Invisible => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Bumper => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Teleporter { power, radius } => {
-                format_components!(power => "teleporterPower", radius => "teleporterRadius")
+                format_component_options!(power => "teleporterPower", radius => "teleporterRadius")
             }
             Feature::Deactivates => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Telespawn => NO_FEATURE_DATA_NEEDED.to_string(),

@@ -1,7 +1,7 @@
 use crate::blocks::feature::explosive::Explosive;
 use crate::blocks::pattern::Pattern;
 use crate::utility::color::Color;
-use crate::utility::component_formatting::format_components;
+use crate::utility::component_formatting::format_component_options;
 use crate::utility::flags::Flags;
 use std::fmt::{self, Display};
 
@@ -26,7 +26,7 @@ impl Display for Fragment {
         write!(
             f,
             "{{{}}}",
-            format_components!(
+            format_component_options!(
                 self.rounds_per_burst => "roundsPerBurst",
                 &self.explosive => "explosive",
                 &self.pattern => "pattern",
