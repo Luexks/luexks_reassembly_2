@@ -12,6 +12,20 @@ pub struct CannonBoost {
     spread: Option<CannonBoostValue>,
 }
 
+impl Default for CannonBoost {
+    fn default() -> Self {
+        CannonBoost {
+            rounds_per_sec: None,
+            muzzle_vel: None,
+            power: None,
+            damage: None,
+            range: None,
+            explode_radius: None,
+            spread: None,
+        }
+    }
+}
+
 impl Display for CannonBoost {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(

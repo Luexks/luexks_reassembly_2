@@ -1,12 +1,5 @@
 use crate::blocks::block::Block;
-use crate::blocks::feature::fragment::Fragment;
-use crate::blocks::pattern::Pattern;
-use crate::utility::color::Color;
 use crate::utility::component_formatting::format_component_options;
-use crate::utility::flags::Flags;
-use crate::{
-    blocks::feature::explosive::Explosive, utility::component_formatting::format_component_option,
-};
 use std::fmt::{self, Display};
 
 #[derive(Clone)]

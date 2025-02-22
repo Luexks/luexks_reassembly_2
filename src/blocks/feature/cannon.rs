@@ -1,3 +1,4 @@
+use crate::blocks::feature::explosive::Explosive;
 use crate::blocks::feature::fragment::Fragment;
 use crate::blocks::pattern::Pattern;
 use crate::utility::color::Color;
@@ -5,20 +6,7 @@ use crate::utility::component_formatting::{
     format_bracket_layer, format_component, format_component_options,
 };
 use crate::utility::flags::Flags;
-use crate::{
-    blocks::feature::explosive::Explosive, utility::component_formatting::format_component_option,
-};
 use std::fmt::{self, Display};
-
-macro_rules! cannon {
-    ($($component_name:ident: $component_value:expr),* $(,)?) => {
-        crate::blocks::feature::cannon::Cannon {
-            $($component_name: Some($component_value),)*
-            ..crate::blocks::feature::cannon::Cannon::default()
-        }
-    };
-}
-pub(crate) use cannon;
 
 #[derive(Clone)]
 pub struct Cannon {

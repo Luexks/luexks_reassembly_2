@@ -2,23 +2,23 @@ use crate::utility::component_formatting::format_component_options;
 use std::fmt::{self, Display};
 
 #[derive(Clone)]
-pub struct Perishable {
-    lifetime: Option<f32>,
+pub struct Melee {
+    damage: Option<f32>,
 }
 
-impl Default for Perishable {
+impl Default for Melee {
     fn default() -> Self {
-        Self { lifetime: None }
+        Self { damage: None }
     }
 }
 
-impl Display for Perishable {
+impl Display for Melee {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{}",
             format_component_options!(
-                self.lifetime => "lifetime",
+                self.damage => "meleeDamage",
             )
         )
     }

@@ -1,7 +1,7 @@
+use crate::utility::color::Color;
 use crate::utility::component_formatting::{
     format_bracket_layer, format_component, format_component_options,
 };
-use crate::utility::{color::Color, component_formatting::format_component_option};
 use std::fmt::{self, Display};
 
 #[derive(Clone)]

@@ -1,10 +1,6 @@
-use crate::blocks::feature::fragment::Fragment;
-use crate::blocks::pattern::Pattern;
-use crate::utility::color::Color;
+use crate::utility::angle::Angle;
 use crate::utility::component_formatting::format_component_options;
 use crate::utility::display_oriented_math::DisplayOriented2D;
-use crate::utility::flags::Flags;
-use crate::{blocks::feature::explosive::Explosive, utility::angle::Angle};
 use std::fmt::{self, Display};
 
 #[derive(Clone)]

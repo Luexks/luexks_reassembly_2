@@ -37,7 +37,8 @@ impl Display for Fragment {
                 self.range => "range",
                 self.explode_radius => "explodeRadius",
                 &self.color => "color",
-                self.projectile_size => "projectileSize"
+                self.projectile_size => "projectileSize",
+                &self.fragment => "fragment",
             )
         )
     }
