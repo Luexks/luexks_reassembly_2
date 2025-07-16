@@ -1,5 +1,6 @@
 use std::fmt::{self, Display};
 
+#[macro_export]
 macro_rules! funky_string {
     ($value:expr) => {
         FunkyString($value.to_string())

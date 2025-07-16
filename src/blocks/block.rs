@@ -10,6 +10,7 @@ use crate::utility::funky_string::{funky_string, FunkyString};
 use crate::utility::option_comparison_prioritising_some::option_comparison_prioritising_some;
 use std::fmt::{self, Display};
 
+#[macro_export]
 macro_rules! block {
     ($($component_name:ident: $component_value:expr),* $(,)?) => {
         Block {
@@ -19,22 +20,25 @@ macro_rules! block {
         }
     };
 }
-pub(crate) use block;
+// pub(crate) use block;
 
+#[macro_export]
 macro_rules! block_variants {
     ($(($($component_name:ident: $component_value:expr),* $(,)?)),* $(,)?) => {
         vec![$(block_variant!($($component_name: $component_value),*)),*]
     }
 }
-pub(crate) use block_variants;
+// pub(crate) use block_variants;
 
+#[macro_export]
 macro_rules! block_variant {
     ($($component_name:ident: $component_value:expr),* $(,)?) => {
         block_without_id!($($component_name: $component_value),*)
     }
 }
-pub(crate) use block_variant;
+// pub(crate) use block_variant;
 
+#[macro_export]
 macro_rules! block_without_id {
     ($($component_name:ident: $component_value:expr),* $(,)?) => {
         Block {
@@ -348,7 +352,7 @@ impl Display for Block {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{{{}{}{}{}}}",
+            "{{ {}{}{}{} }}",
             match self.id {
                 Some(value) => value.to_string(),
                 None => String::new(),

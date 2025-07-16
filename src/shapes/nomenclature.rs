@@ -16,6 +16,11 @@ pub fn shape_name_with_dimensions(
     height: f32,
     scale_index_option: Option<usize>,
 ) -> String {
+    let (width, height) = if width > height {
+        (height, width)
+    } else {
+        (width, height)
+    };
     format!(
         "{}x{}{}{}",
         width,
@@ -31,6 +36,11 @@ pub fn shape_name_with_ratio(
     consequent: f32,
     scale_index_option: Option<usize>,
 ) -> String {
+    let (antecedent, consequent) = if antecedent > consequent {
+        (consequent, antecedent)
+    } else {
+        (antecedent, consequent)
+    };
     format!(
         "{};{}{}{}",
         antecedent,
@@ -38,6 +48,16 @@ pub fn shape_name_with_ratio(
         shape_name,
         format_scale(scale_index_option),
     )
+    // if antecedent > consequent {
+    //     let (antecedent, consequent) = (consequent, antecedent);
+    // }
+    // format!(
+    //     "{};{}{}{}",
+    //     antecedent,
+    //     consequent,
+    //     shape_name,
+    //     format_scale(scale_index_option),
+    // )
 }
 
 pub fn shape_name_with_angle(

@@ -3,6 +3,7 @@ use std::fmt::{self, Display};
 
 const NO_FEATURE_DATA_NEEDED: &str = "";
 
+#[macro_export]
 macro_rules! implicit_features {
     (
         $($feature:ident $( { $($feature_component_name:ident: $feature_component_value:expr),*})? $(,)?),*
@@ -17,6 +18,7 @@ macro_rules! implicit_features {
 }
 pub(crate) use implicit_features;
 
+#[macro_export]
 macro_rules! explicit_features {
     (
         $($feature:ident $({ $($feature_component_name:ident: $feature_component_value:expr),*})? $(,)?),*
@@ -31,6 +33,7 @@ macro_rules! explicit_features {
 }
 pub(crate) use explicit_features;
 
+#[macro_export]
 macro_rules! new_feature {
     ($feature_name:ident) => {
         Feature::$feature_name
@@ -105,6 +108,7 @@ pub enum Feature {
     NoIcon,
 }
 
+#[macro_export]
 macro_rules! default_feature_of_variant {
     // (Command
     (Thruster) => {

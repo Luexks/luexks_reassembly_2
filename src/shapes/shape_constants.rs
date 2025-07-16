@@ -10,5 +10,7 @@ pub const PORT_COUNT_DECISION_TOLERANCE: f32 = 0.001;
 
 pub const VERTEX_ORIENTATION_MULTIPLIERS: [(f32, f32); 4] =
     [(-1.0, -1.0), (-1.0, 1.0), (1.0, 1.0), (1.0, -1.0)];
+pub const VERTEX_DIAGONAL_ORIENTATION_MULTIPLIERS: [(f32, f32); 4] =
+    [(-1.0, 0.0), (0.0, 1.0), (1.0, 0.0), (0.0, -1.0)];
 
 pub const SHAPES_NAME: &str = "shapes.lua";

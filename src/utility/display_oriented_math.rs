@@ -114,6 +114,17 @@ impl DisplayOriented2D {
             y: don_float_from(self.y.to_f32() + distance * angle.as_radians().get_value().sin()),
         }
     }
+
+    pub fn diagonal_orient_by_vert_index(&self, vert_index: usize) -> Self {
+        DisplayOriented2D {
+            x: DisplayOrientedNumber::Float(
+                self.x.to_f32().abs() * VERTEX_DIAGONAL_ORIENTATION_MULTIPLIERS[vert_index].0,
+            ),
+            y: DisplayOrientedNumber::Float(
+                self.y.to_f32().abs() * VERTEX_DIAGONAL_ORIENTATION_MULTIPLIERS[vert_index].1,
+            ),
+        }
+    }
 }
 
 impl Display for DisplayOriented2D {

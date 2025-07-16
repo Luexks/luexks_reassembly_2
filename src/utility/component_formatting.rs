@@ -27,7 +27,7 @@ pub(crate) use format_component_options;
 macro_rules! format_component_option {
     ($component:expr => $component_name:expr $(,)?) => {
         match $component {
-            Some(value) => format!(",{}={}", $component_name, value),
+            Some(value) => format!(" {}={}", $component_name, value),
             None => "".to_string(),
         }
     };
@@ -35,9 +35,9 @@ macro_rules! format_component_option {
 pub(crate) use format_component_option;
 
 pub fn format_component<T: Display>(component: T, component_name: &str) -> String {
-    format!(",{}={}", component_name, component)
+    format!(" {}={}", component_name, component)
 }
 
 pub fn format_bracket_layer<T: Display>(component: T) -> String {
-    format!("{{{}}}", component)
+    format!("{{ {}}}", component)
 }

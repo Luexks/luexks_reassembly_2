@@ -1,0 +1,5 @@
+pub const SHAPE_ID_BASE: u32 = 129873000;
+
+pub const MASTER_SCALE: f32 = 10.0;
+pub const PORT_SPACING: f32 = MASTER_SCALE;
+pub const PORT_SPACING_FROM_VERT: f32 = MASTER_SCALE / 2.0;
