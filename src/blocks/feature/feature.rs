@@ -40,7 +40,7 @@ macro_rules! new_feature {
     };
     ($feature_name:ident { $($feature_component_name:ident: $feature_component_value:expr),* }) => {
         Feature::$feature_name(
-            Some(
+            // Some(
                 {
                     let mut feature_data = default_feature_of_variant!($feature_name);
                     $(
@@ -48,7 +48,7 @@ macro_rules! new_feature {
                     )*
                     feature_data
                 }
-            )
+            // )
         )
     };
 }
@@ -57,43 +57,43 @@ pub(crate) use new_feature;
 #[derive(Clone)]
 pub enum Feature {
     Command,
-    Thruster(Option<Thruster>),
-    Generator(Option<Generator>),
-    Perishable(Option<Perishable>),
-    Turret(Option<Turret>),
+    Thruster(ThrusterFields),
+    Generator(GeneratorFields),
+    Perishable,
+    Turret(TurretFields),
     // Launch,
-    Cannon(Option<Cannon>),
-    Laser(Option<Laser>),
+    Cannon(CannonFields),
+    Laser(LaserFields),
     Autofire,
-    Shield(Option<Shield>),
-    Torquer(Option<Torquer>),
-    Launcher(Option<Launcher>),
-    Explode(Option<Explode>),
+    Shield(ShieldFields),
+    Torquer(TorquerFields),
+    Launcher(LauncherFields),
+    Explode(ExplodeFields),
     Assembler,
     Regrower,
-    CannonBoost(Option<CannonBoost>),
+    CannonBoost(CannonBoostFields),
     Invulnerable,
     NoRegen,
     Persistent,
     Environmental,
-    Tractor(Option<Tractor>),
+    Tractor(TractorFields),
     Root,
     // Grow,
-    Photosynth(Option<Photosynth>),
+    Photosynth(PhotosynthFields),
     Autolaunch,
     FreeRes,
     Factory,
-    Seed(Option<Seed>),
-    Melee(Option<Melee>),
+    Seed(SeedFields),
+    Melee(MeleeFields),
     // Ungrow,
     Unique,
-    Charging(Option<Charging>),
+    Charging(ChargingFields),
     // Transient,
     SelfFactory,
     NoClip,
     Invisible,
     Bumper,
-    Teleporter(Option<Teleporter>),
+    Teleporter(TeleporterFields),
     Deactivates,
     Telespawn,
     NoClipAlly,
@@ -112,55 +112,55 @@ pub enum Feature {
 macro_rules! default_feature_of_variant {
     // (Command
     (Thruster) => {
-        Thruster::default()
+        ThrusterFields::default()
     };
     (Generator) => {
-        Generator::default()
+        GeneratorFields::default()
     };
-    (Perishable) => {
-        Perishable::default()
-    };
+    // (Perishable) => {
+    //     Perishable::default()
+    // };
     (Turret) => {
-        Turret::default()
+        TurretFields::default()
     };
     (Cannon) => {
-        Cannon::default()
+        CannonFields::default()
     };
     (Laser) => {
-        Laser::default()
+        LaserFields::default()
     };
     (Shield) => {
-        Shield::default()
+        ShieldFields::default()
     };
     (Torquer) => {
-        Torquer::default()
+        TorquerFields::default()
     };
     (Launcher) => {
-        Launcher::default()
+        LauncherFields::default()
     };
     (Explode) => {
-        Explode::default()
+        ExplodeFields::default()
     };
     (CannonBoost) => {
-        CannonBoos::default()
+        CannonBoostFields::default()
     };
     (Tractor) => {
-        Tractor::default()
+        TractorFields::default()
     };
     (Photosynth) => {
-        Photosynth::default()
+        PhotosynthFields::default()
     };
     (Seed) => {
-        Seed::default()
+        SeedFields::default()
     };
     (Melee) => {
-        Melee::default()
+        MeleeFields::default()
     };
     (Charging) => {
-        Charging::default()
+        ChargingFields::default()
     };
     (Teleporter) => {
-        Teleporter::default()
+        TeleporterFields::default()
     }; // (Autofire
        // (Assembler
        // (Regrower
@@ -201,7 +201,7 @@ impl Display for Feature {
                 Feature::Command => "COMMAND",
                 Feature::Thruster(_) => "THRUSTER",
                 Feature::Generator(_) => "GENERATOR",
-                Feature::Perishable(_) => "PERISHABLE",
+                Feature::Perishable => "PERISHABLE",
                 Feature::Turret(_) => "TURRET",
                 Feature::Cannon(_) => "CANNON",
                 Feature::Laser(_) => "LASER",
@@ -253,76 +253,42 @@ impl Feature {
     pub fn components_to_string(&self) -> String {
         match self {
             Feature::Command => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Thruster(thruster_option) => thruster_option
-                .clone()
-                .map_or(String::new(), |thruster| thruster.to_string()),
-            Feature::Generator(generator_option) => generator_option
-                .clone()
-                .map_or(String::new(), |generator| generator.to_string()),
-            Feature::Perishable(perishable_option) => perishable_option
-                .clone()
-                .map_or(String::new(), |perishable| perishable.to_string()),
-            Feature::Turret(turret_option) => turret_option
-                .clone()
-                .map_or(String::new(), |turret| turret.to_string()),
+            Feature::Thruster(thruster_fields) => thruster_fields.to_string(),
+            Feature::Generator(generator_fields) => generator_fields.to_string(),
+            Feature::Perishable => NO_FEATURE_DATA_NEEDED.to_string(),
+            Feature::Turret(turret_fields) => turret_fields.to_string(),
             // Feature::Launch => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Cannon(cannon_option) => cannon_option
-                .clone()
-                .map_or(String::new(), |cannon| cannon.to_string()),
-            Feature::Laser(laser_option) => laser_option
-                .clone()
-                .map_or(String::new(), |laser| laser.to_string()),
+            Feature::Cannon(cannon_fields) => cannon_fields.to_string(),
+            Feature::Laser(laser_fields) => laser_fields.to_string(),
             Feature::Autofire => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Shield(shield_option) => shield_option
-                .clone()
-                .map_or(String::new(), |shield| shield.to_string()),
-            Feature::Torquer(torquer_option) => torquer_option
-                .clone()
-                .map_or(String::new(), |torquer| torquer.to_string()),
-            Feature::Launcher(launcher_option) => launcher_option
-                .clone()
-                .map_or(String::new(), |launcher| launcher.to_string()),
-            Feature::Explode(explode_option) => explode_option
-                .clone()
-                .map_or(String::new(), |explode| explode.to_string()),
+            Feature::Shield(shield_fields) => shield_fields.to_string(),
+            Feature::Torquer(torquer_fields) => torquer_fields.to_string(),
+            Feature::Launcher(launcher_fields) => launcher_fields.to_string(),
+            Feature::Explode(explode_fields) => explode_fields.to_string(),
             Feature::Assembler => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Regrower => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::CannonBoost(cannon_boost_option) => cannon_boost_option
-                .clone()
-                .map_or(String::new(), |cannon_boost| cannon_boost.to_string()),
+            Feature::CannonBoost(cannon_boost_fields) => cannon_boost_fields.to_string(),
             Feature::Invulnerable => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::NoRegen => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Persistent => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Environmental => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Tractor(tractor_option) => tractor_option
-                .clone()
-                .map_or(String::new(), |tractor| tractor.to_string()),
+            Feature::Tractor(tractor_fields) => tractor_fields.to_string(),
             Feature::Root => NO_FEATURE_DATA_NEEDED.to_string(),
             // Feature::Grow => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Photosynth(photosynth_option) => photosynth_option
-                .clone()
-                .map_or(String::new(), |photosynth| photosynth.to_string()),
+            Feature::Photosynth(photosynth_fields) => photosynth_fields.to_string(),
             Feature::Autolaunch => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::FreeRes => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Factory => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Seed(seed_option) => seed_option
-                .clone()
-                .map_or(String::new(), |seed| seed.to_string()),
-            Feature::Melee(melee_option) => melee_option
-                .clone()
-                .map_or(String::new(), |melee| melee.to_string()),
+            Feature::Seed(seed_fields) => seed_fields.to_string(),
+            Feature::Melee(melee_fields) => melee_fields.to_string(),
             // Feature::Ungrow => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Unique => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Charging(charging_option) => charging_option
-                .clone()
-                .map_or(String::new(), |charging| charging.to_string()),
+            Feature::Charging(charging_fields) => charging_fields.to_string(),
             Feature::SelfFactory => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::NoClip => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Invisible => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Bumper => NO_FEATURE_DATA_NEEDED.to_string(),
-            Feature::Teleporter(teleporter_option) => teleporter_option
-                .clone()
-                .map_or(String::new(), |teleporter| teleporter.to_string()),
+            Feature::Teleporter(teleporter_fields) => teleporter_fields.to_string(),
             Feature::Deactivates => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::Telespawn => NO_FEATURE_DATA_NEEDED.to_string(),
             Feature::NoClipAlly => NO_FEATURE_DATA_NEEDED.to_string(),

@@ -18,6 +18,12 @@ pub mod octagons;
 pub use octagons::*;
 pub mod hardpoints;
 pub use hardpoints::*;
+pub mod generic_adapters;
+pub use generic_adapters::*;
+pub mod generic_parallelograms;
+pub use generic_parallelograms::*;
+pub mod other_grid_shapes;
+pub use other_grid_shapes::*;
 
 pub mod shape_generation;
 pub use shape_generation::*;

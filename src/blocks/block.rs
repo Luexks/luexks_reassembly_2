@@ -1,7 +1,7 @@
 use crate::blocks::block_id::BlockId;
 use crate::blocks::block_sort::BlockSort;
 use crate::blocks::extend_accounting_feature_list::ExtendAccountingFeatureList;
-use crate::blocks::shrouds::Shrouds;
+use crate::blocks::shroud::Shroud;
 use crate::shapes::shape::Shape;
 use crate::shapes::shape_id::ShapeId;
 use crate::utility::color::Color;
@@ -48,7 +48,7 @@ macro_rules! block_without_id {
         }
     };
 }
-pub(crate) use block_without_id;
+// pub(crate) use block_without_id;
 
 #[derive(Clone)]
 pub struct Block {
@@ -71,7 +71,8 @@ pub struct Block {
     pub armor: Option<f32>,
     pub density: Option<f32>,
     pub blurb: Option<FunkyString>,
-    pub shrouds: Option<Shrouds>,
+    pub shrouds: Option<Shroud>,
+    pub lifetime: Option<f32>,
 }
 
 macro_rules! add_scale_name_to_block {
@@ -344,6 +345,7 @@ impl Default for Block {
             density: None,
             blurb: None,
             shrouds: None,
+            lifetime: None,
         }
     }
 }
@@ -376,6 +378,7 @@ impl Display for Block {
                 self.density => "density",
                 &self.blurb => "blurb",
                 &self.shrouds => "shroud",
+                self.lifetime => "lifetime",
             ),
             match &self.features {
                 Some(extend_accounting_feature_list) => {

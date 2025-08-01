@@ -72,3 +72,21 @@ pub fn shape_name_with_angle(
         format_scale(scale_index_option),
     )
 }
+
+pub fn shape_name_with_ratio_and_dimensions(
+    shape_name: &str,
+    width: f32,
+    height: f32,
+    antecedent: f32,
+    consequent: f32,
+) -> String {
+    let (antecedent, consequent) = if antecedent > consequent {
+        (consequent, antecedent)
+    } else {
+        (antecedent, consequent)
+    };
+    format!(
+        "{}x{},{};{}{}",
+        width, height, antecedent, consequent, shape_name,
+    )
+}

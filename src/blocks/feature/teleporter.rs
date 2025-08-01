@@ -2,12 +2,12 @@ use crate::utility::component_formatting::format_component_options;
 use std::fmt::{self, Display};
 
 #[derive(Clone)]
-pub struct Teleporter {
+pub struct TeleporterFields {
     power: Option<f32>,
     radius: Option<f32>,
 }
 
-impl Default for Teleporter {
+impl Default for TeleporterFields {
     fn default() -> Self {
         Self {
             power: None,
@@ -16,7 +16,7 @@ impl Default for Teleporter {
     }
 }
 
-impl Display for Teleporter {
+impl Display for TeleporterFields {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,

@@ -1,5 +1,29 @@
-use crate::utility::component_formatting::*;
+use crate::utility::component_formatting::{
+    format_bracket_layer, format_component_option, format_component_options,
+};
 use std::fmt::{self, Display};
+
+#[derive(Clone)]
+pub struct CannonBoostFields {
+    pub cannon_boost: Option<CannonBoost>,
+}
+
+impl Default for CannonBoostFields {
+    fn default() -> Self {
+        CannonBoostFields { cannon_boost: None }
+    }
+}
+
+impl Display for CannonBoostFields {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            format_component_option!(&self.cannon_boost => "cannonBoost",
+            ),
+        )
+    }
+}
 
 #[derive(Clone)]
 pub struct CannonBoost {
@@ -31,19 +55,33 @@ impl Display for CannonBoost {
         write!(
             f,
             "{}",
-            format_component(
-                format_component_options!(&self.rounds_per_sec => "roundsPerSec",
-                    &self.muzzle_vel => "muzzleVel",
-                    &self.power => "power",
-                    &self.damage => "damage",
-                    &self.range => "range",
-                    &self.explode_radius => "explodeRadius",
-                    &self.spread => "spread"
-                ),
-                "boost"
-            ),
+            format_bracket_layer(format_component_options!(
+                &self.rounds_per_sec => "roundsPerSec",
+                &self.muzzle_vel => "muzzleVel",
+                &self.power => "power",
+                &self.damage => "damage",
+                &self.range => "range",
+                &self.explode_radius => "explodeRadius",
+                &self.spread => "spread"
+            )),
         )
     }
+}
+
+#[macro_export]
+macro_rules! cannon_boost {
+    () => {
+        CannonBoost::default()
+    };
+    {$($component_name:ident: $component_value:expr),* $(,)?} => {
+        {
+            let mut cannon_boost = CannonBoost::default();
+            $(
+                cannon_boost.$component_name = Some($component_value);
+            )*
+            cannon_boost
+        }
+    };
 }
 
 #[derive(Clone)]

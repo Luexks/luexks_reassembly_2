@@ -2,17 +2,17 @@ use crate::utility::component_formatting::format_component_options;
 use std::fmt::{self, Display};
 
 #[derive(Clone)]
-pub struct Tractor {
+pub struct TractorFields {
     range: Option<f32>,
 }
 
-impl Default for Tractor {
+impl Default for TractorFields {
     fn default() -> Self {
         Self { range: None }
     }
 }
 
-impl Display for Tractor {
+impl Display for TractorFields {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,

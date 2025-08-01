@@ -25,9 +25,6 @@ pub use thruster::*;
 pub mod generator;
 pub use generator::*;
 
-pub mod perishable;
-pub use perishable::*;
-
 pub mod turret;
 pub use turret::*;
 

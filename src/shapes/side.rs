@@ -22,6 +22,7 @@ impl Side {
         .sqrt()
     }
 
+    // pub fn to_ports_of<F: Fn(usize, f32) -> Vec<Port> + Clone>(&self, port_module_option: Option<PortModule<F>>) -> Vec<Port> {
     pub fn to_ports_of(&self, port_module_option: Option<PortModule>) -> Vec<Port> {
         if port_module_option.is_none() {
             return Vec::new();
@@ -35,6 +36,22 @@ impl Side {
             }];
         }
         let side_length = self.get_side_length();
+        // println!("{}", match &port_module.port_distribution {
+        //     PortDistribution::Center { courtesy_port_distribution_option: _ } => "Center",
+        //     PortDistribution::TowardsFromCurrentVert { distance_from_current_vert, courtesy_port_distribution_option } => "2",
+        //     PortDistribution::BackwardsFromNextVert { distance_from_next_vert, courtesy_port_distribution_option } => "3",
+        //     PortDistribution::JoinWithNext => "4",
+        //     PortDistribution::UseIntersectingPortsFrom { side_with_possibly_intersecting_ports, possibly_intersecting_ports } => "5",
+        //     PortDistribution::Single { position } => "6",
+        //     PortDistribution::Custom { port_function } => "Custom",
+        // }.to_string());
+        // println!("Pre Custom");
+        if let PortDistribution::Custom { port_function } = port_module.port_distribution {
+            // println!("Custom Ports");
+            // return dbg!(port_function(self.index, side_length));
+            return port_function(self.index, side_length);
+        }
+        // println!("Post Custom");
         let port_count = if let PortDistribution::UseIntersectingPortsFrom {
             possibly_intersecting_ports,
             ..
@@ -77,8 +94,12 @@ impl Side {
 }
 
 #[rustfmt::skip]
+// fn get_port_position_of_distribution<F: Fn(usize, f32) -> Vec<Port> + Clone>(
+//     port_distribution: &Option<&PortDistribution<F>>,
 fn get_port_position_of_distribution(
     port_distribution: &Option<&PortDistribution>,
+// fn get_port_position_of_distribution(
+//     port_distribution: &Option<&PortDistribution<_>>,
     side: &Side,
     port_count: &f32,
     port_index: usize,
@@ -152,6 +173,7 @@ fn get_port_position_of_distribution(
                 };
                 don_float_from(intersecting_port_position.to_f32() * side_length)
             },
+            PortDistribution::Custom { port_function: _ } => panic!("Port function is for getting `Port<Vec>`"),
         }),
         denominator: Box::new(don_float_from(side_length)),
     })

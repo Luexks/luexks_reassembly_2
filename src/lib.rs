@@ -10,12 +10,10 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use blocks::block_constants::BLOCKS_NAME;
-use blocks::blocks::Blocks;
 // use mod_configs::mod_generation::*;
 // use mod_configs::mod_metadata::*;
 use r#mod::Mod;
 use shapes::shape_constants::SHAPES_NAME;
-use shapes::shapes::Shapes;
 
 // const USER: &str = "";
 

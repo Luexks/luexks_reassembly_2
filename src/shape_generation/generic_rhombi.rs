@@ -16,12 +16,22 @@ pub fn add_generic_rhombi_to_the(
     scale_count: usize,
     antecedent_forwards: bool,
 ) -> usize {
-    shapes.add_unmirrored_shape_from_scales(
-        (1..=scale_count)
-            .map(|scale_index| scale_from(angle_ratio, scale_index, antecedent_forwards))
-            .collect(),
-    );
+    shapes.add_unmirrored_shape_from_scales(get_generic_rhombi_scales(
+        angle_ratio,
+        scale_count,
+        antecedent_forwards,
+    ));
     shapes.0.len() - 1
+}
+
+pub fn get_generic_rhombi_scales(
+    angle_ratio: (f32, f32),
+    scale_count: usize,
+    antecedent_forwards: bool,
+) -> Vec<Scale> {
+    (1..=scale_count)
+        .map(|scale_index| scale_from(angle_ratio, scale_index, antecedent_forwards))
+        .collect()
 }
 
 fn scale_from(angle_ratio: (f32, f32), scale_index: usize, antecedent_forwards: bool) -> Scale {

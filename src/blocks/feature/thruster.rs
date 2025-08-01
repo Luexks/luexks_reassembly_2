@@ -1,13 +1,9 @@
-use crate::blocks::feature::explosive::Explosive;
-use crate::blocks::feature::fragment::Fragment;
-use crate::blocks::pattern::Pattern;
 use crate::utility::color::Color;
 use crate::utility::component_formatting::format_component_options;
-use crate::utility::flags::Flags;
 use std::fmt::{self, Display};
 
 #[derive(Clone)]
-pub struct Thruster {
+pub struct ThrusterFields {
     force: Option<f32>,
     boost: Option<f32>,
     boost_time: Option<f32>,
@@ -15,7 +11,7 @@ pub struct Thruster {
     color_2: Option<Color>,
 }
 
-impl Default for Thruster {
+impl Default for ThrusterFields {
     fn default() -> Self {
         Self {
             force: None,
@@ -27,7 +23,7 @@ impl Default for Thruster {
     }
 }
 
-impl Display for Thruster {
+impl Display for ThrusterFields {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,

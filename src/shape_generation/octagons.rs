@@ -9,15 +9,15 @@ use crate::{
 
 use super::MASTER_SCALE;
 
-pub const OCTAGON_SCALE_COUNT: usize = 3;
-
-pub fn add_octagons_to_the(shapes: &mut Shapes) -> usize {
-    shapes.add_unmirrored_shape_from_scales(
-        (0..OCTAGON_SCALE_COUNT)
-            .map(|scale_index| scale_from(scale_index))
-            .collect(),
-    );
+pub fn add_octagons_to_the(shapes: &mut Shapes, scale_count: usize) -> usize {
+    shapes.add_unmirrored_shape_from_scales(get_octagon_scales(scale_count));
     shapes.0.len() - 1
+}
+
+pub fn get_octagon_scales(scale_count: usize) -> Vec<Scale> {
+    (0..scale_count)
+        .map(|scale_index| scale_from(scale_index))
+        .collect()
 }
 
 fn scale_from(scale_index: usize) -> Scale {
@@ -57,4 +57,3 @@ fn vertices_from(half_bounding_box_length: f32, half_side_length: f32) -> Vertic
             .collect(),
     )
 }
-

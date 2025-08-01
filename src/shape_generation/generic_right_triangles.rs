@@ -17,19 +17,25 @@ pub fn add_generic_right_triangles_to_the(
     shapes: &mut Shapes,
     right_triangle_ratios_and_name_options: Vec<(f32, f32, Option<String>)>,
 ) -> (usize, usize) {
-    shapes.add_mirrored_shape_from_scales(
-        right_triangle_ratios_and_name_options
-            .iter()
-            .map(|right_triangle_ratios_and_name_option| {
-                scale_from(
-                    right_triangle_ratios_and_name_option.0,
-                    right_triangle_ratios_and_name_option.1,
-                    right_triangle_ratios_and_name_option.2.clone(),
-                )
-            })
-            .collect(),
-    );
+    shapes.add_mirrored_shape_from_scales(get_generic_right_triangle_scales(
+        right_triangle_ratios_and_name_options,
+    ));
     (shapes.0.len() - 2, shapes.0.len() - 1)
+}
+
+pub fn get_generic_right_triangle_scales(
+    right_triangle_ratios_and_name_options: Vec<(f32, f32, Option<String>)>,
+) -> Vec<Scale> {
+    right_triangle_ratios_and_name_options
+        .iter()
+        .map(|right_triangle_ratios_and_name_option| {
+            scale_from(
+                right_triangle_ratios_and_name_option.0,
+                right_triangle_ratios_and_name_option.1,
+                right_triangle_ratios_and_name_option.2.clone(),
+            )
+        })
+        .collect()
 }
 
 fn scale_from(

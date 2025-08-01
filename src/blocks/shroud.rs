@@ -1,61 +1,27 @@
-use crate::{
-    shapes::shape_id::ShapeId,
-    utility::{
-        angle::Angle,
-        component_formatting::{format_bracket_layer, format_component, format_component_options},
-        display_oriented_math::{DisplayOriented2D, DisplayOriented3D},
-    },
-};
+use crate::{blocks::shroud_layer::ShroudLayer, utility::component_formatting::format_bracket_layer};
 use std::fmt::Display;
 
 #[derive(Clone)]
-pub struct Shroud {
-    shape: Option<ShapeId>,
-    size: Option<DisplayOriented2D>,
-    offset: Option<DisplayOriented3D>,
-    color_1: Option<ShroudColor>,
-    color_2: Option<ShroudColor>,
-    line_color: Option<ShroudColor>,
-    angle: Option<Angle>,
-    taper: Option<f32>,
-}
+pub struct Shroud(pub Vec<ShroudLayer>);
 
 impl Display for Shroud {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{}",
-            format_bracket_layer(format_component_options!(
-                self.shape => "shape",
-                &self.size => "size",
-                &self.offset => "offset",
-                &self.color_1 => "tri_color_id",
-                &self.color_2 => "tri_color1_id",
-                &self.line_color => "line_color_id",
-                &self.angle => "angle",
-                self.taper => "taper",
-            ))
+            format_bracket_layer(
+                self.0
+                    .iter()
+                    .map(|shroud_layer| shroud_layer.to_string())
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            )
         )
     }
 }
 
-#[derive(Clone)]
-enum ShroudColor {
-    Color1,
-    Color2,
-    LineColor,
-}
-
-impl Display for ShroudColor {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                ShroudColor::Color1 => "0",
-                ShroudColor::Color2 => "1",
-                ShroudColor::LineColor => "2",
-            }
-        )
+impl Default for Shroud {
+    fn default() -> Self {
+        Shroud(Vec::new())
     }
 }

@@ -2,12 +2,12 @@ use crate::utility::component_formatting::format_component_options;
 use std::fmt::{self, Display};
 
 #[derive(Clone)]
-pub struct Charging {
+pub struct ChargingFields {
     max_seconds: Option<f32>,
     min_fraction: Option<f32>,
 }
 
-impl Default for Charging {
+impl Default for ChargingFields {
     fn default() -> Self {
         Self {
             max_seconds: None,
@@ -16,7 +16,7 @@ impl Default for Charging {
     }
 }
 
-impl Display for Charging {
+impl Display for ChargingFields {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,

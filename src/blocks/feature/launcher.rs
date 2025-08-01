@@ -3,7 +3,7 @@ use crate::utility::component_formatting::format_component_options;
 use std::fmt::{self, Display};
 
 #[derive(Clone)]
-pub struct Launcher {
+pub struct LauncherFields {
     replicate_block: Option<Block>,
     speed: Option<f32>,
     power: Option<f32>,
@@ -11,7 +11,7 @@ pub struct Launcher {
     ang_vel: Option<f32>,
 }
 
-impl Default for Launcher {
+impl Default for LauncherFields {
     fn default() -> Self {
         Self {
             replicate_block: None,
@@ -23,7 +23,7 @@ impl Default for Launcher {
     }
 }
 
-impl Display for Launcher {
+impl Display for LauncherFields {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,

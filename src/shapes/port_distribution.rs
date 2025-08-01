@@ -1,10 +1,16 @@
+use std::rc::Rc;
+
 use crate::shapes::courtesy_port_distribution::CourtesyPortDistribution;
 use crate::shapes::port::Port;
 use crate::shapes::side::Side;
 use crate::utility::display_oriented_math::*;
 
 #[derive(Clone)]
-pub enum PortDistribution<'a> {
+// pub enum PortDistribution<'a, F>
+pub enum PortDistribution<'a>
+// where
+//     F: Fn(usize, f32) -> Vec<Port> + Clone,
+{
     Center {
         courtesy_port_distribution_option: Option<CourtesyPortDistribution>,
     },
@@ -24,8 +30,15 @@ pub enum PortDistribution<'a> {
     Single {
         position: DisplayOrientedNumber,
     },
+    Custom {
+        // port_function: F where F: Fn(f32) -> Vec<Port>,
+        // port_function: Box<dyn Fn(f32) -> Vec<Port> + Clone + 'a>,
+        // port_function: F,
+        port_function: Rc<dyn Fn(usize, f32) -> Vec<Port> + 'a>,
+    },
 }
 
+// impl<F: Fn(usize, f32) -> Vec<Port> + Clone> PortDistribution<'_, F> {
 impl PortDistribution<'_> {
     pub fn should_add_a_single_halfway_port_to_if_side_length_is_less_than_master_scale(
         &self,

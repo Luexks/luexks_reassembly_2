@@ -1,14 +1,13 @@
 use crate::utility::component_formatting::format_component_options;
-use crate::utility::flags::Flags;
 use std::fmt::{self, Display};
 
 #[derive(Clone)]
-pub struct Generator {
+pub struct GeneratorFields {
     pub capacity: Option<f32>,
     pub capacity_per_sec: Option<f32>,
 }
 
-impl Default for Generator {
+impl Default for GeneratorFields {
     fn default() -> Self {
         Self {
             capacity: None,
@@ -17,7 +16,7 @@ impl Default for Generator {
     }
 }
 
-impl Display for Generator {
+impl Display for GeneratorFields {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,

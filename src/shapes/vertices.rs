@@ -11,10 +11,11 @@ use std::fmt::Display;
 use super::port_distribution::default_port_distribution_from_variant;
 use super::port_module::PortModule;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Vertices(pub Vec<Vertex>);
 
 impl Vertices {
+    // pub fn to_hull_scale<F: Fn(usize, f32) -> Vec<Port> + Clone>(self, name: String) -> Scale {
     pub fn to_hull_scale(self, name: String) -> Scale {
         Scale {
             verts: self.clone(),
@@ -29,6 +30,7 @@ impl Vertices {
                             vertex_1: vert_1.clone(),
                             vertex_2: vert_2.clone(),
                         }
+                        // .to_ports_of(PortModule::<F>::no_flags(
                         .to_ports_of(PortModule::no_flags(
                             default_port_distribution_from_variant!(Center),
                         ))
@@ -39,8 +41,10 @@ impl Vertices {
         }
     }
 
+    // pub fn to_hull_scale_with_modules<F: Fn(usize, f32) -> Vec<Port> + Clone>(
     pub fn to_hull_scale_with_modules(
         self,
+        // port_module_options: Vec<Option<PortModule<F>>>,
         port_module_options: Vec<Option<PortModule>>,
         name: String,
     ) -> Scale {
@@ -81,7 +85,7 @@ impl Vertices {
                             join_with_next_vertices.push(vertex_2);
                             let entire_side = Side {
                                 index: 0, // Null value hehe
-                                vertex_1: join_with_next_vertices.first().unwrap().clone().clone(),
+                                vertex_1: (*join_with_next_vertices.first().unwrap()).clone(),
                                 vertex_2: vertex_2.clone(),
                             };
                             let sub_sides: Vec<_> = join_with_next_vertices
@@ -91,8 +95,8 @@ impl Vertices {
                                 .map(|((sub_side_index, sub_vertex_1), sub_vertex_2)| Side {
                                     index: 2 + side_index - join_with_next_vertices.len()
                                         + sub_side_index,
-                                    vertex_1: sub_vertex_1.clone().clone(),
-                                    vertex_2: sub_vertex_2.clone().clone(),
+                                    vertex_1: (*sub_vertex_1).clone(),
+                                    vertex_2: (*sub_vertex_2).clone(),
                                 })
                                 .collect();
                             let new_undistributed_ports = entire_side

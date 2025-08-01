@@ -30,19 +30,25 @@ pub fn add_generic_rectangles_to_the(
     //             )
     //         }))
     //     };
-    shapes.add_unmirrored_shape_from_scales(
-        rectangle_ratios_and_name_options
-            .iter()
-            .map(|rectangle_ratios_and_name_option| {
-                scale_from(
-                    rectangle_ratios_and_name_option.0,
-                    rectangle_ratios_and_name_option.1,
-                    rectangle_ratios_and_name_option.2.clone(),
-                )
-            })
-            .collect::<Vec<_>>(),
-    );
+    shapes.add_unmirrored_shape_from_scales(get_generic_rectangles(
+        rectangle_ratios_and_name_options,
+    ));
     shapes.0.len() - 1
+}
+
+pub fn get_generic_rectangles(
+    rectangle_ratios_and_name_options: Vec<(f32, f32, Option<String>)>,
+) -> Vec<Scale> {
+    rectangle_ratios_and_name_options
+        .iter()
+        .map(|rectangle_ratios_and_name_option| {
+            scale_from(
+                rectangle_ratios_and_name_option.0,
+                rectangle_ratios_and_name_option.1,
+                rectangle_ratios_and_name_option.2.clone(),
+            )
+        })
+        .collect::<Vec<_>>()
 }
 
 fn scale_from(

@@ -2,14 +2,14 @@ use crate::utility::component_formatting::format_component_options;
 use std::fmt::{self, Display};
 
 #[derive(Clone)]
-pub struct Explode {
+pub struct ExplodeFields {
     explode_damage: Option<f32>,
     explode_radius: Option<f32>,
     explode_std_dev: Option<f32>,
     explode_faction: Option<i32>,
 }
 
-impl Default for Explode {
+impl Default for ExplodeFields {
     fn default() -> Self {
         Self {
             explode_damage: None,
@@ -20,7 +20,7 @@ impl Default for Explode {
     }
 }
 
-impl Display for Explode {
+impl Display for ExplodeFields {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,

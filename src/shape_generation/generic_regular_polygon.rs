@@ -2,13 +2,9 @@ use std::f32::consts::{PI, TAU};
 
 use crate::{
     shapes::{
-        nomenclature::{shape_name, shape_name_with_ratio},
-        scale::Scale,
-        shapes::Shapes,
-        vertex::Vertex,
-        vertices::Vertices,
+        nomenclature::shape_name, scale::Scale, shapes::Shapes, vertex::Vertex, vertices::Vertices,
     },
-    utility::{angle::Angle, display_oriented_math::do2d_float_from},
+    utility::display_oriented_math::do2d_float_from,
 };
 
 use super::shape_generation::MASTER_SCALE;
@@ -55,12 +51,22 @@ pub fn add_generic_regular_polygon_to_the(
     scale_count: usize,
     point_forwards: bool,
 ) -> usize {
-    shapes.add_unmirrored_shape_from_scales(
-        (1..=scale_count)
-            .map(|scale_index| scale_from(side_count, scale_index, point_forwards))
-            .collect(),
-    );
+    shapes.add_unmirrored_shape_from_scales(get_regular_polygon_scales(
+        side_count,
+        scale_count,
+        point_forwards,
+    ));
     shapes.0.len() - 1
+}
+
+pub fn get_regular_polygon_scales(
+    side_count: usize,
+    scale_count: usize,
+    point_forwards: bool,
+) -> Vec<Scale> {
+    (1..=scale_count)
+        .map(|scale_index| scale_from(side_count, scale_index, point_forwards))
+        .collect()
 }
 
 fn scale_from(side_count: usize, scale_index: usize, point_forwards: bool) -> Scale {

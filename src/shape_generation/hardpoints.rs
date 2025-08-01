@@ -1,39 +1,60 @@
 use crate::{
     shapes::{
-        courtesy_port_distribution::CourtesyPortDistribution,
+        courtesy_port_distribution::CourtesyPortDistribution, port::Port,
         port_distribution::default_port_distribution_from_variant, port_flags::PortFlag,
         port_module::PortModule, scale::Scale, shapes::Shapes, vertex::Vertex, vertices::Vertices,
     },
     utility::{
         angle::Angle,
-        display_oriented_math::{
-            distance_and_angle_to_do2d, do2d_float_from, DisplayOriented2D,
-        },
+        display_oriented_math::{distance_and_angle_to_do2d, do2d_float_from, DisplayOriented2D},
         flags::flags,
     },
 };
 
 use super::MASTER_SCALE;
 
-pub fn add_hardpoints_to_the_shapes(shapes: &mut Shapes, hardpoint_angle_per_side: Angle, hardpoint_scale_count: usize) -> usize {
-    shapes.add_unmirrored_shape_from_scales(
-        (1..=hardpoint_scale_count)
-            .map(|scale_index| scale_from(scale_index, hardpoint_angle_per_side.clone()))
-            .collect(),
-    );
+// pub fn add_hardpoints_to_the_shapes<F: Fn(usize, f32) -> Vec<Port> + Clone>(
+pub fn add_hardpoints_to_the_shapes(
+    shapes: &mut Shapes,
+    hardpoint_angle_per_side: Angle,
+    hardpoint_scale_count: usize,
+) -> usize {
+    shapes.add_unmirrored_shape_from_scales(get_hardpoint_scales(
+        hardpoint_angle_per_side,
+        hardpoint_scale_count,
+    ));
     shapes.0.len() - 1
 }
 
+// pub fn get_hardpoint_scales<F: Fn(usize, f32) -> Vec<Port> + Clone>(
+pub fn get_hardpoint_scales(
+    hardpoint_angle_per_side: Angle,
+    hardpoint_scale_count: usize,
+) -> Vec<Scale> {
+    (1..=hardpoint_scale_count)
+        .map(|scale_index| scale_from(scale_index, hardpoint_angle_per_side.clone()))
+        .collect()
+}
+
+// fn scale_from<F: Fn(usize, f32) -> Vec<Port> + Clone>(scale_index: usize, hardpoint_angle_per_side: Angle) -> Scale {
 fn scale_from(scale_index: usize, hardpoint_angle_per_side: Angle) -> Scale {
-    let hardpoint_side_count = (360.0 / hardpoint_angle_per_side.as_degrees().get_value()).floor() as usize;
+    let hardpoint_side_count =
+        (360.0 / hardpoint_angle_per_side.as_degrees().get_value()).floor() as usize;
     let port_modules = port_modules(hardpoint_side_count);
     let half_square_length = 0.5 * MASTER_SCALE * (scale_index as f32);
     let unoriented_do2d = do2d_float_from(half_square_length, half_square_length);
     let radius = 0.5 * MASTER_SCALE * scale_index as f32;
-    vertices_from(half_square_length, unoriented_do2d, radius, hardpoint_side_count, hardpoint_angle_per_side)
-        .to_hull_scale_with_modules(port_modules, format!("HardpointS{}", scale_index))
+    vertices_from(
+        half_square_length,
+        unoriented_do2d,
+        radius,
+        hardpoint_side_count,
+        hardpoint_angle_per_side,
+    )
+    .to_hull_scale_with_modules(port_modules, format!("HardpointS{}", scale_index))
 }
 
+// fn port_modules<F: Fn(usize, f32) -> Vec<Port> + Clone>(hardpoint_side_count: usize) -> Vec<Option<PortModule<'static, F>>> {
 fn port_modules(hardpoint_side_count: usize) -> Vec<Option<PortModule<'static>>> {
     (0..hardpoint_side_count - 1)
         .map(|_| PortModule::some(flags!(PortFlag::WeaponOut), default_port_distribution_from_variant!(Single)))

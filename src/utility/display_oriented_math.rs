@@ -171,3 +171,11 @@ pub fn distance_and_angle_to_do2d(distance: f32, angle: Angle) -> DisplayOriente
     let angle = angle.as_radians().get_value();
     do2d_float_from(distance * angle.cos(), distance * angle.sin())
 }
+
+pub fn do3d_float_from(x: f32, y: f32, z: f32) -> DisplayOriented3D {
+    DisplayOriented3D {
+        x: DisplayOrientedNumber::Float(x),
+        y: DisplayOrientedNumber::Float(y),
+        z: DisplayOrientedNumber::Float(z),
+    }
+}

@@ -2,7 +2,7 @@ use crate::mod_configs::mod_metadata::FUNKY_PORT_FORMATING;
 use crate::shapes::port::*;
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Ports(pub Vec<Port>);
 
 impl Display for Ports {

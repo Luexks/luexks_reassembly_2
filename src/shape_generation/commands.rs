@@ -20,13 +20,15 @@ use crate::{
 
 use super::MASTER_SCALE;
 
-pub fn add_commands_to_the(shapes: &mut Shapes) -> usize {
-    shapes.add_unmirrored_shape_from_scales(
-        (1..=COMMAND_SCALE_COUNT)
-            .map(|scale_index| scale_from(scale_index))
-            .collect(),
-    );
+pub fn add_commands_to_the(shapes: &mut Shapes, scale_count: usize) -> usize {
+    shapes.add_unmirrored_shape_from_scales(get_command_scales(scale_count));
     shapes.0.len() - 1
+}
+
+pub fn get_command_scales(scale_count: usize) -> Vec<Scale> {
+    (1..=scale_count)
+        .map(|scale_index| scale_from(scale_index))
+        .collect()
 }
 
 fn scale_from(scale_index: usize) -> Scale {

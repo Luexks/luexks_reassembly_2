@@ -4,7 +4,7 @@ use std::fmt::{self, Display};
 static mut CURRENT_SHAPE_ID: ShapeId = ShapeId(SHAPE_ID_BASE);
 
 #[derive(Clone, Copy)]
-pub struct ShapeId(u32);
+pub struct ShapeId(pub u32);
 
 impl Display for ShapeId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

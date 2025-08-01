@@ -7,13 +7,19 @@ use crate::{
 
 use super::shape_generation::MASTER_SCALE;
 
-pub fn add_adapters_to_the(shapes: &mut Shapes, adapter_scale_count: usize) -> usize {
+pub fn add_adapters_to_the(shapes: &mut Shapes, scale_count: usize) -> usize {
     shapes.add_unmirrored_shape_from_scales(
-        (1..=adapter_scale_count)
-            .map(|scale_index: usize| scale_from(scale_index))
-            .collect::<Vec<_>>(),
+        get_adapter_scales(scale_count), // (1..=adapter_scale_count)
+                                         //     .map(|scale_index: usize| scale_from(scale_index))
+                                         //     .collect::<Vec<_>>(),
     );
     shapes.0.len() - 1
+}
+
+pub fn get_adapter_scales(scale_count: usize) -> Vec<Scale> {
+    (1..=scale_count)
+        .map(|scale_index: usize| scale_from(scale_index))
+        .collect::<Vec<_>>()
 }
 
 fn scale_from(scale_index: usize) -> Scale {
