@@ -3,9 +3,10 @@ use crate::utility::display_oriented_math::DisplayOriented2D;
 #[derive(Clone, Debug)]
 pub struct Vertex(pub DisplayOriented2D);
 
+#[macro_export]
 macro_rules! vert {
     ($x:expr, $y:expr) => {
-        Vertex(crate::utility::display_oriented_math::DisplayOriented2D::simple($x, $y))
+        crate::shapes::vertex::Vertex(crate::utility::display_oriented_math::DisplayOriented2D::simple($x, $y))
     };
 }
-pub(crate) use vert;
+pub use vert;

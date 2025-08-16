@@ -8,7 +8,7 @@ use crate::utility::component_formatting::{
 use crate::utility::flags::Flags;
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CannonFields {
     pub cannon: Option<Cannon>,
 }
@@ -31,7 +31,7 @@ impl Display for CannonFields {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Cannon {
     pub rounds_per_sec: Option<f32>,
     pub rounds_per_burst: Option<u8>,

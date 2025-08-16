@@ -2,7 +2,7 @@ use crate::utility::color::Color;
 use crate::utility::component_formatting::format_component_options;
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ThrusterFields {
     force: Option<f32>,
     boost: Option<f32>,

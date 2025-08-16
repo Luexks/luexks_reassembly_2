@@ -3,7 +3,7 @@ use std::fmt::{self, Display};
 
 static mut CURRENT_BLOCK_ID: BlockId = BLOCK_ID_BASE;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct BlockId(pub u32);
 
 impl Default for BlockId {

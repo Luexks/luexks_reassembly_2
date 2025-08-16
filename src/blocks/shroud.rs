@@ -1,7 +1,7 @@
 use crate::{blocks::shroud_layer::ShroudLayer, utility::component_formatting::format_bracket_layer};
 use std::fmt::Display;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Shroud(pub Vec<ShroudLayer>);
 
 impl Display for Shroud {

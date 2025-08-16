@@ -1,7 +1,7 @@
 use crate::utility::component_formatting::format_component_option;
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TorquerFields {
     torque: Option<f32>,
 }

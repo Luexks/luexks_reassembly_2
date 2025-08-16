@@ -6,7 +6,7 @@ use crate::utility::component_formatting::{
 use crate::utility::flags::Flags;
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct LaserFields {
     laser: Option<Laser>,
 }
@@ -29,7 +29,7 @@ impl Display for LaserFields {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Laser {
     pulses_per_sec: Option<f32>,
     pulses_per_burst: Option<u8>,

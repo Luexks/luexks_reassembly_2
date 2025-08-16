@@ -1,6 +1,7 @@
 use crate::blocks::block::Block;
 use std::fmt::{self, Display};
 
+#[derive(Debug)]
 pub struct Blocks(pub Vec<Block>);
 
 impl Default for Blocks {

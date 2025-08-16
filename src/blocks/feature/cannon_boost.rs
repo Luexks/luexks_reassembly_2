@@ -3,7 +3,7 @@ use crate::utility::component_formatting::{
 };
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CannonBoostFields {
     pub cannon_boost: Option<CannonBoost>,
 }
@@ -25,7 +25,7 @@ impl Display for CannonBoostFields {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CannonBoost {
     rounds_per_sec: Option<CannonBoostValue>,
     muzzle_vel: Option<CannonBoostValue>,
@@ -84,7 +84,7 @@ macro_rules! cannon_boost {
     };
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CannonBoostValue {
     multiplier: f32,
     flat: f32,

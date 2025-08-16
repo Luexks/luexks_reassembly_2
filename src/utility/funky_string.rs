@@ -8,7 +8,7 @@ macro_rules! funky_string {
 }
 pub(crate) use funky_string;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct FunkyString(pub String);
 
 impl Display for FunkyString {

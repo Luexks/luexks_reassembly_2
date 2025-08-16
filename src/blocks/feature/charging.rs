@@ -1,7 +1,7 @@
 use crate::utility::component_formatting::format_component_options;
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ChargingFields {
     max_seconds: Option<f32>,
     min_fraction: Option<f32>,

@@ -54,7 +54,7 @@ macro_rules! new_feature {
 }
 pub(crate) use new_feature;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Feature {
     Command,
     Thruster(ThrusterFields),

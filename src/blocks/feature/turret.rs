@@ -3,7 +3,7 @@ use crate::utility::component_formatting::format_component_options;
 use crate::utility::display_oriented_math::DisplayOriented2D;
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TurretFields {
     pub speed: Option<Angle>,
     pub limit: Option<Angle>,

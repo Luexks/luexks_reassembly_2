@@ -8,7 +8,7 @@ use crate::{
 };
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Fragment {
     rounds_per_burst: Option<u8>,
     explosive: Option<Flags<ExplosiveFields>>,

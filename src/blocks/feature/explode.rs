@@ -1,7 +1,7 @@
 use crate::utility::component_formatting::format_component_options;
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ExplodeFields {
     explode_damage: Option<f32>,
     explode_radius: Option<f32>,

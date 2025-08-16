@@ -4,7 +4,7 @@ use crate::utility::component_formatting::{
 };
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ShieldFields {
     shield: Option<Shield>,
 }
@@ -21,7 +21,7 @@ impl Display for ShieldFields {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Shield {
     strength: Option<f32>,
     armor: Option<f32>,

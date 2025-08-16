@@ -2,8 +2,8 @@ use crate::mod_configs::mod_metadata::BLOCK_SORT_BASE;
 use std::fmt::{self, Display};
 
 static mut CURRENT_BLOCK_SORT: BlockSort = BlockSort(BLOCK_SORT_BASE);
-#[derive(Clone, Copy)]
 
+#[derive(Clone, Copy, Debug)]
 pub struct BlockSort(i32);
 
 impl Display for BlockSort {

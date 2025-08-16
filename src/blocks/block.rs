@@ -50,7 +50,7 @@ macro_rules! block_without_id {
 }
 // pub(crate) use block_without_id;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Block {
     pub id: Option<BlockId>,
     pub extends: Option<BlockId>,
@@ -369,7 +369,7 @@ impl Display for Block {
                 &self.color_1 => "fillColor",
                 &self.color_2 => "fillColor1",
                 &self.line_color => "lineColor",
-                self.shape => "shape",
+                &self.shape => "shape",
                 self.scale => "scale",
                 &self.name => "name",
                 self.points => "points",

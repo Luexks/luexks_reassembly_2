@@ -2,7 +2,7 @@ use crate::shapes::scale::Scale;
 use crate::shapes::shape_id::*;
 use std::fmt::Display;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Shape {
     Standard {
         id: ShapeId,
@@ -56,7 +56,7 @@ impl Shape {
         }
         Shape::Mirror {
             id: ShapeId::next(),
-            mirror_of: *mirror_of,
+            mirror_of: mirror_of.clone(),
             scale_count: scale_count,
             scale_names: scale_names,
         }
@@ -84,8 +84,8 @@ impl Shape {
 
     pub fn get_id(&self) -> Option<ShapeId> {
         Some(match self {
-            Shape::Standard { id, .. } => *id,
-            Shape::Mirror { id, .. } => *id,
+            Shape::Standard { id, .. } => id.clone(),
+            Shape::Mirror { id, .. } => id.clone(),
         })
     }
 
@@ -106,7 +106,7 @@ impl Shape {
     pub fn get_scales(&self, range: std::ops::Range<usize>) -> Shape {
         match self {
             Shape::Standard { id, scales } => Shape::Standard {
-                id: *id,
+                id: id.clone(),
                 scales: scales[range].to_vec(),
             },
             Shape::Mirror {
@@ -115,8 +115,8 @@ impl Shape {
                 scale_names,
                 ..
             } => Shape::Mirror {
-                id: *id,
-                mirror_of: *mirror_of,
+                id: id.clone(),
+                mirror_of: mirror_of.clone(),
                 scale_count: range.end + 1,
                 scale_names: scale_names[range].to_vec(),
             },

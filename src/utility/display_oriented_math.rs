@@ -140,7 +140,7 @@ pub fn do2d_float_from(x: f32, y: f32) -> DisplayOriented2D {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DisplayOriented3D {
     pub x: DisplayOrientedNumber,
     pub y: DisplayOrientedNumber,

@@ -1,6 +1,6 @@
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Color {
     RRGGBB { rr: u8, gg: u8, bb: u8 },
     AARRGGBB { aa: u8, rr: u8, gg: u8, bb: u8 },

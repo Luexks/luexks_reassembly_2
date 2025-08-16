@@ -3,6 +3,7 @@ use crate::shapes::shape::Shape;
 use crate::shapes::shape_id::*;
 use std::fmt::Display;
 
+#[derive(Clone, Debug)]
 pub struct Shapes(pub Vec<Shape>);
 
 impl Default for Shapes {

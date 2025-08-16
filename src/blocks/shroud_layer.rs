@@ -7,7 +7,7 @@ use crate::{
 };
 use std::fmt::Display;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct ShroudLayer {
     pub shape: Option<ShapeId>,
     pub size: Option<DisplayOriented2D>,
@@ -22,7 +22,7 @@ pub struct ShroudLayer {
 impl Default for ShroudLayer {
     fn default() -> Self {
         ShroudLayer {
-            shape: Some(ShapeId(SHAPE_ID_BASE)),
+            shape: Some(ShapeId::Number(SHAPE_ID_BASE)),
             size: Some(do2d_float_from(0.0, 0.0)),
             offset: Some(do3d_float_from(0.0, 0.0, 0.01)),
             color_1: Some(ShroudLayerColor::Color1),
@@ -40,7 +40,7 @@ impl Display for ShroudLayer {
             f,
             "{}",
             format_bracket_layer(format_component_options!(
-                self.shape => "shape",
+                &self.shape => "shape",
                 &self.size => "size",
                 &self.offset => "offset",
                 &self.color_1 => "tri_color_id",
@@ -53,7 +53,7 @@ impl Display for ShroudLayer {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum ShroudLayerColor {
     Color1,
     Color2,

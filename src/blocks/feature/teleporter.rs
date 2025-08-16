@@ -1,7 +1,7 @@
 use crate::utility::component_formatting::format_component_options;
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct TeleporterFields {
     power: Option<f32>,
     radius: Option<f32>,

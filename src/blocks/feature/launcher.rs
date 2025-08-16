@@ -2,7 +2,7 @@ use crate::blocks::block::Block;
 use crate::utility::component_formatting::format_component_options;
 use std::fmt::{self, Display};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct LauncherFields {
     replicate_block: Option<Block>,
     speed: Option<f32>,
