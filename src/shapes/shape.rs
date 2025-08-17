@@ -1,5 +1,6 @@
 use crate::shapes::scale::Scale;
 use crate::shapes::shape_id::*;
+use crate::shapes::vertices::Vertices;
 use std::fmt::Display;
 
 #[derive(Clone, Debug)]
@@ -120,6 +121,15 @@ impl Shape {
                 scale_count: range.end + 1,
                 scale_names: scale_names[range].to_vec(),
             },
+        }
+    }
+
+    pub fn get_first_scale_vertices(&self) -> Vertices {
+        match self {
+            Shape::Standard { id: _, scales } => {
+                scales.get(0).unwrap().verts.clone()
+            }
+            _ => panic!()
         }
     }
 }

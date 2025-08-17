@@ -39,3 +39,20 @@ macro_rules! no_port_flags {
     };
 }
 pub(crate) use no_port_flags;
+
+impl PortFlag {
+    pub fn from_str(s: &str) -> PortFlag {
+        match s {
+            "THRUSTER_OUT" => PortFlag::ThrusterOut,
+            "THRUSTER_IN" => PortFlag::ThrusterIn,
+            "WEAPON_OUT" => PortFlag::WeaponOut,
+            "WEAPON_IN" => PortFlag::WeaponIn,
+            "LAUNCHER" => PortFlag::Launcher,
+            "MISSILE" => PortFlag::Missile,
+            "ROOT" => PortFlag::Root,
+            "NONE" => PortFlag::None,
+            "NORMAL" => PortFlag::Normal,
+            _ => panic!(),
+        }
+    }
+}

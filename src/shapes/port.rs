@@ -15,8 +15,14 @@ impl Display for Port {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{{{},{},{}}}",
-            self.side_index, self.position, self.flags
+            "{{{},{}{}}}",
+            self.side_index,
+            self.position,
+            if self.flags.0.is_empty() {
+                "".to_string()
+            } else {
+                format!(",{}", self.flags.to_string())
+            }
         )
     }
 }

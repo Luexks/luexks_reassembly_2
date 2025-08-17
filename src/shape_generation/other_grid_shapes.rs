@@ -47,12 +47,10 @@ pub fn get_other_grid_shape_scales() -> Vec<Scale> {
         //     1.0,
         //     Some("".to_string()),
         // ))
-        .chain(
-            generic_rectangles::get_generic_rectangles(vec![
-                ((SQRT_2 * 0.5, SQRT_2 * 0.5, Some("½√2square".to_string()))),
-                ((SQRT_2, SQRT_2, Some("√2square".to_string()))),
-            ])
-        )
+        .chain(generic_rectangles::get_generic_rectangles(vec![
+            ((SQRT_2 * 0.5, SQRT_2 * 0.5, Some("½√2square".to_string()))),
+            ((SQRT_2, SQRT_2, Some("√2square".to_string()))),
+        ]))
         .collect()
 }
 

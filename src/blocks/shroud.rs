@@ -1,4 +1,6 @@
-use crate::{blocks::shroud_layer::ShroudLayer, utility::component_formatting::format_bracket_layer};
+use crate::{
+    blocks::shroud_layer::ShroudLayer, utility::component_formatting::format_bracket_layer,
+};
 use std::fmt::Display;
 
 #[derive(Clone, Debug)]

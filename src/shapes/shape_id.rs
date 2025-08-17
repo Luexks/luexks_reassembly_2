@@ -11,10 +11,14 @@ pub enum ShapeId {
 
 impl Display for ShapeId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", match self {
-            Self::Number(number) => number.to_string(),
-            Self::Vanilla(name) => name.to_string(),
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Number(number) => number.to_string(),
+                Self::Vanilla(name) => name.to_string(),
+            }
+        )
     }
 }
 

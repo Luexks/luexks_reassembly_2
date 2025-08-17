@@ -1,9 +1,13 @@
 use crate::{
-    mod_configs::shape_configs::SHAPE_ID_BASE, shapes::shape_id::ShapeId, utility::{
+    mod_configs::shape_configs::SHAPE_ID_BASE,
+    shapes::shape_id::ShapeId,
+    utility::{
         angle::Angle,
         component_formatting::{format_bracket_layer, format_component_options},
-        display_oriented_math::{do2d_float_from, do3d_float_from, DisplayOriented2D, DisplayOriented3D},
-    }
+        display_oriented_math::{
+            do2d_float_from, do3d_float_from, DisplayOriented2D, DisplayOriented3D,
+        },
+    },
 };
 use std::fmt::Display;
 
@@ -54,7 +58,7 @@ impl Display for ShroudLayer {
 }
 
 #[derive(Clone, Debug)]
-enum ShroudLayerColor {
+pub enum ShroudLayerColor {
     Color1,
     Color2,
     LineColor,
