@@ -3,7 +3,7 @@ use std::fmt::{self, Display};
 
 static mut CURRENT_SHAPE_ID: ShapeId = ShapeId::Number(SHAPE_ID_BASE);
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ShapeId {
     Number(u32),
     Vanilla(String),

@@ -21,7 +21,7 @@ impl Display for Color {
 }
 
 impl Color {
-    pub fn new_rrggbb(rrggbb: &str) -> Color {
+    pub fn new_rrggbb_str(rrggbb: &str) -> Color {
         if rrggbb.len() != 6 {
             panic!("Invalid color length for rrggbb");
         }
@@ -35,7 +35,7 @@ impl Color {
         }
     }
 
-    pub fn new_aarrggbb(aarrggbb: &str) -> Color {
+    pub fn new_aarrggbb_str(aarrggbb: &str) -> Color {
         if aarrggbb.len() != 8 {
             panic!("Invalid color length for rrggbb");
         }
@@ -48,6 +48,42 @@ impl Color {
                 .expect(&format!("Invalid hex for GG of {}", aarrggbb)),
             bb: u8::from_str_radix(&aarrggbb[6..=7], 16)
                 .expect(&format!("Invalid hex for BB of {}", aarrggbb)),
+        }
+    }
+
+    pub fn new_rrggb_u8(rr: u8, bb: u8, gg: u8) -> Color {
+        Color::RRGGBB { rr, gg, bb }
+    }
+
+    pub fn new_aarrggb_u8(aa: u8, rr: u8, bb: u8, gg: u8) -> Color {
+        Color::AARRGGBB { aa, rr, gg, bb }
+    }
+
+    pub fn rr(&self) -> u8 {
+        match self {
+            Color::RRGGBB { rr, .. } => *rr,
+            Color::AARRGGBB { rr, .. } => *rr,
+        }
+    }
+
+    pub fn gg(&self) -> u8 {
+        match self {
+            Color::RRGGBB { gg, .. } => *gg,
+            Color::AARRGGBB { gg, .. } => *gg,
+        }
+    }
+
+    pub fn bb(&self) -> u8 {
+        match self {
+            Color::RRGGBB { bb, .. } => *bb,
+            Color::AARRGGBB { bb, .. } => *bb,
+        }
+    }
+
+    pub fn aa(&self) -> Option<u8> {
+        match self {
+            Color::RRGGBB { .. } => None,
+            Color::AARRGGBB { aa, .. } => Some(*aa),
         }
     }
 }
