@@ -42,14 +42,14 @@ impl Display for ShroudLayer {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}",
+            "\t{}",
             format_bracket_layer(format_component_options!(
-                &self.shape => "shape",
-                &self.size => "size",
-                &self.offset => "offset",
                 &self.color_1 => "tri_color_id",
                 &self.color_2 => "tri_color1_id",
                 &self.line_color => "line_color_id",
+                &self.shape => "shape",
+                &self.size => "size",
+                &self.offset => "offset",
                 &self.angle => "angle",
                 self.taper => "taper",
             ))

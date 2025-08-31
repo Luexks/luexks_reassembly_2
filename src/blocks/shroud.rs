@@ -1,5 +1,5 @@
 use crate::{
-    blocks::shroud_layer::ShroudLayer, utility::component_formatting::format_bracket_layer,
+    blocks::shroud_layer::ShroudLayer, utility::component_formatting::format_bracket_layer_multiline,
 };
 use std::fmt::Display;
 
@@ -11,7 +11,7 @@ impl Display for Shroud {
         write!(
             f,
             "{}",
-            format_bracket_layer(
+            format_bracket_layer_multiline(
                 self.0
                     .iter()
                     .map(|shroud_layer| shroud_layer.to_string())
