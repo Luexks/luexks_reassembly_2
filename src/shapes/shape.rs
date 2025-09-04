@@ -127,7 +127,16 @@ impl Shape {
     pub fn get_first_scale_vertices(&self) -> Vertices {
         match self {
             Shape::Standard { id: _, scales } => {
-                scales.get(0).unwrap().verts.clone()
+                scales.first().unwrap().verts.clone()
+            }
+            _ => panic!()
+        }
+    }
+
+    pub fn get_nth_scale_vertices(&self, n: usize) -> Vertices {
+        match self {
+            Shape::Standard { id: _, scales } => {
+                scales.get(n).unwrap().verts.clone()
             }
             _ => panic!()
         }

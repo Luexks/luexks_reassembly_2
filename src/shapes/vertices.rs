@@ -11,7 +11,7 @@ use std::fmt::Display;
 use super::port_distribution::default_port_distribution_from_variant;
 use super::port_module::PortModule;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Vertices(pub Vec<Vertex>);
 
 impl Vertices {

@@ -2,7 +2,7 @@ use crate::shapes::ports::Ports;
 use crate::shapes::vertices::Vertices;
 use std::fmt::{self, Display};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct Scale {
     pub verts: Vertices,
     pub ports: Ports,
