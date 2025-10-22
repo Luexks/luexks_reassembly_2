@@ -71,7 +71,7 @@ pub struct Block {
     pub armor: Option<f32>,
     pub density: Option<f32>,
     pub blurb: Option<FunkyString>,
-    pub shrouds: Option<Shroud>,
+    pub shroud: Option<Shroud>,
     pub lifetime: Option<f32>,
 }
 
@@ -344,7 +344,7 @@ impl Default for Block {
             armor: None,
             density: None,
             blurb: None,
-            shrouds: None,
+            shroud: None,
             lifetime: None,
         }
     }
@@ -377,7 +377,7 @@ impl Display for Block {
                 self.armor => "armor",
                 self.density => "density",
                 &self.blurb => "blurb",
-                &self.shrouds => "shroud",
+                &self.shroud => "shroud",
                 self.lifetime => "lifetime",
             ),
             match &self.features {
