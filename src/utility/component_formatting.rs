@@ -17,7 +17,7 @@ use std::fmt::Display;
 macro_rules! format_component_options {
     ($($component:expr => $component_name:expr),* $(,)?) => {
         format!(
-            " {} ",
+            "{}",
             vec![$(crate::utility::component_formatting::format_component_option!($component => $component_name)),*]
                 .into_iter()
                 .filter(|s| *s != "".to_string())
@@ -43,9 +43,13 @@ pub fn format_component<T: Display>(component: T, component_name: &str) -> Strin
 }
 
 pub fn format_bracket_layer<T: Display>(component: T) -> String {
-    format!("{{{}}}", component)
+    format!("{{ {} }}", component)
 }
 
 pub fn format_bracket_layer_multiline<T: Display>(component: T) -> String {
     format!("{{\n{}\n}}", component)
+}
+
+pub fn format_space_buffer<T: Display>(component: T) -> String {
+    format!(" {}", component)
 }

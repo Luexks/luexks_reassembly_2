@@ -14,7 +14,7 @@ impl Display for Color {
             match self {
                 Color::RRGGBB { rr, gg, bb } => format!("{:02X}{:02X}{:02X}", rr, gg, bb),
                 Color::AARRGGBB { aa, rr, gg, bb } =>
-                    format!("{:02X}{:02X}{:2X}{:02X}", aa, rr, gg, bb),
+                    format!("{:02X}{:02X}{:02X}{:02X}", aa, rr, gg, bb),
             }
         )
     }

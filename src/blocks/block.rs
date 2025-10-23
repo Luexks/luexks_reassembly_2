@@ -5,7 +5,7 @@ use crate::blocks::shroud::Shroud;
 use crate::shapes::shape::Shape;
 use crate::shapes::shape_id::ShapeId;
 use crate::utility::color::Color;
-use crate::utility::component_formatting::{format_component_option, format_component_options};
+use crate::utility::component_formatting::{format_bracket_layer, format_component_option, format_component_options, format_space_buffer};
 use crate::utility::funky_string::{funky_string, FunkyString};
 use crate::utility::option_comparison_prioritising_some::option_comparison_prioritising_some;
 use std::fmt::{self, Display};
@@ -150,11 +150,16 @@ impl Block {
         shape: &Shape,
         extra_variants: Vec<Block>,
     ) -> Vec<Block> {
-        assert_eq!(shape.get_scale_count(), 1 + extra_variants.len());
+        let first_scale = match self.scale {
+            Some(scale) => scale - 1,
+            None => 0,
+        };
+        // assert_eq!(shape.get_scale_count(), 1 + extra_variants.len());
+        assert!(shape.get_scale_count() >= extra_variants.len());
         static mut BASE_BLOCK_ID: Option<BlockId> = None;
         static mut LAST_VARIANT_BLOCK_ID: Option<BlockId> = None;
         static mut LAST_SHAPE_BLOCK_ID: Option<BlockId> = None;
-        (0..shape.get_scale_count())
+        (0..extra_variants.len())
             .map({
                 let original_block = &self;
                 move |scale_index| {
@@ -166,14 +171,14 @@ impl Block {
                         }
                         let mut new_block = original_block.clone();
                         new_block.shape = shape.get_id();
-                        new_block.scale = Some(scale_index as u8 + 1);
+                        new_block.scale = Some(first_scale + scale_index as u8 + 1);
                         add_scale_name_to_block!(new_block, shape, scale_index);
                         new_block
                     } else {
                         let mut new_block = extra_variants.get(scale_index - 1).unwrap().to_owned();
                         new_block.id = Some(BlockId::next());
                         new_block.extends = Some(unsafe { LAST_SHAPE_BLOCK_ID.unwrap() });
-                        new_block.scale = Some((scale_index + 1) as u8);
+                        new_block.scale = Some(first_scale + scale_index as u8 + 1);
                         new_block.blurb = original_block.blurb.clone();
                         add_scale_name_to_block!(new_block, shape, scale_index);
                         new_block
@@ -354,7 +359,7 @@ impl Display for Block {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{{ {}{}{}{} }}",
+            "{{ {} {}{}{} }}",
             match self.id {
                 Some(value) => value.to_string(),
                 None => String::new(),
@@ -385,7 +390,7 @@ impl Display for Block {
                     match extend_accounting_feature_list.feature_list_same_as_extends {
                         true => "".to_string(),
                         false => {
-                            format_component_option!(Some(&extend_accounting_feature_list.features) => "features")
+                            format_space_buffer(format_component_option!(Some(&extend_accounting_feature_list.features) => "features"))
                         }
                     }
                 }
@@ -393,13 +398,20 @@ impl Display for Block {
                 None => "".to_string(),
             },
             match &self.features {
-                Some(extend_accounting_feature_list) => extend_accounting_feature_list
-                    .features
-                    .0
-                    .iter()
-                    .map(|feature| feature.components_to_string())
-                    .collect::<Vec<_>>()
-                    .join(""),
+                Some(extend_accounting_feature_list) => {
+                    let s = extend_accounting_feature_list
+                        .features
+                        .0
+                        .iter()
+                        .map(|feature| feature.components_to_string())
+                        .filter(|s| s != "")
+                        .collect::<Vec<_>>()
+                        .join(" ");
+                    match s.is_empty() {
+                        true => s,
+                        false => format_space_buffer(s),
+                    }
+                },
                 None => "".to_string(),
             },
         )
