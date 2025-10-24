@@ -94,7 +94,8 @@ impl Display for ShroudLayerColor {
 //     };
 // }
 
-#[macro_export] macro_rules! shroud_layer {
+#[macro_export]
+macro_rules! shroud_layer {
     ($($component_name:ident: $component_value:expr),* $(,)?) => {
         ShroudLayer {
             $($component_name: Some($component_value),)*

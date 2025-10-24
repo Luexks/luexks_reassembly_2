@@ -159,7 +159,7 @@ impl Block {
         static mut BASE_BLOCK_ID: Option<BlockId> = None;
         static mut LAST_VARIANT_BLOCK_ID: Option<BlockId> = None;
         static mut LAST_SHAPE_BLOCK_ID: Option<BlockId> = None;
-        (0..extra_variants.len())
+        (0..extra_variants.len() + 1)
             .map({
                 let original_block = &self;
                 move |scale_index| {
