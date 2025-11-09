@@ -33,6 +33,7 @@ impl Display for PortFlag {
     }
 }
 
+#[macro_export]
 macro_rules! no_port_flags {
     () => {
         Flags::default()

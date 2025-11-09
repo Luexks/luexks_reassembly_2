@@ -5,7 +5,9 @@ use crate::blocks::shroud::Shroud;
 use crate::shapes::shape::Shape;
 use crate::shapes::shape_id::ShapeId;
 use crate::utility::color::Color;
-use crate::utility::component_formatting::{format_bracket_layer, format_component_option, format_component_options, format_space_buffer};
+use crate::utility::component_formatting::{
+    format_bracket_layer, format_component_option, format_component_options, format_space_buffer,
+};
 use crate::utility::funky_string::{funky_string, FunkyString};
 use crate::utility::option_comparison_prioritising_some::option_comparison_prioritising_some;
 use std::fmt::{self, Display};
@@ -389,9 +391,9 @@ impl Display for Block {
                 Some(extend_accounting_feature_list) => {
                     match extend_accounting_feature_list.feature_list_same_as_extends {
                         true => "".to_string(),
-                        false => {
-                            format_space_buffer(format_component_option!(Some(&extend_accounting_feature_list.features) => "features"))
-                        }
+                        false => format_space_buffer(
+                            format_component_option!(Some(&extend_accounting_feature_list.features) => "features"),
+                        ),
                     }
                 }
 
@@ -411,7 +413,7 @@ impl Display for Block {
                         true => s,
                         false => format_space_buffer(s),
                     }
-                },
+                }
                 None => "".to_string(),
             },
         )

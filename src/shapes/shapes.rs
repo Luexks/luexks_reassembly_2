@@ -45,7 +45,23 @@ impl Shapes {
         self.0.push(mirrored_new_shape);
     }
 
-    pub fn get(&self, shape_id: usize) -> &Shape {
-        &self.0.get(shape_id).unwrap()
+    pub fn get(&self, shape_idx: usize) -> &Shape {
+        &self.0.get(shape_idx).unwrap()
+    }
+
+    pub fn get_mirror_of_mirror_idx(&self, mirror_idx: usize) -> Option<&Shape> {
+        let mirror_shape = self.0.get(mirror_idx).unwrap();
+        match mirror_shape {
+            Shape::Standard { .. } => None,
+            Shape::Mirror {
+                id: _,
+                mirror_of,
+                scale_count: _,
+                scale_names: _,
+            } => self
+                .0
+                .iter()
+                .find(|shape| shape.get_id().unwrap() == *mirror_of),
+        }
     }
 }

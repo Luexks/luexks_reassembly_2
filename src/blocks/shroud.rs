@@ -1,5 +1,6 @@
 use crate::{
-    blocks::shroud_layer::ShroudLayer, utility::component_formatting::format_bracket_layer_multiline,
+    blocks::shroud_layer::ShroudLayer,
+    utility::component_formatting::format_bracket_layer_multiline,
 };
 use std::fmt::Display;
 

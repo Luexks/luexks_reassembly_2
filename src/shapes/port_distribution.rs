@@ -52,6 +52,7 @@ impl PortDistribution<'_> {
     }
 }
 
+#[macro_export]
 macro_rules! scale_from_alternating_vertices_and_port_distributions {
     (name: $name:expr, $($vertex:expr, $port_distribution_variant:ident $(: $last_port_distribution:expr)?),*,) => {
         {
@@ -69,6 +70,7 @@ macro_rules! scale_from_alternating_vertices_and_port_distributions {
 }
 pub(crate) use scale_from_alternating_vertices_and_port_distributions;
 
+#[macro_export]
 macro_rules! default_port_distribution_from_variants {
     (None) => {
         vec![$(default_port_distribution_from_variant!(None)),*]
@@ -82,6 +84,7 @@ macro_rules! default_port_distribution_from_variants {
 }
 pub(crate) use default_port_distribution_from_variants;
 
+#[macro_export]
 macro_rules! default_port_distribution_from_variant {
     (Single) => {{
         use crate::{
