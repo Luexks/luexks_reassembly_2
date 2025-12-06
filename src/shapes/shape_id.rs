@@ -48,4 +48,9 @@ impl ShapeId {
             buffer_shape_id
         }
     }
+    pub fn set(id: u32) {
+        unsafe {
+            CURRENT_SHAPE_ID = ShapeId::Number(id);
+        }
+    }
 }

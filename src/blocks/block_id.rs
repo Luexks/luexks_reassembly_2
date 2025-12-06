@@ -26,4 +26,9 @@ impl BlockId {
             buffer_block_id
         }
     }
+    pub fn set(id: u32) {
+        unsafe {
+            CURRENT_BLOCK_ID.0 = id;
+        }
+    }
 }
