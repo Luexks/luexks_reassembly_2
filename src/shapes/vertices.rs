@@ -159,6 +159,38 @@ impl Vertices {
             }
         })
     }
+
+    pub fn to_shroud_scale(self) -> Scale {
+        Scale {
+            verts: self,
+            ports: Ports(vec![Port {
+                side_index: 0,
+                position: don_float_from(0.0),
+                flags: Flags(Vec::new()),
+            }]),
+            name: "".to_string(),
+        }
+    }
+
+    pub fn get_size(&self) -> DisplayOriented2D {
+        let (x_min, x_max, y_min, y_max) = self.0.iter().skip(1).fold(
+            (
+                self.0[0].0.x.to_f32(),
+                self.0[0].0.x.to_f32(),
+                self.0[0].0.y.to_f32(),
+                self.0[0].0.y.to_f32(),
+            ),
+            |(x_min, x_max, y_min, y_max), vert| {
+                (
+                    x_min.min(vert.0.x.to_f32()),
+                    x_max.max(vert.0.x.to_f32()),
+                    y_min.min(vert.0.y.to_f32()),
+                    y_max.max(vert.0.y.to_f32()),
+                )
+            },
+        );
+        do2d_float_from(x_max - x_min, y_max - y_min)
+    }
 }
 
 impl Display for Vertices {
