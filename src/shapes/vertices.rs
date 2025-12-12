@@ -191,6 +191,21 @@ impl Vertices {
         );
         do2d_float_from(x_max - x_min, y_max - y_min)
     }
+
+    pub fn mirror(self) -> Vertices {
+        Vertices(
+            self.0
+                .into_iter()
+                .map(|vertex| {
+                    Vertex(DisplayOriented2D {
+                        x: vertex.0.x,
+                        y: don_float_from(-vertex.0.y.to_f32()),
+                    })
+                })
+                .rev()
+                .collect(),
+        )
+    }
 }
 
 impl Display for Vertices {
