@@ -22,6 +22,22 @@ impl DisplayOrientedNumber {
         }
     }
 
+    pub fn to_f32_mut(&mut self) -> &mut f32 {
+        match self {
+            DisplayOrientedNumber::Float(value) => value,
+            DisplayOrientedNumber::Fraction {
+                numerator,
+                denominator,
+            } => {
+                *self = don_float_from(numerator.to_f32() / denominator.to_f32());
+                match self {
+                    DisplayOrientedNumber::Float(value) => value,
+                    DisplayOrientedNumber::Fraction { .. } => unreachable!(),
+                }
+            }
+        }
+    }
+
     pub fn get_numerator(&self) -> f32 {
         if let DisplayOrientedNumber::Fraction { numerator, .. } = self {
             numerator.to_f32()
