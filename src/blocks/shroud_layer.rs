@@ -57,7 +57,7 @@ impl Display for ShroudLayer {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Copy)]
 pub enum ShroudLayerColor {
     Color1,
     Color2,
