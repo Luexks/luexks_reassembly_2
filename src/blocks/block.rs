@@ -66,7 +66,7 @@ pub struct Block {
     pub color_2: Option<Color>,
     pub line_color: Option<Color>,
     pub shape: Option<ShapeId>,
-    pub scale: Option<u8>,
+    pub scale: Option<usize>,
     pub name: Option<FunkyString>,
     pub points: Option<i32>,
     pub durability: Option<f32>,
@@ -130,13 +130,13 @@ impl Block {
                         }
                         let mut new_block = original_block.clone();
                         new_block.shape = shape.get_id();
-                        new_block.scale = Some(scale_index as u8 + 1);
+                        new_block.scale = Some(scale_index + 1);
                         add_scale_name_to_block!(new_block, shape, scale_index);
                         new_block
                     } else {
                         let mut new_block = block!(
                             extends: unsafe { LAST_SHAPE_BLOCK_ID.unwrap() },
-                            scale: scale_index as u8 + 1
+                            scale: scale_index + 1
                         );
                         new_block.blurb = original_block.blurb.clone();
                         add_scale_name_to_block!(new_block, shape, scale_index);
@@ -173,14 +173,14 @@ impl Block {
                         }
                         let mut new_block = original_block.clone();
                         new_block.shape = shape.get_id();
-                        new_block.scale = Some(first_scale + scale_index as u8 + 1);
+                        new_block.scale = Some(first_scale + scale_index + 1);
                         add_scale_name_to_block!(new_block, shape, scale_index);
                         new_block
                     } else {
                         let mut new_block = extra_variants.get(scale_index - 1).unwrap().to_owned();
                         new_block.id = Some(BlockId::next());
                         new_block.extends = Some(unsafe { LAST_SHAPE_BLOCK_ID.unwrap() });
-                        new_block.scale = Some(first_scale + scale_index as u8 + 1);
+                        new_block.scale = Some(first_scale + scale_index + 1);
                         new_block.blurb = original_block.blurb.clone();
                         add_scale_name_to_block!(new_block, shape, scale_index);
                         new_block
@@ -209,7 +209,7 @@ impl Block {
                             }
                             let mut new_block = original_block.clone();
                             new_block.shape = shape.get_id();
-                            new_block.scale = Some(scale_index as u8 + 1);
+                            new_block.scale = Some(scale_index + 1);
                             add_scale_name_to_block!(new_block, shape, scale_index);
                             new_block
                         } else if scale_index == 0 {
@@ -226,7 +226,7 @@ impl Block {
                         } else {
                             let mut new_block = block!(
                                 extends: unsafe { LAST_SHAPE_BLOCK_ID.unwrap() },
-                                scale: scale_index as u8 + 1
+                                scale: scale_index + 1
                             );
                             new_block.blurb = original_block.blurb.clone();
                             add_scale_name_to_block!(new_block, shape, scale_index);
@@ -269,7 +269,7 @@ impl Block {
                                     }
                                     let mut new_block = original_block.clone();
                                     new_block.shape = shape.get_id();
-                                    new_block.scale = Some(scale_index as u8 + 1);
+                                    new_block.scale = Some(scale_index + 1);
                                     add_scale_name_to_block!(new_block, shape, scale_index);
                                     new_block
                                 } else if shape_index == 0 && scale_index == 0 {
@@ -307,7 +307,7 @@ impl Block {
                                 } else {
                                     let mut new_block = block!(
                                         extends: unsafe { LAST_SHAPE_BLOCK_ID.unwrap() },
-                                        scale: scale_index as u8 + 1
+                                        scale: scale_index + 1
                                     );
                                     option_comparison_prioritising_some!(
                                         new_block.blurb,
