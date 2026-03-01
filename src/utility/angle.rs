@@ -34,4 +34,11 @@ impl Angle {
             Angle::Radian(value) => *value,
         }
     }
+
+    pub fn get_value_mut(&mut self) -> &mut f32 {
+        match self {
+            Angle::Degree(value) => value,
+            Angle::Radian(value) => value,
+        }
+    }
 }
