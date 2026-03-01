@@ -15,7 +15,6 @@ impl Display for Angle {
 impl Angle {
     pub fn as_radians(&self) -> Angle {
         Angle::Radian(match self {
-            // Angle::Degree(value) => value * (std::f32::consts::PI / 90.0),
             Angle::Degree(value) => value * (std::f32::consts::PI / 180.0),
             Angle::Radian(value) => *value,
         })
@@ -40,5 +39,15 @@ impl Angle {
             Angle::Degree(value) => value,
             Angle::Radian(value) => value,
         }
+    }
+
+    pub fn as_radians_mut(&mut self) -> &mut Angle {
+        *self = self.as_radians();
+        self
+    }
+
+    pub fn as_degrees_mut(&mut self) -> &mut Angle {
+        *self = self.as_degrees();
+        self
     }
 }
